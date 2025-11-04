@@ -49,13 +49,13 @@
                         <i class="angle fa fa-angle-right ms-auto"></i>
                     </a>
                     <ul class="slide-menu">
-                        <li><a href="{{ route('setting.general.index') }}" class="slide-item">Hero Section</a></li>
-                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Distribution Table</a>
+                        <li><a href="{{ route('cms.home.hero.section') }}" class="slide-item">Hero Section</a></li>
+                        <li><a href="{{ route('cms.home.distribution.section') }}" class="slide-item">Distribution Table</a>
                         </li>
-                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Percentage</a></li>
-                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Selected Name</a></li>
-                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Quote</a></li>
-                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Our Story</a></li>
+                        <li><a href="{{ route('cms.home.percentage.section') }}" class="slide-item">Percentage</a></li>
+                        <li><a href="{{ route('cms.home.selected_name.section') }}" class="slide-item">Selected Name</a></li>
+                        <li><a href="{{ route('cms.home.quote.section') }}" class="slide-item">Quote</a></li>
+                        <li><a href="{{ route('cms.home.our_story.section') }}" class="slide-item">Our Story</a></li>
                         <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Testimonial</a></li>
                         <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Gallery</a></li>
                         <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Disclaimer</a></li>
