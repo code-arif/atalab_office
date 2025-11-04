@@ -15,9 +15,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             SettingSeeder::class,
-            TeamSeeder::class,
-            WorkCategorySeeder::class,
-            WorkSeeder::class
+            CmsSeeder::class,
         ]);
     }
 }

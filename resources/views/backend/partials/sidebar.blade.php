@@ -35,63 +35,113 @@
                     </a>
                 </li>
 
-                {{-- Employee Manage --}}
-                <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('employee.list') ? 'has-link' : '' }}"
-                        href="{{ route('employee.list') }}">
-                        <i class="fa fa-user"></i>
-                        <span class="side-menu__label">Employee Manage</span>
-                    </a>
+                <li>
+                    <h3>CMS</h3>
                 </li>
 
-                {{-- Team Manage --}}
-                <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('team.list') ? 'has-link' : '' }}"
-                        href="{{ route('team.list') }}">
-                        <i class="fa fa-users"></i>
-                        <span class="side-menu__label">Team Manage</span>
-                    </a>
-                </li>
+                {{-- Cms Manage --}}
 
-                {{-- Work Manage --}}
+                {{-- home page --}}
                 <li class="slide">
                     <a class="side-menu__item" data-bs-toggle="slide" href="#">
-                        <i class="fa fa-lightbulb"></i>
-                        <span class="side-menu__label">Work Manage</span>
+                        <i class="fa fa-home"></i>
+                        <span class="mb-1">Home Page</span>
+                        <i class="angle fa fa-angle-right ms-auto"></i>
                     </a>
                     <ul class="slide-menu">
-                        <li><a href="{{ route('work.list') }}" class="slide-item">Work List</a></li>
-                        <li><a href="{{ route('reschedule.work.list') }}" class="slide-item">Reschedule Request</a>
+                        <li><a href="{{ route('setting.general.index') }}" class="slide-item">Hero Section</a></li>
+                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Distribution Table</a>
+                        </li>
+                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Percentage</a></li>
+                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Selected Name</a></li>
+                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Quote</a></li>
+                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Our Story</a></li>
+                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Testimonial</a></li>
+                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Gallery</a></li>
+                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Disclaimer</a></li>
+                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">We Believe</a></li>
+                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Founder Statement</a>
                         </li>
                     </ul>
                 </li>
 
-                {{-- Calendar --}}
+                {{-- Our story page --}}
                 <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('calendar.index') ? 'has-link' : '' }}"
-                        href="{{ route('calendar.index') }}">
-                        <i class="fa fa-calendar"></i>
-                        <span class="side-menu__label">Google Calendar</span>
+                    <a class="side-menu__item {{ request()->routeIs('#') ? 'has-link' : '' }}" href="#">
+                        <i class="fa-solid fa-store"></i>
+                        <span class="side-menu__label mb-1">Our Story</span>
                     </a>
                 </li>
 
-                {{-- Map --}}
+                {{-- how it works --}}
                 <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('map.global') ? 'has-link' : '' }}"
-                        href="{{ route('map.global') }}">
-                        <i class="fa fa-map"></i>
-                        <span class="side-menu__label">Google Map</span>
+                    <a class="side-menu__item" data-bs-toggle="slide" href="#">
+                        <i class="fa-solid fa-briefcase"></i>
+                        <span class="mb-1">How It Works Page</span>
+                        <i class="angle fa fa-angle-right ms-auto"></i>
+                    </a>
+                    <ul class="slide-menu">
+                        <li><a href="{{ route('setting.general.index') }}" class="slide-item">How It Works</a></li>
+                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Structure</a>
+                        </li>
+                    </ul>
+                </li>
+
+                {{-- Eligibility page --}}
+                <li class="slide">
+                    <a class="side-menu__item {{ request()->routeIs('#') ? 'has-link' : '' }}" href="#">
+                        <i class="fa-solid fa-yin-yang"></i>
+                        <span class="side-menu__label mb-1">Eligibility Page</span>
                     </a>
                 </li>
 
-                {{-- track team --}}
+                {{-- Payment Policy page --}}
                 <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('admin.tracking.index') ? 'has-link' : '' }}"
-                        href="{{ route('admin.tracking.index') }}">
-                        <i class="fe fe-map-pin"></i>
-                        <span class="side-menu__label">Track Teams</span>
+                    <a class="side-menu__item {{ request()->routeIs('#') ? 'has-link' : '' }}" href="#">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span class="side-menu__label mb-1">Payment Policy Page</span>
                     </a>
                 </li>
+
+                {{-- tax policy --}}
+                <li class="slide">
+                    <a class="side-menu__item" data-bs-toggle="slide" href="#">
+                        <i class="fa-solid fa-tower-observation"></i>
+                        <span class="mb-1">Tax Policy Page</span>
+                        <i class="angle fa fa-angle-right ms-auto"></i>
+                    </a>
+                    <ul class="slide-menu">
+                        <li><a href="{{ route('setting.general.index') }}" class="slide-item">Tax Policy</a></li>
+                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Ethical boundaries</a>
+                        </li>
+                    </ul>
+                </li>
+
+                {{-- Officers Comp --}}
+                <li class="slide">
+                    <a class="side-menu__item {{ request()->routeIs('#') ? 'has-link' : '' }}" href="#">
+                        <i class="fa-solid fa-building"></i>
+                        <span class="side-menu__label mb-1">Officers Comp Page</span>
+                    </a>
+                </li>
+
+
+                {{-- Archives Comp --}}
+                <li class="slide">
+                    <a class="side-menu__item {{ request()->routeIs('#') ? 'has-link' : '' }}" href="#">
+                        <i class="fa-solid fa-box-archive"></i>
+                        <span class="side-menu__label mb-1">Archives Page</span>
+                    </a>
+                </li>
+
+                {{-- Contact Us Comp --}}
+                <li class="slide">
+                    <a class="side-menu__item {{ request()->routeIs('#') ? 'has-link' : '' }}" href="#">
+                        <i class="fa-solid fa-address-book"></i>
+                        <span class="side-menu__label mb-1">Contact Us Page</span>
+                    </a>
+                </li>
+
 
                 {{-- Settings --}}
                 <li class="slide">
@@ -101,8 +151,10 @@
                         <i class="angle fa fa-angle-right ms-auto"></i>
                     </a>
                     <ul class="slide-menu">
-                        <li><a href="{{ route('setting.general.index') }}" class="slide-item">General Settings</a></li>
-                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Profile Settings</a></li>
+                        <li><a href="{{ route('setting.general.index') }}" class="slide-item">General Settings</a>
+                        </li>
+                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Profile Settings</a>
+                        </li>
                     </ul>
                 </li>
             </ul>
