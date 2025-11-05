@@ -1,15 +1,23 @@
 <?php
 
-use App\Http\Controllers\Web\Backend\CMS\Home\DistributionController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Web\Backend\CMS\Home\HeroController;
-use App\Http\Controllers\Web\Backend\CMS\Home\NameSelectedController;
-use App\Http\Controllers\Web\Backend\CMS\Home\OurStoryController;
-use App\Http\Controllers\Web\Backend\CMS\Home\PercentageController;
-use App\Http\Controllers\Web\Backend\CMS\Home\QuoteController;
 use App\Http\Controllers\Web\Backend\DashboardController;
+use App\Http\Controllers\Web\Backend\CMS\Home\HeroController;
+use App\Http\Controllers\Web\Backend\CMS\Home\QuoteController;
+use App\Http\Controllers\Web\Backend\CMS\Home\GalleryController;
 use App\Http\Controllers\Web\Backend\Settings\ProfileController;
 use App\Http\Controllers\Web\Backend\Settings\SettingController;
+use App\Http\Controllers\Web\Backend\CMS\Home\OurStoryController;
+use App\Http\Controllers\Web\Backend\CMS\Home\WeBelieveController;
+use App\Http\Controllers\Web\Backend\CMS\Home\DisclaimerController;
+use App\Http\Controllers\Web\Backend\CMS\Home\PercentageController;
+use App\Http\Controllers\Web\Backend\CMS\Home\TestimonialController;
+use App\Http\Controllers\Web\Backend\CMS\Home\DistributionController;
+use App\Http\Controllers\Web\Backend\CMS\Home\NameSelectedController;
+use App\Http\Controllers\Web\Backend\CMS\Home\FounderStatementController;
+use App\Http\Controllers\Web\Backend\CMS\OurStory\OurStoryPageController;
+use App\Http\Controllers\Web\Backend\CMS\HowItWorks\StructurePageController;
+use App\Http\Controllers\Web\Backend\CMS\HowItWorks\HowItWorksPageController;
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -40,6 +48,38 @@ Route::middleware(['auth', 'admin'])->group(function () {
         // home page our story section
         Route::get('/home/our-story', [OurStoryController::class, 'index'])->name('home.our_story.section');
         Route::post('/home/our-story/update', [OurStoryController::class, 'update'])->name('home.our_story.section.update');
+
+        // home page testimonial section
+        Route::get('/home/testimonial', [TestimonialController::class, 'index'])->name('home.testimonial.section');
+        Route::post('/home/testimonial/update', [TestimonialController::class, 'update'])->name('home.testimonial.section.update');
+
+        // home page gallery section
+        Route::get('/home/gallery', [GalleryController::class, 'index'])->name('home.gallery.section');
+        Route::post('/home/gallery/update', [GalleryController::class, 'update'])->name('home.gallery.section.update');
+
+        // home page disclaimer section
+        Route::get('/home/disclaimer', [DisclaimerController::class, 'index'])->name('home.disclaimer.section');
+        Route::post('/home/disclaimer/update', [DisclaimerController::class, 'update'])->name('home.disclaimer.section.update');
+
+        // home page we believe section
+        Route::get('/home/we-believe', [WeBelieveController::class, 'index'])->name('home.we_believe.section');
+        Route::post('/home/we-believe/update', [WeBelieveController::class, 'update'])->name('home.we_believe.section.update');
+
+        // home page founder statement section
+        Route::get('/home/founder-statement', [FounderStatementController::class, 'index'])->name('home.founder_statement.section');
+        Route::post('/home/founder-statement/update', [FounderStatementController::class, 'update'])->name('home.founder_statement.section.update');
+
+        // our story page hero section
+        Route::get('/our-story/hero', [OurStoryPageController::class, 'index'])->name('our_story.hero.section');
+        Route::post('/our-story/hero/update', [OurStoryPageController::class, 'update'])->name('our_story.hero.section.update');
+
+        // how it works page hero section
+        Route::get('/how-it-works/hero', [HowItWorksPageController::class, 'index'])->name('how_it_works.hero.section');
+        Route::post('/how-it-works/hero/update', [HowItWorksPageController::class, 'update'])->name('how_it_works.hero.section.update');
+
+        // structure page hero section
+        Route::get('/structure/hero', [StructurePageController::class, 'index'])->name('structure.hero.section');
+        Route::post('/structure/hero/update', [StructurePageController::class, 'update'])->name('structure.hero.section.update');
     });
 });
 

@@ -250,7 +250,7 @@ class CmsSeeder extends Seeder
                 'description'     => '“We built The Dignity Draw for one reason: to touch lives and give back to the communities with Dignity. Not through spectacle, but intention. Every name is honoured. Every story matters.This is redistribution with heart. This is legacy with clarity. This is us, we the people, moving forward, one draw at a time. -Ali Bozorgi Talab, Founder of The Dignity Draw.',
                 'sub_description' => null,
                 'bg'              => null,
-                'image'           => '',
+                'image'           => asset('default/placeholder-image.avif'),
                 'btn_text'        => null,
                 'btn_link'        => null,
                 'btn_color'       => null,

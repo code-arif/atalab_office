@@ -56,20 +56,20 @@
                         <li><a href="{{ route('cms.home.selected_name.section') }}" class="slide-item">Selected Name</a></li>
                         <li><a href="{{ route('cms.home.quote.section') }}" class="slide-item">Quote</a></li>
                         <li><a href="{{ route('cms.home.our_story.section') }}" class="slide-item">Our Story</a></li>
-                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Testimonial</a></li>
-                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Gallery</a></li>
-                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Disclaimer</a></li>
-                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">We Believe</a></li>
-                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Founder Statement</a>
+                        <li><a href="{{ route('cms.home.testimonial.section') }}" class="slide-item">Testimonial</a></li>
+                        <li><a href="{{ route('cms.home.gallery.section') }}" class="slide-item">Gallery</a></li>
+                        <li><a href="{{ route('cms.home.disclaimer.section') }}" class="slide-item">Disclaimer</a></li>
+                        <li><a href="{{ route('cms.home.we_believe.section') }}" class="slide-item">We Believe</a></li>
+                        <li><a href="{{ route('cms.home.founder_statement.section') }}" class="slide-item">Founder Statement</a>
                         </li>
                     </ul>
                 </li>
 
                 {{-- Our story page --}}
                 <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('#') ? 'has-link' : '' }}" href="#">
+                    <a class="side-menu__item {{ request()->routeIs('cms.our_story.hero.section') ? 'has-link' : '' }}" href="{{ route('cms.our_story.hero.section') }}">
                         <i class="fa-solid fa-store"></i>
-                        <span class="side-menu__label mb-1">Our Story</span>
+                        <span class="side-menu__label mb-1">Our Story Page</span>
                     </a>
                 </li>
 
@@ -81,8 +81,8 @@
                         <i class="angle fa fa-angle-right ms-auto"></i>
                     </a>
                     <ul class="slide-menu">
-                        <li><a href="{{ route('setting.general.index') }}" class="slide-item">How It Works</a></li>
-                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Structure</a>
+                        <li><a href="{{ route('cms.how_it_works.hero.section') }}" class="slide-item">How It Works</a></li>
+                        <li><a href="{{ route('cms.structure.hero.section') }}" class="slide-item">Structure</a>
                         </li>
                     </ul>
                 </li>
