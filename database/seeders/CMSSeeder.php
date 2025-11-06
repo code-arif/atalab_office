@@ -6,7 +6,6 @@ use App\Models\CMS;
 use App\Enums\PageEnum;
 use App\Enums\SectionEnum;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CmsSeeder extends Seeder
 {
