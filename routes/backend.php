@@ -4,18 +4,24 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\Backend\DashboardController;
 use App\Http\Controllers\Web\Backend\CMS\Home\HeroController;
 use App\Http\Controllers\Web\Backend\CMS\Home\QuoteController;
+use App\Http\Controllers\Web\Backend\CMS\ArchivePageController;
 use App\Http\Controllers\Web\Backend\CMS\EthicalPageController;
+use App\Http\Controllers\Web\Backend\CMS\Home\SliderController;
 use App\Http\Controllers\Web\Backend\CMS\PaymentPageController;
-use App\Http\Controllers\Web\Backend\CMS\EligibilityPageController;
+use App\Http\Controllers\Web\Backend\CMS\FooterManageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\GalleryController;
+use App\Http\Controllers\Web\Backend\CMS\TopBarManageController;
 use App\Http\Controllers\Web\Backend\Settings\ProfileController;
 use App\Http\Controllers\Web\Backend\Settings\SettingController;
+use App\Http\Controllers\Web\Backend\CMS\ContactUsPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\OurStoryController;
 use App\Http\Controllers\Web\Backend\CMS\TaxPolicyPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\WeBelieveController;
+use App\Http\Controllers\Web\Backend\CMS\EligibilityPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\DisclaimerController;
 use App\Http\Controllers\Web\Backend\CMS\Home\PercentageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\TestimonialController;
+use App\Http\Controllers\Web\Backend\CMS\OfficersCompPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\DistributionController;
 use App\Http\Controllers\Web\Backend\CMS\Home\NameSelectedController;
 use App\Http\Controllers\Web\Backend\CMS\Home\FounderStatementController;
@@ -98,8 +104,35 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/tax-policy/hero/update', [TaxPolicyPageController::class, 'update'])->name('tax_policy.hero.section.update');
 
         // ethical page hero section
-        Route::get('/ethical/hero', [EthicalPageController::class, 'index'])->name('ethical.hero.section');
-        Route::post('/ethical/hero/update', [EthicalPageController::class, 'update'])->name('ethical.hero.section.update');
+        Route::get('/ethical/hero', [EthicalPageController::class, 'index'])->name('ethical_boundaries.hero.section');
+        Route::post('/ethical/hero/update', [EthicalPageController::class, 'update'])->name('ethical_boundaries.hero.section.update');
+
+        // officer compensation page hero section
+        Route::get('/officer-compensation/hero', [OfficersCompPageController::class, 'index'])->name('officer_compensation.hero.section');
+        Route::post('/officer-compensation/hero/update', [OfficersCompPageController::class, 'update'])->name('officer_compensation.hero.section.update');
+
+        // archive page hero section
+        Route::get('/archive/hero', [ArchivePageController::class, 'index'])->name('archive.hero.section');
+        Route::post('/archive/hero/update', [ArchivePageController::class, 'update'])->name('archive.hero.section.update');
+
+        // contact us page hero section
+        Route::get('/contact-us/hero', [ContactUsPageController::class, 'index'])->name('contact_us.hero.section');
+        Route::post('/contact-us/hero/update', [ContactUsPageController::class, 'update'])->name('contact_us.hero.section.update');
+
+        // topbar section
+        Route::get('/topbar', [TopBarManageController::class, 'index'])->name('topbar.section');
+        Route::post('/topbar/update', [TopBarManageController::class, 'update'])->name('topbar.section.update');
+
+        // footer section
+        Route::get('/footer', [FooterManageController::class, 'index'])->name('footer.section');
+        Route::post('/footer/update', [FooterManageController::class, 'update'])->name('footer.section.update');
+
+        // Slider Management Routes
+        Route::get('/slider', [SliderController::class, 'index'])->name('slider.index');
+        Route::post('/slider/store', [SliderController::class, 'store'])->name('slider.store');
+        Route::post('/slider/{id}/status', [SliderController::class, 'updateStatus'])->name('slider.status');
+        Route::delete('/slider/{id}', [SliderController::class, 'destroy'])->name('slider.destroy');
+        Route::post('/slider/update-order', [SliderController::class, 'updateOrder'])->name('slider.updateOrder');
     });
 });
 

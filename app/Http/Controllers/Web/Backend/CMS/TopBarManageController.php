@@ -4,26 +4,27 @@ namespace App\Http\Controllers\Web\Backend\CMS;
 
 use Exception;
 use App\Models\CMS;
+use App\Helper\Helper;
 use Illuminate\Http\Request;
 use App\Http\Requests\CmsRequest;
 use App\Http\Controllers\Controller;
 
-class ArchivePageController extends Controller
+class TopBarManageController extends Controller
 {
     /**
-     * show archive page hero section data and section item
+     * show top bar section data and section item
      */
 
     public function index(Request $request)
     {
-        $data = CMS::where('page', 'archives')->where('section', 'hero')->where('name', 'item')->first();
+        $data = CMS::where('page', 'partials')->where('section', 'topbar')->where('name', 'topbar')->first();
 
-        return view("backend.layouts.cms.archives.index", compact("data"));
+        return view("backend.layouts.cms.partials.topbar", compact("data"));
     }
 
 
     /**
-     * update archive page hero section
+     * update top bar section
      **/
     public function update(CmsRequest $request)
     {
@@ -31,16 +32,16 @@ class ArchivePageController extends Controller
             $validated_data = $request->validated();
 
             // get the existing record
-            CMS::where('page', 'archives')
-                ->where('section', 'hero')
-                ->where('name', 'item')
+            CMS::where('page', 'partials')
+                ->where('section', 'topbar')
+                ->where('name', 'topbar')
                 ->first();
 
             CMS::updateOrCreate(
                 [
-                    'page' => 'archives',
-                    'section' => 'hero',
-                    'name' => 'item'
+                    'page' => 'partials',
+                    'section' => 'topbar',
+                    'name' => 'topbar'
                 ],
                 $validated_data
             );

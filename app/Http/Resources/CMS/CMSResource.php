@@ -20,7 +20,7 @@ class CMSResource extends JsonResource
             'section' => $this->section,
             'title' => $this->title,
             'sub_title' => $this->when($this->sub_title && $this->sub_title !== 'null', $this->sub_title),
-            'description' => $this->when($this->description, strip_tags($this->description)),
+            'description' => $this->when($this->description, $this->description),
             'sub_description' => $this->when($this->sub_description, $this->sub_description),
             'image' => $this->when($this->image && $this->image !== '', asset($this->image)),
             'btn_text' => $this->when($this->btn_text, $this->btn_text),

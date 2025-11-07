@@ -33,7 +33,12 @@ class CmsRequest extends FormRequest
             'btn_text'          => 'nullable|string|max:50',
             'btn_link'          => 'nullable|string|max:100',
             'btn_color'         => 'nullable|string|max:50',
-            'rating'            => 'nullable|integer|between:1,5'
+            'rating'            => 'nullable|integer|between:1,5',
+            'email'             => 'nullable|email|max:100',
+            'phone'             => 'nullable|string|max:100',
+            'address'          => 'nullable|string|max:255',
+            'slogan'           => 'nullable|string|max:255',
+            'business_name'    => 'nullable|string|max:255',
         ];
     }
 }

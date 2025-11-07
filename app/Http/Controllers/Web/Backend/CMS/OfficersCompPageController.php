@@ -9,21 +9,21 @@ use Illuminate\Http\Request;
 use App\Http\Requests\CmsRequest;
 use App\Http\Controllers\Controller;
 
-class EthicalPageController extends Controller
+class OfficersCompPageController extends Controller
 {
     /**
-     * show ethical-boundaries page hero section data and section item
+     * show officer-compensation page hero section data and section item
      */
     public function index(Request $request)
     {
-        $data = CMS::where('page', 'ethical-boundaries')->where('section', 'hero')->where('name', 'item')->first();
+        $data = CMS::where('page', 'officer_compensation_policy')->where('section', 'hero')->where('name', 'item')->first();
 
-        return view("backend.layouts.cms.tax_policy.ethical_boundaries", compact("data"));
+        return view("backend.layouts.cms.officers_comp.index", compact("data"));
     }
 
 
     /**
-     * update ethical-boundaries page hero section
+     * update officer-compensation page hero section
      **/
     public function update(CmsRequest $request)
     {
@@ -31,7 +31,7 @@ class EthicalPageController extends Controller
             $validated_data = $request->validated();
 
             // get the existing record
-            $existing = CMS::where('page', 'ethical-boundaries')
+            $existing = CMS::where('page', 'officer_compensation_policy')
                 ->where('section', 'hero')
                 ->where('name', 'item')
                 ->first();
@@ -42,13 +42,13 @@ class EthicalPageController extends Controller
                     Helper::deleteImage($existing->image);
                 }
 
-                $image_path = Helper::uploadImage($request->file('image'), 'cms/ethical-boundaries');
+                $image_path = Helper::uploadImage($request->file('image'), 'cms/officer-compensation');
                 $validated_data['image'] = $image_path;
             }
 
             CMS::updateOrCreate(
                 [
-                    'page' => 'ethical-boundaries',
+                    'page' => 'officer_compensation_policy',
                     'section' => 'hero',
                     'name' => 'item'
                 ],
@@ -61,4 +61,3 @@ class EthicalPageController extends Controller
         }
     }
 }
-

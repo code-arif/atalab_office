@@ -50,24 +50,30 @@
                     </a>
                     <ul class="slide-menu">
                         <li><a href="{{ route('cms.home.hero.section') }}" class="slide-item">Hero Section</a></li>
-                        <li><a href="{{ route('cms.home.distribution.section') }}" class="slide-item">Distribution Table</a>
+                        <li><a href="{{ route('cms.slider.index') }}" class="slide-item">Slider Section</a></li>
+                        <li><a href="{{ route('cms.home.distribution.section') }}" class="slide-item">Distribution
+                                Table</a>
                         </li>
                         <li><a href="{{ route('cms.home.percentage.section') }}" class="slide-item">Percentage</a></li>
-                        <li><a href="{{ route('cms.home.selected_name.section') }}" class="slide-item">Selected Name</a></li>
+                        <li><a href="{{ route('cms.home.selected_name.section') }}" class="slide-item">Selected
+                                Name</a></li>
                         <li><a href="{{ route('cms.home.quote.section') }}" class="slide-item">Quote</a></li>
                         <li><a href="{{ route('cms.home.our_story.section') }}" class="slide-item">Our Story</a></li>
-                        <li><a href="{{ route('cms.home.testimonial.section') }}" class="slide-item">Testimonial</a></li>
+                        <li><a href="{{ route('cms.home.testimonial.section') }}" class="slide-item">Testimonial</a>
+                        </li>
                         <li><a href="{{ route('cms.home.gallery.section') }}" class="slide-item">Gallery</a></li>
                         <li><a href="{{ route('cms.home.disclaimer.section') }}" class="slide-item">Disclaimer</a></li>
                         <li><a href="{{ route('cms.home.we_believe.section') }}" class="slide-item">We Believe</a></li>
-                        <li><a href="{{ route('cms.home.founder_statement.section') }}" class="slide-item">Founder Statement</a>
+                        <li><a href="{{ route('cms.home.founder_statement.section') }}" class="slide-item">Founder
+                                Statement</a>
                         </li>
                     </ul>
                 </li>
 
                 {{-- Our story page --}}
                 <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('cms.our_story.hero.section') ? 'has-link' : '' }}" href="{{ route('cms.our_story.hero.section') }}">
+                    <a class="side-menu__item {{ request()->routeIs('cms.our_story.hero.section') ? 'has-link' : '' }}"
+                        href="{{ route('cms.our_story.hero.section') }}">
                         <i class="fa-solid fa-store"></i>
                         <span class="side-menu__label mb-1">Our Story Page</span>
                     </a>
@@ -81,7 +87,8 @@
                         <i class="angle fa fa-angle-right ms-auto"></i>
                     </a>
                     <ul class="slide-menu">
-                        <li><a href="{{ route('cms.how_it_works.hero.section') }}" class="slide-item">How It Works</a></li>
+                        <li><a href="{{ route('cms.how_it_works.hero.section') }}" class="slide-item">How It Works</a>
+                        </li>
                         <li><a href="{{ route('cms.structure.hero.section') }}" class="slide-item">Structure</a>
                         </li>
                     </ul>
@@ -89,7 +96,8 @@
 
                 {{-- Eligibility page --}}
                 <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('cms.eligibility.hero.section') ? 'has-link' : '' }}" href="{{ route('cms.eligibility.hero.section') }}">
+                    <a class="side-menu__item {{ request()->routeIs('cms.eligibility.hero.section') ? 'has-link' : '' }}"
+                        href="{{ route('cms.eligibility.hero.section') }}">
                         <i class="fa-solid fa-yin-yang"></i>
                         <span class="side-menu__label mb-1">Eligibility Page</span>
                     </a>
@@ -97,7 +105,8 @@
 
                 {{-- Payment Policy page --}}
                 <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('#') ? 'has-link' : '' }}" href="#">
+                    <a class="side-menu__item {{ request()->routeIs('cms.payment_policy.hero.section') ? 'has-link' : '' }}"
+                        href="{{ route('cms.payment_policy.hero.section') }}">
                         <i class="fa-solid fa-cart-shopping"></i>
                         <span class="side-menu__label mb-1">Payment Policy Page</span>
                     </a>
@@ -111,15 +120,18 @@
                         <i class="angle fa fa-angle-right ms-auto"></i>
                     </a>
                     <ul class="slide-menu">
-                        <li><a href="{{ route('setting.general.index') }}" class="slide-item">Tax Policy</a></li>
-                        <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Ethical boundaries</a>
+                        <li><a href="{{ route('cms.tax_policy.hero.section') }}" class="slide-item">Tax Policy</a>
+                        </li>
+                        <li><a href="{{ route('cms.ethical_boundaries.hero.section') }}" class="slide-item">Ethical
+                                boundaries</a>
                         </li>
                     </ul>
                 </li>
 
                 {{-- Officers Comp --}}
                 <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('#') ? 'has-link' : '' }}" href="#">
+                    <a class="side-menu__item {{ request()->routeIs('cms.officer_compensation.hero.section') ? 'has-link' : '' }}"
+                        href="{{ route('cms.officer_compensation.hero.section') }}">
                         <i class="fa-solid fa-building"></i>
                         <span class="side-menu__label mb-1">Officers Comp Page</span>
                     </a>
@@ -128,7 +140,8 @@
 
                 {{-- Archives Comp --}}
                 <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('#') ? 'has-link' : '' }}" href="#">
+                    <a class="side-menu__item {{ request()->routeIs('cms.archive.hero.section') ? 'has-link' : '' }}"
+                        href="{{ route('cms.archive.hero.section') }}">
                         <i class="fa-solid fa-box-archive"></i>
                         <span class="side-menu__label mb-1">Archives Page</span>
                     </a>
@@ -136,14 +149,30 @@
 
                 {{-- Contact Us Comp --}}
                 <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('#') ? 'has-link' : '' }}" href="#">
+                    <a class="side-menu__item {{ request()->routeIs('cms.contact_us.hero.section') ? 'has-link' : '' }}"
+                        href="{{ route('cms.contact_us.hero.section') }}">
                         <i class="fa-solid fa-address-book"></i>
                         <span class="side-menu__label mb-1">Contact Us Page</span>
                     </a>
                 </li>
 
 
-                {{-- Settings --}}
+                {{-- topbar, footer --}}
+                <li class="slide">
+                    <a class="side-menu__item" data-bs-toggle="slide" href="#">
+                        <i class="fa-solid fa-file-half-dashed"></i>
+                        <span class="side-menu__label">Partials</span>
+                        <i class="angle fa fa-angle-right ms-auto"></i>
+                    </a>
+                    <ul class="slide-menu">
+                        <li><a href="{{ route('cms.topbar.section') }}" class="slide-item">Topbar</a>
+                        </li>
+                        <li><a href="{{ route('cms.footer.section') }}" class="slide-item">Footer</a>
+                        </li>
+                    </ul>
+                </li>
+
+                {{-- settings --}}
                 <li class="slide">
                     <a class="side-menu__item" data-bs-toggle="slide" href="#">
                         <i class="fa fa-cog"></i>

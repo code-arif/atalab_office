@@ -1,6 +1,6 @@
 @extends('backend.app')
 
-@section('title', 'Eligibility Page')
+@section('title', 'Archive Page')
 
 @section('content')
     <!--app-content open-->
@@ -11,11 +11,11 @@
                 {{-- PAGE-HEADER --}}
                 <div class="page-header">
                     <div>
-                        <h1 class="page-title">Eligibility Page</h1>
+                        <h1 class="page-title">Archive Page</h1>
                     </div>
                     <div class="ms-auto pageheader-btn">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="javascript:void(0);">Eligibility Page</a></li>
+                            <li class="breadcrumb-item"><a href="javascript:void(0);">Archive Page</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Index</li>
                         </ol>
                     </div>
@@ -27,7 +27,7 @@
                         <div class="card box-shadow-0">
                             <div class="card-body">
                                 <form class="form-horizontal" method="post"
-                                    action="{{ route('cms.eligibility.hero.section.update') }}"
+                                    action="{{ route('cms.archive.hero.section.update') }}"
                                     enctype="multipart/form-data">
                                     @csrf
                                     <div class="row mb-4">
@@ -51,22 +51,6 @@
                                             @error('description')
                                                 <span class="text-danger">{{ $message }}</span>
                                             @enderror
-                                        </div>
-
-                                        {{-- slected name --}}
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label for="image" class="form-label">Image</label>
-                                                    <input type="file"
-                                                        class="dropify form-control @error('image') is-invalid @enderror"
-                                                        data-default-file="{{ !empty($data->image) && file_exists(public_path($data->image)) ? asset($data->image) : asset('default/placeholder-image.avif') }}"
-                                                        name="image" id="image">
-                                                    @error('image')
-                                                        <span class="text-danger">{{ $message }}</span>
-                                                    @enderror
-                                                </div>
-                                            </div>
                                         </div>
 
                                         {{-- Submit --}}

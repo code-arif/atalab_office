@@ -1,6 +1,6 @@
 @extends('backend.app')
 
-@section('title', 'Eligibility Page')
+@section('title', 'Ethical Boundaries Page')
 
 @section('content')
     <!--app-content open-->
@@ -11,11 +11,11 @@
                 {{-- PAGE-HEADER --}}
                 <div class="page-header">
                     <div>
-                        <h1 class="page-title">Eligibility Page</h1>
+                        <h1 class="page-title">Ethical Boundaries Page</h1>
                     </div>
                     <div class="ms-auto pageheader-btn">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="javascript:void(0);">Eligibility Page</a></li>
+                            <li class="breadcrumb-item"><a href="javascript:void(0);">Ethical Boundaries Page</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Index</li>
                         </ol>
                     </div>
@@ -27,7 +27,7 @@
                         <div class="card box-shadow-0">
                             <div class="card-body">
                                 <form class="form-horizontal" method="post"
-                                    action="{{ route('cms.eligibility.hero.section.update') }}"
+                                    action="{{ route('cms.ethical_boundaries.hero.section.update') }}"
                                     enctype="multipart/form-data">
                                     @csrf
                                     <div class="row mb-4">

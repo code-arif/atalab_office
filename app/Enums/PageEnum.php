@@ -15,5 +15,5 @@ enum PageEnum: string
     case ETHICAL_BOUNDARIES =  'ethical-boundaries';
     case OFFICER_COMPENSATION_POLICY = 'officer_compensation_policy';
     case ARCHIVES =  'archives';
-    case CONTACT_US = 'contact_us';
+    case CONTACT_US = 'contact-us';
 }
