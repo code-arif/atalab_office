@@ -7,7 +7,7 @@ enum PageEnum: string
 {
     case HOME  = 'home';
     case OUR_STORY = 'our-story';
-    case HOW_IT_WORKS = 'how_it_works';
+    case HOW_IT_WORKS = 'how-it-works';
     case STRUCTURE = 'structure';
     case ELIGIBILITY = 'eligibility';
     case PAYMENT_POLICY = 'payment-policy';

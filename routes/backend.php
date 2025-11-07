@@ -4,10 +4,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\Backend\DashboardController;
 use App\Http\Controllers\Web\Backend\CMS\Home\HeroController;
 use App\Http\Controllers\Web\Backend\CMS\Home\QuoteController;
+use App\Http\Controllers\Web\Backend\CMS\EthicalPageController;
+use App\Http\Controllers\Web\Backend\CMS\PaymentPageController;
+use App\Http\Controllers\Web\Backend\CMS\EligibilityPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\GalleryController;
 use App\Http\Controllers\Web\Backend\Settings\ProfileController;
 use App\Http\Controllers\Web\Backend\Settings\SettingController;
 use App\Http\Controllers\Web\Backend\CMS\Home\OurStoryController;
+use App\Http\Controllers\Web\Backend\CMS\TaxPolicyPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\WeBelieveController;
 use App\Http\Controllers\Web\Backend\CMS\Home\DisclaimerController;
 use App\Http\Controllers\Web\Backend\CMS\Home\PercentageController;
@@ -80,6 +84,22 @@ Route::middleware(['auth', 'admin'])->group(function () {
         // structure page hero section
         Route::get('/structure/hero', [StructurePageController::class, 'index'])->name('structure.hero.section');
         Route::post('/structure/hero/update', [StructurePageController::class, 'update'])->name('structure.hero.section.update');
+
+        // eligibility page hero section
+        Route::get('/eligibility/hero', [EligibilityPageController::class, 'index'])->name('eligibility.hero.section');
+        Route::post('/eligibility/hero/update', [EligibilityPageController::class, 'update'])->name('eligibility.hero.section.update');
+
+        // payment policy page hero section
+        Route::get('/payment-policy/hero', [PaymentPageController::class, 'index'])->name('payment_policy.hero.section');
+        Route::post('/payment-policy/hero/update', [PaymentPageController::class, 'update'])->name('payment_policy.hero.section.update');
+
+        // tax policy page hero section
+        Route::get('/tax-policy/hero', [TaxPolicyPageController::class, 'index'])->name('tax_policy.hero.section');
+        Route::post('/tax-policy/hero/update', [TaxPolicyPageController::class, 'update'])->name('tax_policy.hero.section.update');
+
+        // ethical page hero section
+        Route::get('/ethical/hero', [EthicalPageController::class, 'index'])->name('ethical.hero.section');
+        Route::post('/ethical/hero/update', [EthicalPageController::class, 'update'])->name('ethical.hero.section.update');
     });
 });
 

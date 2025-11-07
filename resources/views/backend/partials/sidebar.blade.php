@@ -89,7 +89,7 @@
 
                 {{-- Eligibility page --}}
                 <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('#') ? 'has-link' : '' }}" href="#">
+                    <a class="side-menu__item {{ request()->routeIs('cms.eligibility.hero.section') ? 'has-link' : '' }}" href="{{ route('cms.eligibility.hero.section') }}">
                         <i class="fa-solid fa-yin-yang"></i>
                         <span class="side-menu__label mb-1">Eligibility Page</span>
                     </a>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\UserListController;
 use App\Http\Controllers\Api\WorkScheduleRequest;
 use App\Http\Controllers\Api\Auth\AuthenticationController;
+use App\Http\Controllers\Api\CMS\CmsController;
 
 //health-check
 Route::get("/check", function () {
@@ -17,6 +18,15 @@ Route::group(['middleware' => 'guest:api'], function () {
 
     // Login & Register
     Route::post('/login', [AuthenticationController::class, 'login']);
+
+    // cms home page data
+    Route::get('/cms/home', [CmsController::class, 'home']);
+
+    // cms our story page data
+    Route::get('/cms/our-story', [CmsController::class, 'ourStory']);
+
+    // how it works page data
+    Route::get('/cms/how-it-works', [CmsController::class, 'howItWorks']);
 });
 
 

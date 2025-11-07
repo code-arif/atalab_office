@@ -300,7 +300,29 @@ class CmsSeeder extends Seeder
                 'metadata'        => null,
                 'created_at'      => now(),
                 'updated_at'      => now(),
-            ]
+            ],
+
+            /**
+             * structure page - hero section
+             */
+            [
+                'page'    => PageEnum::STRUCTURE->value,
+                'section' => SectionEnum::HERO->value,
+                'name'    => 'item',
+                'slug'    => null,
+                'title'   => 'Structure',
+                'sub_title'       => null,
+                'description'     => 'Entity Type: The Dignity Draw, Inc. is a registered nonprofit corporation, governed by bylaws that prioritize verified participation, officer accountability, and public disclosure. Compliance: We adhere to federal and state nonprofit regulations, including draw disclosures, tax reporting, and compensation transparency. Draw Legality: Each draw is conducted under a verified, no-purchase-necessary model. Odds are published. Winners are archived. No sweepstakes ambiguity. Officer Compensation: All officer compensation is disclosed and benchmarked against nonprofit standards. Operational Costs: Administrative and operational expenses are transparently documented and reported. Public Benefit: Our mission is to provide economic redistribution with dignity, rooted in recognition rather than randomness. Every draw contributes to this public benefit, documented and archived for accountability.',
+                'sub_description' => null,
+                'bg'              => null,
+                'image'           => '',
+                'btn_text'        => null,
+                'btn_link'        => null,
+                'btn_color'       => null,
+                'metadata'        => null,
+                'created_at'      => now(),
+                'updated_at'      => now(),
+            ],
         ];
 
         foreach ($data as $row) {

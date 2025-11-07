@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Web\Backend\CMS\HowItWorks;
+namespace App\Http\Controllers\Web\Backend\CMS;
 
 use Exception;
 use App\Models\CMS;
@@ -9,21 +9,21 @@ use Illuminate\Http\Request;
 use App\Http\Requests\CmsRequest;
 use App\Http\Controllers\Controller;
 
-class StructurePageController extends Controller
+class EligibilityPageController extends Controller
 {
     /**
-     * show stru page hero section data and section item
+     * show eligibility page hero section data and section item
      */
     public function index(Request $request)
     {
-        $data = CMS::where('page', 'structure')->where('section', 'hero')->where('name', 'item')->first();
+        $data = CMS::where('page', 'eligibility')->where('section', 'hero')->where('name', 'item')->first();
 
-        return view("backend.layouts.cms.how_it_works.structure", compact("data"));
+        return view("backend.layouts.cms.eligibility.index", compact("data"));
     }
 
 
     /**
-     * update structure page hero section
+     * update eligibility page hero section
      **/
     public function update(CmsRequest $request)
     {
@@ -31,7 +31,7 @@ class StructurePageController extends Controller
             $validated_data = $request->validated();
 
             // get the existing record
-            $existing = CMS::where('page', 'structure')
+            $existing = CMS::where('page', 'eligibility')
                 ->where('section', 'hero')
                 ->where('name', 'item')
                 ->first();
@@ -42,13 +42,13 @@ class StructurePageController extends Controller
                     Helper::deleteImage($existing->image);
                 }
 
-                $image_path = Helper::uploadImage($request->file('image'), 'cms/structure');
+                $image_path = Helper::uploadImage($request->file('image'), 'cms/eligibility');
                 $validated_data['image'] = $image_path;
             }
 
             CMS::updateOrCreate(
                 [
-                    'page' => 'structure',
+                    'page' => 'eligibility',
                     'section' => 'hero',
                     'name' => 'item'
                 ],

@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Http\Resources\CMS;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class CMSResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'page' => $this->page,
+            'section' => $this->section,
+            'title' => $this->title,
+            'sub_title' => $this->when($this->sub_title && $this->sub_title !== 'null', $this->sub_title),
+            'description' => $this->when($this->description, strip_tags($this->description)),
+            'sub_description' => $this->when($this->sub_description, $this->sub_description),
+            'image' => $this->when($this->image && $this->image !== '', asset($this->image)),
+            'btn_text' => $this->when($this->btn_text, $this->btn_text),
+        ];
+    }
+}

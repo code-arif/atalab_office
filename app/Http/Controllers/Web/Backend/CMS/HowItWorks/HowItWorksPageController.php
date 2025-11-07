@@ -18,7 +18,7 @@ class HowItWorksPageController extends Controller
     {
         $data = CMS::where('page', 'how-it-works')->where('section', 'hero')->where('name', 'item')->first();
 
-        return view("backend.layouts.cms.how_it", compact("data"));
+        return view("backend.layouts.cms.how_it_works.how_it_works", compact("data"));
     }
 
 
@@ -48,7 +48,7 @@ class HowItWorksPageController extends Controller
 
             CMS::updateOrCreate(
                 [
-                    'page' => 'our-story',
+                    'page' => 'how-it-works',
                     'section' => 'hero',
                     'name' => 'item'
                 ],
