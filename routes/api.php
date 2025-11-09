@@ -29,6 +29,33 @@ Route::group(['middleware' => 'guest:api'], function () {
     // how it works page data
     Route::get('/cms/how-it-works', [CmsController::class, 'howItWorks']);
 
+    // structure page data
+    Route::get('/cms/structure', [CmsController::class,'structure']);
+
+    // eligibility page data
+    Route::get('/cms/eligibility', [CmsController::class,'eligibility']);
+
+    // payment policy page data
+    Route::get('/cms/payment-policy', [CmsController::class,'paymentPolicy']);
+
+    // tax policy page data
+    Route::get('/cms/tax-policy', [CmsController::class,'taxPolicy']);
+
+    // ethical-boundaries page data
+    Route::get('/cms/ethical-boundaries', [CmsController::class,'ethicalBoundaries']);
+
+    // officer_compensation_policy page data
+    Route::get('/cms/officer-compensation-policy', [CmsController::class,'officerCompensationPolicy']);
+
+    // archives page data
+    Route::get('/cms/archives', [CmsController::class,'archives']);
+
+    // contact-us page data
+    Route::get('/cms/contact-us', [CmsController::class,'contactUs']);
+
+    // partials - footer data
+    Route::get('/cms/partials/footer', [CmsController::class,'topbarPartials']);
+
     // subscribe newsletter
     Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe']);
 });
