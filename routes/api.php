@@ -2,11 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\WorkController;
+use App\Http\Controllers\Api\CMS\CmsController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\UserListController;
 use App\Http\Controllers\Api\WorkScheduleRequest;
+use App\Http\Controllers\Api\NewsletterController;
 use App\Http\Controllers\Api\Auth\AuthenticationController;
-use App\Http\Controllers\Api\CMS\CmsController;
 
 //health-check
 Route::get("/check", function () {
@@ -27,6 +28,9 @@ Route::group(['middleware' => 'guest:api'], function () {
 
     // how it works page data
     Route::get('/cms/how-it-works', [CmsController::class, 'howItWorks']);
+
+    // subscribe newsletter
+    Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe']);
 });
 
 

@@ -44,11 +44,11 @@
                                         </div>
                                     </div>
 
-                                    <div class="mb-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="status" id="status"
-                                                checked>
-                                            <label class="form-check-label" for="status">
+                                    <div class="mb-3" style="margin-left: 12px">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input custom-toggle" type="checkbox" name="status"
+                                                id="status" value="1" checked>
+                                            <label class="form-check-label" for="status" style="margin-left: 22px; margin-top: 5px;">
                                                 Active Status
                                             </label>
                                         </div>
@@ -89,7 +89,8 @@
 
                                                             <!-- Image Preview -->
                                                             <div class="me-2">
-                                                                <img src="{{ asset('/' . $slider->image) }}" class="rounded"
+                                                                <img src="{{ asset('/' . $slider->image) }}"
+                                                                    class="img-fluid border"
                                                                     style="width: 80px; height: 60px; object-fit: cover;">
                                                             </div>
 
@@ -102,13 +103,14 @@
                                                             </div>
 
                                                             <!-- Actions -->
-                                                            <div class="d-flex align-items-center gap-2">
+                                                            <div class="d-flex align-items-center gap-3">
                                                                 <!-- Status Toggle -->
                                                                 <div class="form-check form-switch mb-0">
-                                                                    <input class="form-check-input status-toggle"
+                                                                    <input
+                                                                        class="form-check-input status-toggle custom-toggle"
                                                                         type="checkbox" data-id="{{ $slider->id }}"
                                                                         {{ $slider->status ? 'checked' : '' }}
-                                                                        style="cursor: pointer;">
+                                                                        style="cursor: pointer;" value="1">
                                                                 </div>
 
                                                                 <!-- Delete Button -->
@@ -131,6 +133,25 @@
             </div>
         </div>
     </div>
+
+    <style>
+        /* Custom Toggle Switch Styling */
+        .custom-toggle {
+            width: 40px !important;
+            height: 20px !important;
+            cursor: pointer;
+        }
+
+        .custom-toggle:checked {
+            background-color: #521aac !important;
+            border-color: #521aac !important;
+        }
+
+        .custom-toggle:focus {
+            box-shadow: 0 0 0 0.25rem rgba(82, 26, 172, 0.25) !important;
+            border-color: #521aac !important;
+        }
+    </style>
 @endsection
 
 @push('scripts')
@@ -215,70 +236,122 @@
             }
         });
 
-        // Status Toggle
+        // Status Toggle with SweetAlert Confirmation
         document.querySelectorAll('.status-toggle').forEach(toggle => {
             toggle.addEventListener('change', async function() {
                 const id = this.getAttribute('data-id');
-                const status = this.checked;
+                const newStatus = this.checked;
+                const statusText = newStatus ? 'activate' : 'deactivate';
 
-                try {
-                    const response = await axios.post(route('cms.slider.status', id), {
-                        status: status
-                    }, {
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                // Prevent toggle until confirmed
+                this.checked = !newStatus;
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `Do you want to ${statusText} this slider?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#521aac',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: `Yes, ${statusText} it!`,
+                    cancelButtonText: 'Cancel'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            const url = "{{ route('cms.slider.status', ':id') }}".replace(
+                                ':id', id);
+
+                            const response = await axios.post(url, {
+                                status: newStatus ? 1 : 0
+                            }, {
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                        'input[name="_token"]').value,
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            // Update toggle to new status
+                            this.checked = newStatus;
+
+                            Swal.fire({
+                                title: 'Success!',
+                                text: response.data.message,
+                                icon: 'success',
+                                confirmButtonColor: '#521aac',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+
+                        } catch (error) {
+                            // Keep toggle at old status
+                            this.checked = !newStatus;
+
+                            Swal.fire({
+                                title: 'Error!',
+                                text: error.response?.data?.message ||
+                                    'Failed to update status.',
+                                icon: 'error',
+                                confirmButtonColor: '#521aac'
+                            });
                         }
-                    });
-
-                    iziToast.success({
-                        title: 'Success',
-                        message: response.data.message,
-                        position: 'topRight'
-                    });
-
-                } catch (error) {
-                    this.checked = !status; // Revert toggle
-                    iziToast.error({
-                        title: 'Error',
-                        message: 'Failed to update status.',
-                        position: 'topRight'
-                    });
-                }
+                    }
+                    // If cancelled, keep toggle at old status (already set above)
+                });
             });
         });
 
-        // Delete Slider
+        // Delete Slider with SweetAlert
         document.querySelectorAll('.delete-slider').forEach(button => {
             button.addEventListener('click', async function() {
                 const id = this.getAttribute('data-id');
 
-                if (confirm('Are you sure you want to delete this slider?')) {
-                    try {
-                        const response = await axios.delete(route('cms.slider.destroy', id), {
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]')
-                                    .value
-                            }
-                        });
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#521aac',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            const url = "{{ route('cms.slider.destroy', ':id') }}".replace(
+                                ':id', id);
 
-                        iziToast.success({
-                            title: 'Success',
-                            message: response.data.message,
-                            position: 'topRight'
-                        });
+                            const response = await axios.delete(url, {
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                        'input[name="_token"]').value
+                                }
+                            });
 
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
+                            Swal.fire({
+                                title: 'Deleted!',
+                                text: response.data.message,
+                                icon: 'success',
+                                confirmButtonColor: '#521aac',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
 
-                    } catch (error) {
-                        iziToast.error({
-                            title: 'Error',
-                            message: 'Failed to delete slider.',
-                            position: 'topRight'
-                        });
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+
+                        } catch (error) {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: error.response?.data?.message ||
+                                    'Failed to delete slider.',
+                                icon: 'error',
+                                confirmButtonColor: '#521aac'
+                            });
+                        }
                     }
-                }
+                });
             });
         });
 

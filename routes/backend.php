@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Web\Backend\ReviewController;
 use App\Http\Controllers\Web\Backend\DashboardController;
+use App\Http\Controllers\Web\Backend\SubscriberController;
 use App\Http\Controllers\Web\Backend\CMS\Home\HeroController;
 use App\Http\Controllers\Web\Backend\CMS\Home\QuoteController;
 use App\Http\Controllers\Web\Backend\CMS\ArchivePageController;
@@ -31,6 +33,18 @@ use App\Http\Controllers\Web\Backend\CMS\HowItWorks\HowItWorksPageController;
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // newsletter subscribers
+    Route::get('/subscribers', [SubscriberController::class, 'index'])
+        ->name('subscribers.index');
+
+    // rating and reviews
+    Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
+    Route::post('/reviews/store', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::get('/reviews/edit/{id}', [ReviewController::class, 'edit'])->name('reviews.edit');
+    Route::get('/reviews/show/{id}', [ReviewController::class, 'show'])->name('reviews.show'); // NEW
+    Route::post('/reviews/update/{id}', [ReviewController::class, 'update'])->name('reviews.update');
+    Route::delete('/reviews/delete/{id}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 
 
     // cms management

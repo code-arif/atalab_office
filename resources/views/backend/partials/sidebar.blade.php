@@ -31,9 +31,29 @@
                     <a class="side-menu__item {{ request()->routeIs('dashboard') ? 'has-link' : '' }}"
                         href="{{ route('dashboard') }}">
                         <i class="fa fa-dashboard"></i>
-                        <span class="side-menu__label">Dashboard</span>
+                        <span class="side-menu__label mb-1">Dashboard</span>
                     </a>
                 </li>
+
+                {{-- subscribe newsletter --}}
+                <li class="slide">
+                    <a class="side-menu__item {{ request()->routeIs('subscribers.index') ? 'has-link' : '' }}"
+                        href="{{ route('subscribers.index') }}">
+                        <i class="fa fa-envelope"></i>
+                        <span class="side-menu__label mb-1">Newsletter Subscribers</span>
+                    </a>
+                </li>
+
+                {{-- Reviews --}}
+                <li class="slide">
+                    <a class="side-menu__item {{ request()->routeIs('reviews.index') ? 'has-link' : '' }}"
+                        href="{{ route('reviews.index') }}">
+                        <i class="fa fa-star"></i>
+                        <span class="side-menu__label mb-1">Reviews</span>
+                    </a>
+                </li>
+
+                <hr>
 
                 <li>
                     <h3>CMS</h3>
@@ -137,7 +157,6 @@
                     </a>
                 </li>
 
-
                 {{-- Archives Comp --}}
                 <li class="slide">
                     <a class="side-menu__item {{ request()->routeIs('cms.archive.hero.section') ? 'has-link' : '' }}"
@@ -161,7 +180,7 @@
                 <li class="slide">
                     <a class="side-menu__item" data-bs-toggle="slide" href="#">
                         <i class="fa-solid fa-file-half-dashed"></i>
-                        <span class="side-menu__label">Partials</span>
+                        <span class="side-menu__label mb-1">Partials</span>
                         <i class="angle fa fa-angle-right ms-auto"></i>
                     </a>
                     <ul class="slide-menu">
@@ -172,11 +191,13 @@
                     </ul>
                 </li>
 
+                <hr>
+
                 {{-- settings --}}
                 <li class="slide">
                     <a class="side-menu__item" data-bs-toggle="slide" href="#">
                         <i class="fa fa-cog"></i>
-                        <span class="side-menu__label">Settings</span>
+                        <span class="side-menu__label mb-2">Settings</span>
                         <i class="angle fa fa-angle-right ms-auto"></i>
                     </a>
                     <ul class="slide-menu">
