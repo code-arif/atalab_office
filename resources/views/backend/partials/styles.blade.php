@@ -35,6 +35,9 @@
 <!-- Toster -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
 
+{{-- dropify costom css --}}
+<link rel="stylesheet" href="{{ asset('backend/css/dropify.css') }}">
+
 
 <style>
     .header-brand-img {

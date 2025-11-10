@@ -5,9 +5,14 @@ use App\Http\Controllers\Api\WorkController;
 use App\Http\Controllers\Api\CMS\CmsController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\UserListController;
+use App\Http\Controllers\Api\Draw\DrawController;
 use App\Http\Controllers\Api\WorkScheduleRequest;
 use App\Http\Controllers\Api\NewsletterController;
+use App\Http\Controllers\Api\Winner\WinningController;
+use Laravel\Cashier\Http\Controllers\WebhookController;
+use App\Http\Controllers\Api\Donation\DonationController;
 use App\Http\Controllers\Api\Auth\AuthenticationController;
+use App\Http\Controllers\Api\TestimonialController;
 
 //health-check
 Route::get("/check", function () {
@@ -30,31 +35,31 @@ Route::group(['middleware' => 'guest:api'], function () {
     Route::get('/cms/how-it-works', [CmsController::class, 'howItWorks']);
 
     // structure page data
-    Route::get('/cms/structure', [CmsController::class,'structure']);
+    Route::get('/cms/structure', [CmsController::class, 'structure']);
 
     // eligibility page data
-    Route::get('/cms/eligibility', [CmsController::class,'eligibility']);
+    Route::get('/cms/eligibility', [CmsController::class, 'eligibility']);
 
     // payment policy page data
-    Route::get('/cms/payment-policy', [CmsController::class,'paymentPolicy']);
+    Route::get('/cms/payment-policy', [CmsController::class, 'paymentPolicy']);
 
     // tax policy page data
-    Route::get('/cms/tax-policy', [CmsController::class,'taxPolicy']);
+    Route::get('/cms/tax-policy', [CmsController::class, 'taxPolicy']);
 
     // ethical-boundaries page data
-    Route::get('/cms/ethical-boundaries', [CmsController::class,'ethicalBoundaries']);
+    Route::get('/cms/ethical-boundaries', [CmsController::class, 'ethicalBoundaries']);
 
     // officer_compensation_policy page data
-    Route::get('/cms/officer-compensation-policy', [CmsController::class,'officerCompensationPolicy']);
+    Route::get('/cms/officer-compensation-policy', [CmsController::class, 'officerCompensationPolicy']);
 
     // archives page data
-    Route::get('/cms/archives', [CmsController::class,'archives']);
+    Route::get('/cms/archives', [CmsController::class, 'archives']);
 
     // contact-us page data
-    Route::get('/cms/contact-us', [CmsController::class,'contactUs']);
+    Route::get('/cms/contact-us', [CmsController::class, 'contactUs']);
 
     // partials - footer data
-    Route::get('/cms/partials/footer', [CmsController::class,'topbarPartials']);
+    Route::get('/cms/partials/footer', [CmsController::class, 'topbarPartials']);
 
     // subscribe newsletter
     Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe']);
@@ -65,27 +70,54 @@ Route::group(['middleware' => 'auth:api'], function () {
     //User logout
     Route::post('/logout', [AuthenticationController::class, 'logout']);
 
-    //employee list
-    Route::get('/employee-list', [UserListController::class, 'index']);
+    // Get tesimonials
+    Route::get('/testimonials', [TestimonialController::class, 'index']);
 
-    // Work reschedule request
-    Route::post('/reschedule-request', [WorkScheduleRequest::class, 'upsert']); // working
-    Route::get('/reschedule-request/edit/{id}', [WorkScheduleRequest::class, 'edit']); // working
-    Route::delete('/reschedule-request/delete/{id}', [WorkScheduleRequest::class, 'destroy']); // working
-    Route::post('/self-reschedule/{id}', [WorkScheduleRequest::class, 'selfReschedule']); // working
+});
 
 
-    // Work manage
-    Route::group(['prefix' => 'work'], function () {
-        Route::get('/list', [WorkController::class, 'index']);
-        Route::get('/map', [WorkController::class, 'mapView']);
-        Route::post('/complete/{id}', [WorkController::class, 'completeWork']); // work complation
-        Route::post('/incomplete/{id}', [WorkController::class, 'inCompleteWork']); // work imcomplation
-        Route::get('/details/{id}', [WorkController::class, 'show']);
+
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
+
+// Draw Information (Public)
+Route::prefix('draws')->group(function () {
+    Route::get('/current', [DrawController::class, 'current']);
+    Route::get('/history', [DrawController::class, 'history']);
+    Route::get('/{id}', [DrawController::class, 'show']);
+    Route::get('/{id}/leaderboard', [DrawController::class, 'leaderboard']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::group(['middleware' => 'guest:api'], function () {
+    // Donation Routes
+    Route::prefix('donations')->group(function () {
+        Route::post('/quick', [DonationController::class, 'quickDonation']);
+        Route::post('/custom', [DonationController::class, 'customDonation']);
+        Route::get('/my-donations', [DonationController::class, 'myDonations']);
+        Route::get('/{id}', [DonationController::class, 'show']);
     });
 
-
-    Route::post('/location/update', [LocationController::class, 'update']);
-    Route::get('/locations/current', [LocationController::class, 'getCurrentLocations']);
-    Route::get('/team/{teamId}/history', [LocationController::class, 'getTeamHistory']);
+    // Winning Routes
+    Route::prefix('winnings')->group(function () {
+        Route::get('/my-winnings', [WinningController::class, 'myWinnings']);
+        Route::post('/{id}/claim', [WinningController::class, 'claim']);
+        Route::get('/check-status', [WinningController::class, 'checkWinningStatus']);
+    });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Webhook Routes (No Auth)
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/webhooks/stripe', [WebhookController::class, 'handleStripe']);

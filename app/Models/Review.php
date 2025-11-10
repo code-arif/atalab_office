@@ -11,5 +11,6 @@ class Review extends Model
         'review_text',
         'rating',
         'author_avatar',
+        'week_label'
     ];
 }

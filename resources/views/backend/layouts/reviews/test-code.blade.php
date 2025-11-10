@@ -49,7 +49,7 @@
                                     <div class="card-options ms-auto">
                                         <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                             data-bs-target="#reviewModal" id="addReviewBtn">
-                                            <i class="fe fe-plus"></i> <span>Add Review</span>
+                                            <i class="fe fe-plus"></i> Add Review
                                         </button>
                                     </div>
                                 </div>
@@ -139,9 +139,10 @@
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">Author Avatar</label>
                                 <input type="file" name="author_avatar" id="author_avatar"
-                                    class="form-control dropify" accept="image">
+                                    class="form-control dropify" accept="image/*">
                                 <span class="text-danger error-text author_avatar_error"></span>
                             </div>
+
                         </div>
                     </div>
 
@@ -201,33 +202,6 @@
         </div>
     </div>
 @endsection
-
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('backend/plugins/rating/rating.css') }}">
-    <style>
-        .rating-stars .stars i {
-            font-size: 24px;
-            color: #ddd;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .rating-stars .stars i.active,
-        .rating-stars .stars i:hover,
-        .rating-stars .stars i:hover~i {
-            color: #ffc107;
-        }
-
-        .dropify-wrapper .dropify-message p {
-            font-size: 14px;
-        }
-
-        #view_rating_stars i {
-            font-size: 20px;
-            color: #ffc107;
-        }
-    </style>
-@endpush
 
 @push('scripts')
     <script src="{{ asset('backend/plugins/rating/rating.js') }}"></script>
@@ -339,10 +313,6 @@
                             dTable.ajax.reload();
                             $('#reviewForm')[0].reset();
                             $('.dropify').dropify('destroy').dropify();
-
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 500);
                         } else {
                             if (res.errors) {
                                 $.each(res.errors, function(field, messages) {
@@ -367,7 +337,8 @@
                 });
             });
 
-            // Edit Review - FIXED VERSION
+            // Edit Review
+            // Edit Review - Fixed Image Preview
             $(document).on('click', '.editReview', function() {
                 let id = $(this).data('id');
                 let url = "{{ route('reviews.edit', ':id') }}".replace(':id', id);
@@ -388,28 +359,51 @@
                             $(`#rating .fa-star[data-rating="${i}"]`).addClass('active');
                         }
 
-                        // Handle Dropify image
-                        let imageInput = $('#author_avatar').dropify();
-                        imageInput = imageInput.data('dropify');
-                        imageInput.resetPreview();
-                        imageInput.clearElement();
+                        // === FIXED: Dropify Image Preview ===
+                        let $dropify = $('#author_avatar');
 
-                        if (res.data.author_avatar) {
-                            let baseUrl = "{{ asset('') }}";
-                            imageInput.settings.defaultFile = baseUrl + res.data.author_avatar;
-                            imageInput.destroy();
-                            imageInput.init();
+                        // Destroy existing Dropify
+                        if ($dropify.data('dropify')) {
+                            $dropify.dropify('destroy');
+                        }
+
+                        // Clear file input
+                        $dropify.val('');
+
+                        // Reinitialize Dropify with existing image
+                        let imageUrl = res.data.author_avatar ?
+                            "{{ asset('/') }}" + res.data
+                            .author_avatar // Make sure path is correct
+                            :
+                            null;
+
+                        $dropify.dropify({
+                            defaultFile: imageUrl,
+                            messages: {
+                                'default': 'Drag and drop or click',
+                                'replace': 'Drag and drop or click to replace',
+                                'remove': 'Remove',
+                                'error': 'Oops, something wrong happened.'
+                            }
+                        });
+
+                        // If no image, show placeholder (optional)
+                        if (!imageUrl) {
+                            let drp = $dropify.data('dropify');
+                            drp.resetPreview();
+                            drp.settings.defaultFile = '';
+                            $dropify.dropify(drp.settings);
                         }
 
                         $('#reviewModal').modal('show');
                     } else {
                         toastr.error(res.message || 'Failed to load review.');
                     }
-                }).fail(function(xhr) {
-                    console.error(xhr);
+                }).fail(function() {
                     toastr.error('Server error. Please try again.');
                 });
             });
+
             // View Review
             $(document).on('click', '.viewReview', function() {
                 let id = $(this).data('id');
@@ -424,7 +418,7 @@
 
                         // Display Avatar or Placeholder
                         if (res.data.author_avatar) {
-                            $('#view_author_avatar').attr('src', "{{ asset('/') }}" + res.data
+                            $('#view_author_avatar').attr('src', "{{ asset('') }}" + res.data
                                 .author_avatar).show();
                             $('#no_avatar').hide();
                         } else {
@@ -486,5 +480,15 @@
                 }
             });
         }
+
+        // Initialize Dropify
+        $('.dropify').dropify({
+            messages: {
+                'default': 'Drag and drop or click',
+                'replace': 'Drag and drop or click to replace',
+                'remove': 'Remove',
+                'error': 'Oops, something wrong happened.'
+            }
+        });
     </script>
 @endpush

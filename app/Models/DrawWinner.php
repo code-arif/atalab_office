@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class DrawWinner extends Model
+{
+    protected $fillable = [
+        'weekly_draw_id',
+        'user_id',
+        'donation_id',
+        'amount_won',
+        'claimed',
+        'claimed_at',
+        'payout_stripe_id',
+        'payout_status',
+    ];
+
+    protected $casts = [
+        'amount_won' => 'decimal:2',
+        'claimed' => 'boolean',
+        'claimed_at' => 'datetime',
+    ];
+
+    public function weeklyDraw(): BelongsTo
+    {
+        return $this->belongsTo(WeeklyDraw::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function donation(): BelongsTo
+    {
+        return $this->belongsTo(Donation::class);
+    }
+
+    public function canClaim(): bool
+    {
+        return !$this->claimed
+            && $this->weeklyDraw->isClaiming()
+            && $this->payout_status === 'pending';
+    }
+}
