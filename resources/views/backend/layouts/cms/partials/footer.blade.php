@@ -104,7 +104,7 @@
 
                             <!-- Social Links -->
                             <div class="card">
-                                <div class="card-header d-flex justify-content-between">
+                                <div class="card-header d-flex justify-content-between bg-light">
                                     <h3 class="card-title">Social Links</h3>
                                     <button type="button" class="btn btn-sm btn-primary" onclick="addSocial()">Add</button>
                                 </div>

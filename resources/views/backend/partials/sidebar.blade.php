@@ -55,6 +55,20 @@
 
                 <hr>
 
+                <li class="slide">
+                    <a class="side-menu__item" data-bs-toggle="slide" href="#">
+                        <i class="fa-solid fa-people-roof"></i>
+                        <span class="mb-1">Donor & Draw Manage</span>
+                        <i class="angle fa fa-angle-right ms-auto"></i>
+                    </a>
+                    <ul class="slide-menu">
+                        <li><a href="{{ route('weekly-draws.index') }}" class="slide-item">Weekly Draw</a></li>
+                        <li><a href="{{ route('cms.slider.index') }}" class="slide-item">Slider Section</a></li>
+                    </ul>
+                </li>
+
+                <hr>
+
                 <li>
                     <h3>CMS</h3>
                 </li>
@@ -82,8 +96,10 @@
                         <li><a href="{{ route('cms.home.testimonial.section') }}" class="slide-item">Testimonial</a>
                         </li>
                         <li><a href="{{ route('cms.home.gallery.section') }}" class="slide-item">Gallery</a></li>
-                        <li><a href="{{ route('cms.home.disclaimer.section') }}" class="slide-item">Disclaimer</a></li>
-                        <li><a href="{{ route('cms.home.we_believe.section') }}" class="slide-item">We Believe</a></li>
+                        <li><a href="{{ route('cms.home.disclaimer.section') }}" class="slide-item">Disclaimer</a>
+                        </li>
+                        <li><a href="{{ route('cms.home.we_believe.section') }}" class="slide-item">We Believe</a>
+                        </li>
                         <li><a href="{{ route('cms.home.founder_statement.section') }}" class="slide-item">Founder
                                 Statement</a>
                         </li>
@@ -107,7 +123,8 @@
                         <i class="angle fa fa-angle-right ms-auto"></i>
                     </a>
                     <ul class="slide-menu">
-                        <li><a href="{{ route('cms.how_it_works.hero.section') }}" class="slide-item">How It Works</a>
+                        <li><a href="{{ route('cms.how_it_works.hero.section') }}" class="slide-item">How It
+                                Works</a>
                         </li>
                         <li><a href="{{ route('cms.structure.hero.section') }}" class="slide-item">Structure</a>
                         </li>

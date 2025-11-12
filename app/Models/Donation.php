@@ -10,6 +10,7 @@ class Donation extends Model
 {
     protected $fillable = [
         'user_id',
+        'temp_identifier',
         'week_id',
         'amount',
         'stripe_payment_id',

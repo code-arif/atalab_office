@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Google\Service\Analytics\Resource\Management;
 use App\Http\Controllers\Web\Backend\ReviewController;
 use App\Http\Controllers\Web\Backend\DashboardController;
 use App\Http\Controllers\Web\Backend\SubscriberController;
@@ -18,10 +19,13 @@ use App\Http\Controllers\Web\Backend\Settings\SettingController;
 use App\Http\Controllers\Web\Backend\CMS\ContactUsPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\OurStoryController;
 use App\Http\Controllers\Web\Backend\CMS\TaxPolicyPageController;
+use App\Http\Controllers\Web\Backend\Donation\DonationController;
 use App\Http\Controllers\Web\Backend\CMS\Home\WeBelieveController;
 use App\Http\Controllers\Web\Backend\CMS\EligibilityPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\DisclaimerController;
 use App\Http\Controllers\Web\Backend\CMS\Home\PercentageController;
+use App\Http\Controllers\Web\Backend\Donation\DrawWinnerController;
+use App\Http\Controllers\Web\Backend\Donation\WeeklyDrawController;
 use App\Http\Controllers\Web\Backend\CMS\Home\TestimonialController;
 use App\Http\Controllers\Web\Backend\CMS\OfficersCompPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\DistributionController;
@@ -148,6 +152,47 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::delete('/slider/{id}', [SliderController::class, 'destroy'])->name('slider.destroy');
         Route::post('/slider/update-order', [SliderController::class, 'updateOrder'])->name('slider.updateOrder');
     });
+
+
+    // Weekly Draw Management
+    // Route::get('/weekly-draw/all', [WeeklyDrawController::class, 'getAllDraws'])->name('get.all.weekly.draw');
+    // // Route::post('/weekly-draw/create', [WeeklyDrawController::class, 'createNewDraw'])->name('');
+    // // Route::post('/weekly-draw/{weekId}/finalize', [WeeklyDrawController::class, 'finalizeDraw']);
+    // // Route::post('/weekly-draw/{weekId}/select-winners', [WeeklyDrawController::class, 'selectWinners']);
+
+    // // Donation Management
+    // Route::get('/donations', [DonationController::class, 'getAllDonations']);
+    // Route::get('/donations/week/{weekId}', [DonationController::class, 'getDonationsByWeek']);
+
+    // // Winner Management
+    // Route::get('/winners', [DrawWinnerController::class, 'getAllWinners']);
+    // Route::post('/winners/{winnerId}/process-payout', [DrawWinnerController::class, 'processPayout']);
+    // Route::get('/winners/pending-payouts', [DrawWinnerController::class, 'getPendingPayouts']);
+
+    // // Statistics
+    // Route::get('/stats/overview', [WeeklyDrawController::class, 'getOverviewStats']);
+
+
+    Route::prefix('weekly-draws')->name('weekly-draws.')->group(function () {
+        Route::get('/', [WeeklyDrawController::class, 'index'])->name('index'); // working
+        Route::post('/store', [WeeklyDrawController::class, 'store'])->name('store'); // working
+        Route::get('/{id}', [WeeklyDrawController::class, 'show'])->name('show');
+        Route::post('/{id}/finalize', [WeeklyDrawController::class, 'finalize'])->name('finalize');
+        Route::post('/{id}/select-winners', [WeeklyDrawController::class, 'selectWinners'])->name('select-winners');
+        Route::delete('/{id}', [WeeklyDrawController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    // View all draws (auto-generated)
+    // Route::get('/draws', [WeeklyDrawController::class, 'index']);
+
+    // // Manual override (emergency only)
+    // Route::post('/draws/emergency-create', [WeeklyDrawController::class, 'store']);
+    // Route::post('/draws/{id}/emergency-finalize', [WeeklyDrawController::class, 'finalize']);
+
+    // View winners
+    Route::get('/winners', [DrawWinnerController::class, 'index']);
+});
 });
 
 

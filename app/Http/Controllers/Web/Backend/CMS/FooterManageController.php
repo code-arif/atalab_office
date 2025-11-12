@@ -21,7 +21,7 @@ class FooterManageController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'logo' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp|max:2048',
+            'logo' => 'nullable|max:2048',
             'business_name' => 'nullable|string|max:255',
             'slogan' => 'nullable|string|max:255',
             'description' => 'nullable|string',
@@ -33,7 +33,7 @@ class FooterManageController extends Controller
             'social_links' => 'nullable|array|min:1',
             'social_links.*.platform' => 'required_with:social_links|in:linkedin,tiktok,youtube,medium,facebook,instagram,twitter,x',
             'social_links.*.url' => 'required_with:social_links|url',
-            'social_links.*.icon' => 'nullable|image|mimes:png,svg,jpg,jpeg,webp|max:1024',
+            'social_links.*.icon' => 'nullable|max:1024',
         ]);
 
         try {

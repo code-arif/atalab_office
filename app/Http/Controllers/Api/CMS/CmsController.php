@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Api\CMS;
 
 use App\Models\CMS;
+use App\Models\Footer;
+use App\Models\Slider;
 use App\Traits\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\FooterResource;
+use App\Http\Resources\SliderResource;
 use App\Http\Resources\CMS\CMSResource;
 
 class CmsController extends Controller
@@ -18,6 +22,15 @@ class CmsController extends Controller
         $data = CMS::where('page', 'home')->get();
 
         return $this->success(CMSResource::collection($data), 'Home data retrieved successfully');
+    }
+
+    /**
+     * All Sliders
+     */
+    public function getSlider()
+    {
+        $data = Slider::where('status', true)->orderBy('order', 'asc')->get();
+        return $this->success(SliderResource::collection($data), 'Sliders data retrieved successfully');
     }
 
 
@@ -120,11 +133,25 @@ class CmsController extends Controller
     }
 
     /**
-     * Get footer partials CMS data
+     * Get topbar partials CMS data
      */
-    public function topbarPartials()
+    public function topbarData()
     {
-        $data = CMS::where('page', 'partials')->where ('section', 'topbar')->get();
-        return $this->success($data, 'Topbar partials data retrieved successfully');
+        $data = CMS::where('page', 'partials')->where('section', 'topbar')->get();
+        return $this->success($data, 'Topbar data retrieved successfully');
+    }
+
+    /**
+     * Get footer partials cms data
+     */
+    public function footerData()
+    {
+        $data = Footer::first();
+
+        if (!$data) {
+            return $this->error('No footer data found', 404);
+        }
+
+        return $this->success(new FooterResource($data), 'Footer data retrieved successfully');
     }
 }

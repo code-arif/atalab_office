@@ -1,8 +1,10 @@
 <?php
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
-use App\Http\Middleware\CorsMiddleware;
+
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
@@ -11,7 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__ . '/../routes/web.php',
         api: __DIR__ . '/../routes/api.php',
         commands: __DIR__ . '/../routes/console.php',
-        channels: __DIR__.'/../routes/channels.php',
+        channels: __DIR__ . '/../routes/channels.php',
 
 
         health: '/up',
@@ -19,8 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware(['web', 'auth', 'admin'])->prefix('admin')->group(base_path('routes/backend.php'));
         }
     )
-     ->withBroadcasting(
-        __DIR__.'/../routes/channels.php',
+    ->withBroadcasting(
+        __DIR__ . '/../routes/channels.php',
         ['prefix' => 'api', 'middleware' => ['auth:api']],
     )
     ->withMiddleware(function (Middleware $middleware) {
@@ -44,9 +46,31 @@ return Application::configure(basePath: dirname(__DIR__))
             'payment/stripe-webhook',
             'api/*'
         ]);
+        // Rate limiting for donation endpoints
+        $middleware->throttleApi('10,1'); // 10 requests per minute
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
-    })->create();
+        // Exception handling
+        $exceptions->report(function (\Exception $e) {
+            if (app()->environment('production')) {
+                // Log critical errors
+                if ($e instanceof \Stripe\Exception\ApiErrorException) {
+                    Log::critical('Stripe API Error', [
+                        'message' => $e->getMessage(),
+                        'code' => $e->getStripeCode()
+                    ]);
+                }
+            }
+        });
+    })
+    ->withSchedule(function (Schedule $schedule) {
+        $schedule->command('draw:automate')->everyMinute();
+        // $schedule->command('app:partnertrashdelete')->daily();
+    })
+    ->withCommands([
+        // Register custom commands directory
+        __DIR__ . '/../app/Console/Commands',
+    ])
+    ->create();
 
     //hello
