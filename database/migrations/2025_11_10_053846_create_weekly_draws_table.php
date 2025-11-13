@@ -14,10 +14,12 @@ return new class extends Migration
         Schema::create('weekly_draws', function (Blueprint $table) {
             $table->id();
             $table->integer('week_number')->unique();
-            $table->timestamp('start_date');
-            $table->timestamp('end_date');
-            $table->timestamp('countdown_ends_at');
-            $table->timestamp('claim_deadline');
+
+            $table->timestamp('start_date')->nullable();
+            $table->timestamp('end_date')->nullable();
+            $table->timestamp('countdown_ends_at')->nullable();
+            $table->timestamp('claim_deadline')->nullable();
+
             $table->enum('status', ['active', 'claiming', 'completed'])->default('active');
             $table->decimal('total_pool', 12, 2)->default(0);
             $table->integer('total_participants')->default(0);
