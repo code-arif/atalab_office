@@ -14,6 +14,7 @@ class FooterManageController extends Controller
     public function index()
     {
         $data = Footer::first() ?? new Footer();
+        return 1;exit();
         return view('backend.layouts.cms.partials.footer', compact('data'));
     }
 
