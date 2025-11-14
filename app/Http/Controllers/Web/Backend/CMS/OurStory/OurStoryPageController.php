@@ -31,20 +31,10 @@ class OurStoryPageController extends Controller
             $validated_data = $request->validated();
 
             // get the existing record
-            $existing = CMS::where('page', 'our-story')
+            CMS::where('page', 'our-story')
                 ->where('section', 'hero')
                 ->where('name', 'item')
                 ->first();
-
-            // handle image
-            if ($request->hasFile('image')) {
-                if ($existing && $existing->image) {
-                    Helper::deleteImage($existing->image);
-                }
-
-                $image_path = Helper::uploadImage($request->file('image'), 'cms/our_story');
-                $validated_data['image'] = $image_path;
-            }
 
             CMS::updateOrCreate(
                 [

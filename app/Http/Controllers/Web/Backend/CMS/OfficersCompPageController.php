@@ -31,20 +31,10 @@ class OfficersCompPageController extends Controller
             $validated_data = $request->validated();
 
             // get the existing record
-            $existing = CMS::where('page', 'officer_compensation_policy')
+            CMS::where('page', 'officer_compensation_policy')
                 ->where('section', 'hero')
                 ->where('name', 'item')
                 ->first();
-
-            // handle image
-            if ($request->hasFile('image')) {
-                if ($existing && $existing->image) {
-                    Helper::deleteImage($existing->image);
-                }
-
-                $image_path = Helper::uploadImage($request->file('image'), 'cms/officer-compensation');
-                $validated_data['image'] = $image_path;
-            }
 
             CMS::updateOrCreate(
                 [

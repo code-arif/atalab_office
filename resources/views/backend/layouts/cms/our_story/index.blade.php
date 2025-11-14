@@ -53,22 +53,6 @@
                                             @enderror
                                         </div>
 
-                                        {{-- slected name --}}
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label for="image" class="form-label">Image</label>
-                                                    <input type="file"
-                                                        class="dropify form-control @error('image') is-invalid @enderror"
-                                                        data-default-file="{{ !empty($data->image) && file_exists(public_path($data->image)) ? asset($data->image) : asset('default/placeholder-image.avif') }}"
-                                                        name="image" id="image">
-                                                    @error('image')
-                                                        <span class="text-danger">{{ $message }}</span>
-                                                    @enderror
-                                                </div>
-                                            </div>
-                                        </div>
-
                                         {{-- Submit --}}
                                         <div class="form-group">
                                             <button class="btn btn-primary" type="submit">Save changes</button>

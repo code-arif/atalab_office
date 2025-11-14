@@ -31,20 +31,10 @@ class HowItWorksPageController extends Controller
             $validated_data = $request->validated();
 
             // get the existing record
-            $existing = CMS::where('page', 'how-it-works')
+            CMS::where('page', 'how-it-works')
                 ->where('section', 'hero')
                 ->where('name', 'item')
                 ->first();
-
-            // handle image
-            if ($request->hasFile('image')) {
-                if ($existing && $existing->image) {
-                    Helper::deleteImage($existing->image);
-                }
-
-                $image_path = Helper::uploadImage($request->file('image'), 'cms/how_it_works');
-                $validated_data['image'] = $image_path;
-            }
 
             CMS::updateOrCreate(
                 [

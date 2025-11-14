@@ -25,10 +25,12 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card box-shadow-0">
+                            <div class="card-header bg-light">
+                                <h4 class="card-title">Quote</h4>
+                            </div>
                             <div class="card-body">
                                 <form class="form-horizontal" method="post"
-                                    action="{{ route('cms.home.quote.section.update') }}"
-                                    enctype="multipart/form-data">
+                                    action="{{ route('cms.home.quote.section.update') }}" enctype="multipart/form-data">
                                     @csrf
                                     <div class="row mb-4">
 
