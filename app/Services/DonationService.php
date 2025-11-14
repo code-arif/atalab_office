@@ -9,8 +9,10 @@ use App\Models\Donation;
 use App\Models\WeeklyDraw;
 use Illuminate\Support\Str;
 use Stripe\Checkout\Session;
+use App\Events\DonationCreated;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 
 class DonationService
 {
@@ -71,6 +73,9 @@ class DonationService
                 'session_id' => $session->id,
                 'temp_identifier' => $tempIdentifier
             ]);
+
+            // After successfully creating donation
+            event(new DonationCreated($donation));
 
             return [
                 'checkout_url' => $session->url,
@@ -268,7 +273,10 @@ class DonationService
             [
                 'name' => $customerDetails->name ?? 'Anonymous Donor',
                 'phone' => $customerDetails->phone ?? null,
-                'email_verified_at' => now(), // Auto-verify from Stripe
+                'email_verified_at' => now(),
+                // 'password' => Hash::make($customerDetails->password),
+                'role' => 'donor',
+                'password' => rand(11111111,99999999),
             ]
         );
     }

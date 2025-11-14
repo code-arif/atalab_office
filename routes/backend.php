@@ -36,7 +36,12 @@ use App\Http\Controllers\Web\Backend\CMS\HowItWorks\StructurePageController;
 use App\Http\Controllers\Web\Backend\CMS\HowItWorks\HowItWorksPageController;
 
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Dashboard API endpoints for real-time updates
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/live-stats', [DashboardController::class, 'liveStatsApi']);
+        Route::get('/recent-donations', [DashboardController::class, 'recentDonationsApi']);
+    });
 
     // newsletter subscribers
     Route::get('/subscribers', [SubscriberController::class, 'index'])
@@ -183,16 +188,16 @@ Route::middleware(['auth', 'admin'])->group(function () {
     });
 
     Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-    // View all draws (auto-generated)
-    // Route::get('/draws', [WeeklyDrawController::class, 'index']);
+        // View all draws (auto-generated)
+        // Route::get('/draws', [WeeklyDrawController::class, 'index']);
 
-    // // Manual override (emergency only)
-    // Route::post('/draws/emergency-create', [WeeklyDrawController::class, 'store']);
-    // Route::post('/draws/{id}/emergency-finalize', [WeeklyDrawController::class, 'finalize']);
+        // // Manual override (emergency only)
+        // Route::post('/draws/emergency-create', [WeeklyDrawController::class, 'store']);
+        // Route::post('/draws/{id}/emergency-finalize', [WeeklyDrawController::class, 'finalize']);
 
-    // View winners
-    Route::get('/winners', [DrawWinnerController::class, 'index']);
-});
+        // View winners
+        Route::get('/winners', [DrawWinnerController::class, 'index']);
+    });
 });
 
 

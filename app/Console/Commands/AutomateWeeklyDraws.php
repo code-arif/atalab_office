@@ -31,7 +31,7 @@ class AutomateWeeklyDraws extends Command
         // Log::info('created');
 
         // Every Monday 12:00 AM - Create New Draw
-        if ($now->isSameDay('Monday') && $now->format('H:i') === '16:37') {
+        if ($now->isSameDay('Thursday') && $now->format('H:i') === '17:30') {
             $this->createNewDraw();
             Log::info('New draw creation');
         }
