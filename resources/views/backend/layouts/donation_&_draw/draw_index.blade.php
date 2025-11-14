@@ -473,13 +473,13 @@
                         let statusBadge = '';
                         if (data.status === 'active') {
                             statusBadge =
-                                '<span class="badge badge-status status-active">Active</span>';
+                                '<span class="badge badge-status py-3 status-active">Active</span>';
                         } else if (data.status === 'claiming') {
                             statusBadge =
-                                '<span class="badge badge-status status-claiming">Claiming</span>';
+                                '<span class="badge badge-status py-3 status-claiming">Claiming</span>';
                         } else {
                             statusBadge =
-                                '<span class="badge badge-status status-completed">Completed</span>';
+                                '<span class="badge badge-status py-3 status-completed">Completed</span>';
                         }
                         $('#view_status').html(statusBadge);
 

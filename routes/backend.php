@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\Backend\ReviewController;
+use App\Http\Controllers\Web\Backend\ContactUsController;
 use App\Http\Controllers\Web\Backend\DashboardController;
 use App\Http\Controllers\Web\Backend\SubscriberController;
 use App\Http\Controllers\Web\Backend\CMS\Home\HeroController;
@@ -158,6 +159,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/footer', [FooterManageController::class, 'index'])->name('footer.section');
         Route::post('/footer/update', [FooterManageController::class, 'update'])->name('footer.section.update');
     });
+
+    // contact us
+    Route::get('/person/contact-me', [ContactUsController::class, 'index'])->name('contact.me');
+    Route::get('/person/contact-me/{id}', [ContactUsController::class, 'show'])->name('contact.me.show');
+    Route::delete('/person/contact-me/delete/{id}', [ContactUsController::class, 'destroy'])->name('contact.me.delete');
 
 
     // Weekly Draw Management

@@ -39,8 +39,17 @@
                 <li class="slide">
                     <a class="side-menu__item {{ request()->routeIs('subscribers.index') ? 'has-link' : '' }}"
                         href="{{ route('subscribers.index') }}">
-                        <i class="fa fa-envelope"></i>
+                        <i class="fa-solid fa-bell"></i>
                         <span class="side-menu__label mb-1">Newsletter Subscribers</span>
+                    </a>
+                </li>
+
+                {{-- contact me --}}
+                <li class="slide">
+                    <a class="side-menu__item {{ request()->routeIs('contact.me') ? 'has-link' : '' }}"
+                        href="{{ route('contact.me') }}">
+                        <i class="fa fa-envelope"></i>
+                        <span class="side-menu__label mb-1">Contact Me</span>
                     </a>
                 </li>
 
