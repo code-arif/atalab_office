@@ -25,6 +25,9 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card box-shadow-0">
+                            <div class="card-header bg-light">
+                                <h4 class="card-title">Header, Subtitle, Description & Image</h4>
+                            </div>
                             <div class="card-body">
                                 <form class="form-horizontal" method="post"
                                     action="{{ route('cms.home.founder_statement.section.update') }}"
@@ -46,7 +49,8 @@
                                         {{-- Subtitle --}}
                                         <div class="form-group mb-3">
                                             <label for="sub_title" class="form-label">Subtitle</label>
-                                            <input type="text" class="form-control @error('sub_title') is-invalid @enderror"
+                                            <input type="text"
+                                                class="form-control @error('sub_title') is-invalid @enderror"
                                                 name="sub_title" placeholder="Enter subtitle" id="sub_title"
                                                 value="{{ $data->sub_title ?? old('sub_title') }}">
                                             @error('sub_title')

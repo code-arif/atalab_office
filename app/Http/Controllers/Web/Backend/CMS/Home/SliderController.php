@@ -10,13 +10,6 @@ use App\Http\Controllers\Controller;
 
 class SliderController extends Controller
 {
-    // Display all sliders
-    public function index()
-    {
-        $sliders = Slider::orderBy('order', 'asc')->get();
-        return view('backend.layouts.cms.home.slider', compact('sliders'));
-    }
-
     // Store new slider
     public function store(Request $request)
     {

@@ -44,15 +44,6 @@
                     </a>
                 </li>
 
-                {{-- Reviews --}}
-                <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('reviews.index') ? 'has-link' : '' }}"
-                        href="{{ route('reviews.index') }}">
-                        <i class="fa fa-star"></i>
-                        <span class="side-menu__label mb-1">Reviews</span>
-                    </a>
-                </li>
-
                 <hr>
 
                 <li class="slide">
@@ -63,7 +54,7 @@
                     </a>
                     <ul class="slide-menu">
                         <li><a href="{{ route('weekly-draws.index') }}" class="slide-item">Weekly Draw</a></li>
-                        <li><a href="{{ route('cms.slider.index') }}" class="slide-item">Slider Section</a></li>
+                        <li><a href="#" class="slide-item">Winners</a></li>
                     </ul>
                 </li>
 
@@ -84,7 +75,6 @@
                     </a>
                     <ul class="slide-menu">
                         <li><a href="{{ route('cms.home.hero.section') }}" class="slide-item">Hero Section</a></li>
-                        <li><a href="{{ route('cms.slider.index') }}" class="slide-item">Slider Section</a></li>
                         <li><a href="{{ route('cms.home.distribution.section') }}" class="slide-item">Distribution
                                 Table</a>
                         </li>

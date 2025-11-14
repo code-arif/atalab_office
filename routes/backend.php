@@ -1,13 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Google\Service\Analytics\Resource\Management;
 use App\Http\Controllers\Web\Backend\ReviewController;
 use App\Http\Controllers\Web\Backend\DashboardController;
 use App\Http\Controllers\Web\Backend\SubscriberController;
 use App\Http\Controllers\Web\Backend\CMS\Home\HeroController;
 use App\Http\Controllers\Web\Backend\CMS\Home\QuoteController;
 use App\Http\Controllers\Web\Backend\CMS\ArchivePageController;
+use App\Http\Controllers\Web\Backend\CMS\DrawSettingController;
 use App\Http\Controllers\Web\Backend\CMS\EthicalPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\SliderController;
 use App\Http\Controllers\Web\Backend\CMS\PaymentPageController;
@@ -19,7 +19,6 @@ use App\Http\Controllers\Web\Backend\Settings\SettingController;
 use App\Http\Controllers\Web\Backend\CMS\ContactUsPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\OurStoryController;
 use App\Http\Controllers\Web\Backend\CMS\TaxPolicyPageController;
-use App\Http\Controllers\Web\Backend\Donation\DonationController;
 use App\Http\Controllers\Web\Backend\CMS\Home\WeBelieveController;
 use App\Http\Controllers\Web\Backend\CMS\EligibilityPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\DisclaimerController;
@@ -43,7 +42,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
         ->name('subscribers.index');
 
     // rating and reviews
-    Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
     Route::post('/reviews/store', [ReviewController::class, 'store'])->name('reviews.store');
     Route::get('/reviews/edit/{id}', [ReviewController::class, 'edit'])->name('reviews.edit');
     Route::get('/reviews/show/{id}', [ReviewController::class, 'show'])->name('reviews.show'); // NEW
@@ -57,9 +55,19 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/home/hero', [HeroController::class, 'index'])->name('home.hero.section');
         Route::post('/home/hero/update', [HeroController::class, 'update'])->name('home.hero.section.update');
 
+        // home page hero section - slider Management Routes
+        Route::get('/slider', [SliderController::class, 'index'])->name('slider.index');
+        Route::post('/slider/store', [SliderController::class, 'store'])->name('slider.store');
+        Route::post('/slider/{id}/status', [SliderController::class, 'updateStatus'])->name('slider.status');
+        Route::delete('/slider/{id}', [SliderController::class, 'destroy'])->name('slider.destroy');
+        Route::post('/slider/update-order', [SliderController::class, 'updateOrder'])->name('slider.updateOrder');
+
         // home distribution section
         Route::get('/home/disctibution', [DistributionController::class, 'index'])->name('home.distribution.section');
         Route::post('/home/disctibution/update', [DistributionController::class, 'update'])->name('home.distribution.section.update');
+        Route::post('/home/disctibution/item/store', [DistributionController::class, 'itemStore'])->name('home.distribution.item.store');
+        Route::post('/home/disctibution/item/update/{id}', [DistributionController::class, 'itemUpdate'])->name('home.distribution.item.update');
+        Route::delete('/home/disctibution/item/destroy/{id}', [DistributionController::class, 'itemDelete'])->name('home.distribution.item.delete');
 
         // home page percentage section
         Route::get('/home/percentage', [PercentageController::class, 'index'])->name('home.percentage.section');
@@ -144,13 +152,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
         // footer section
         Route::get('/footer', [FooterManageController::class, 'index'])->name('footer.section');
         Route::post('/footer/update', [FooterManageController::class, 'update'])->name('footer.section.update');
-
-        // Slider Management Routes
-        Route::get('/slider', [SliderController::class, 'index'])->name('slider.index');
-        Route::post('/slider/store', [SliderController::class, 'store'])->name('slider.store');
-        Route::post('/slider/{id}/status', [SliderController::class, 'updateStatus'])->name('slider.status');
-        Route::delete('/slider/{id}', [SliderController::class, 'destroy'])->name('slider.destroy');
-        Route::post('/slider/update-order', [SliderController::class, 'updateOrder'])->name('slider.updateOrder');
     });
 
 
@@ -183,16 +184,16 @@ Route::middleware(['auth', 'admin'])->group(function () {
     });
 
     Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-    // View all draws (auto-generated)
-    // Route::get('/draws', [WeeklyDrawController::class, 'index']);
+        // View all draws (auto-generated)
+        // Route::get('/draws', [WeeklyDrawController::class, 'index']);
 
-    // // Manual override (emergency only)
-    // Route::post('/draws/emergency-create', [WeeklyDrawController::class, 'store']);
-    // Route::post('/draws/{id}/emergency-finalize', [WeeklyDrawController::class, 'finalize']);
+        // // Manual override (emergency only)
+        // Route::post('/draws/emergency-create', [WeeklyDrawController::class, 'store']);
+        // Route::post('/draws/{id}/emergency-finalize', [WeeklyDrawController::class, 'finalize']);
 
-    // View winners
-    Route::get('/winners', [DrawWinnerController::class, 'index']);
-});
+        // View winners
+        Route::get('/winners', [DrawWinnerController::class, 'index']);
+    });
 });
 
 

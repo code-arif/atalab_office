@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web\Backend\CMS\Home;
 use Exception;
 use App\Models\CMS;
 use App\Helper\Helper;
+use App\Models\Slider;
 use Illuminate\Http\Request;
 use App\Http\Requests\CmsRequest;
 use App\Http\Controllers\Controller;
@@ -17,8 +18,9 @@ class HeroController extends Controller
     public function index(Request $request)
     {
         $data = CMS::where('page', 'home')->where('section', 'hero')->where('name', 'item')->first();
+        $sliders = Slider::orderBy('order', 'asc')->get();
 
-        return view("backend.layouts.cms.home.hero", compact("data"));
+        return view("backend.layouts.cms.home.hero", compact(["data", "sliders"]));
     }
 
 

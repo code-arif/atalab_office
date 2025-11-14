@@ -31,20 +31,10 @@ class PaymentPageController extends Controller
             $validated_data = $request->validated();
 
             // get the existing record
-            $existing = CMS::where('page', 'payment-policy')
+            CMS::where('page', 'payment-policy')
                 ->where('section', 'hero')
                 ->where('name', 'item')
                 ->first();
-
-            // handle image
-            if ($request->hasFile('image')) {
-                if ($existing && $existing->image) {
-                    Helper::deleteImage($existing->image);
-                }
-
-                $image_path = Helper::uploadImage($request->file('image'), 'cms/payment-policy');
-                $validated_data['image'] = $image_path;
-            }
 
             CMS::updateOrCreate(
                 [
