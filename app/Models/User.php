@@ -47,18 +47,78 @@ class User extends Authenticatable implements JWTSubject
     }
 
 
-    public function team()
+    /**
+     * RELATIONSHIPS
+     */
+
+    /**
+     * Get all donations made by this user
+     */
+    public function donations()
     {
-        return $this->hasOne(TeamUser::class, 'user_id', 'id')->with('team');
+        return $this->hasMany(Donation::class);
     }
 
-    public function teamUser()
+    /**
+     * Get all wins by this user
+     */
+    public function wins()
     {
-        return $this->hasOne(User::class);
+        return $this->hasMany(DrawWinner::class);
     }
 
-    public function teams()
+    /**
+     * Check if user is admin
+     */
+    public function isAdmin(): bool
     {
-        return $this->belongsToMany(Team::class, 'team_users', 'user_id', 'team_id');
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is donor
+     */
+    public function isDonor(): bool
+    {
+        return $this->role === 'donor';
+    }
+
+    /**
+     * Get total donated amount
+     */
+    public function getTotalDonatedAttribute(): float
+    {
+        return $this->donations()
+            ->where('stripe_payment_status', 'completed')
+            ->sum('amount');
+    }
+
+    /**
+     * Get total won amount
+     */
+    public function getTotalWonAttribute(): float
+    {
+        return $this->wins()->sum('amount_won');
+    }
+
+    /**
+     * Check if user has donated in specific week
+     */
+    public function hasDonatedInWeek(int $weekId): bool
+    {
+        return $this->donations()
+            ->where('week_id', $weekId)
+            ->where('stripe_payment_status', 'completed')
+            ->exists();
+    }
+
+    /**
+     * Check if user won in last 6 months
+     */
+    public function hasWonRecently(): bool
+    {
+        return $this->wins()
+            ->where('created_at', '>=', now()->subMonths(6))
+            ->exists();
     }
 }

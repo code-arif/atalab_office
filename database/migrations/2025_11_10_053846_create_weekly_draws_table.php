@@ -30,6 +30,8 @@ return new class extends Migration
 
             $table->index('status');
             $table->index('week_number');
+
+            $table->softDeletes();
         });
     }
 

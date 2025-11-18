@@ -12,7 +12,6 @@ use Stripe\Checkout\Session;
 use App\Events\DonationCreated;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Hash;
 
 class DonationService
 {
@@ -25,8 +24,7 @@ class DonationService
     }
 
     /**
-     * Create standard $25 donation
-     * SECURITY FIX: Use unique identifier instead of temporary user_id
+     * Create standard $25 donation with DUPLICATE CHECK
      */
     public function createStandardDonation(string $successUrl, string $cancelUrl): array
     {
@@ -52,18 +50,18 @@ class DonationService
                 $cancelUrl
             );
 
-            // ** SECURITY FIX: Create unique temporary identifier **
+            // Create unique temporary identifier
             $tempIdentifier = 'temp_' . Str::uuid();
 
-            // Create pending donation with temporary identifier
+            // Create pending donation
             $donation = Donation::create([
-                'user_id' => null, // Will be set after checkout
-                'temp_identifier' => $tempIdentifier, // Track via unique ID
+                'user_id' => null,
+                'temp_identifier' => $tempIdentifier,
                 'week_id' => $currentDraw->id,
                 'amount' => 25.00,
                 'stripe_payment_id' => $session->id,
                 'stripe_payment_status' => 'pending',
-                'is_eligible_for_draw' => false, // Only eligible after completion
+                'is_eligible_for_draw' => false,
                 'payment_type' => 'standard',
                 'donated_at' => now(),
             ]);
@@ -71,10 +69,8 @@ class DonationService
             Log::info('Standard donation initiated', [
                 'donation_id' => $donation->id,
                 'session_id' => $session->id,
-                'temp_identifier' => $tempIdentifier
             ]);
 
-            // After successfully creating donation
             event(new DonationCreated($donation));
 
             return [
@@ -86,8 +82,7 @@ class DonationService
     }
 
     /**
-     * Create custom amount donation
-     * SECURITY FIX: Use unique identifier instead of temporary user_id
+     * Create custom amount donation with DUPLICATE CHECK
      */
     public function createCustomDonation(float $amount, string $successUrl, string $cancelUrl): array
     {
@@ -118,12 +113,11 @@ class DonationService
                 $cancelUrl
             );
 
-            // ** SECURITY FIX: Create unique temporary identifier **
             $tempIdentifier = 'temp_' . Str::uuid();
 
-            // Create pending donation with temporary identifier
+            // Create pending donation
             $donation = Donation::create([
-                'user_id' => null, // Will be set after checkout
+                'user_id' => null,
                 'temp_identifier' => $tempIdentifier,
                 'week_id' => $currentDraw->id,
                 'amount' => $amount,
@@ -137,7 +131,6 @@ class DonationService
             Log::info('Custom donation initiated', [
                 'donation_id' => $donation->id,
                 'amount' => $amount,
-                'session_id' => $session->id
             ]);
 
             return [
@@ -150,18 +143,17 @@ class DonationService
 
     /**
      * Check if donation is allowed based on time window
-     * Donations paused: Sunday 5 PM - Monday 12 AM
      */
     protected function isDonationAllowed(): bool
     {
-        $now = \Carbon\Carbon::now();
+        $now = \Carbon\Carbon::now('Asia/Dhaka');
 
-        // Sunday 5 PM (17:00) onwards - PAUSED
+        // Sunday 5 PM onwards - PAUSED
         if ($now->isSunday() && $now->hour >= 17) {
             return false;
         }
 
-        // Monday before 12 AM (00:00) - PAUSED
+        // Monday before 12 AM - PAUSED (technically this is still Sunday night)
         if ($now->isMonday() && $now->hour < 0) {
             return false;
         }
@@ -170,7 +162,7 @@ class DonationService
     }
 
     /**
-     * Verify payment after Stripe redirect
+     * Verify payment with DUPLICATE EMAIL CHECK
      */
     public function verifyPayment(string $sessionId): Donation
     {
@@ -183,24 +175,48 @@ class DonationService
         }
 
         if ($session->payment_status === 'paid') {
-            // Get or create user from Stripe data
+            $customerEmail = $session->customer_details->email;
+
+            // 🔴 CRITICAL: Check if email already donated in this week
+            $existingDonation = Donation::where('week_id', $donation->week_id)
+                ->where('stripe_payment_status', 'completed')
+                ->whereHas('user', function ($query) use ($customerEmail) {
+                    $query->where('email', $customerEmail);
+                })
+                ->first();
+
+            if ($existingDonation) {
+                // Mark as duplicate and refund
+                $donation->update([
+                    'stripe_payment_status' => 'duplicate',
+                    'is_eligible_for_draw' => false,
+                ]);
+
+                Log::warning('🚫 Duplicate donation detected', [
+                    'email' => $customerEmail,
+                    'week_id' => $donation->week_id
+                ]);
+
+                throw new Exception('You have already donated this week. Only one donation per week is allowed.');
+            }
+
+            // Get or create user
             $user = $this->getOrCreateUserFromStripe($session);
 
             $donation->update([
                 'user_id' => $user->id,
                 'stripe_payment_status' => 'completed',
                 'stripe_charge_id' => $session->payment_intent,
-                'is_eligible_for_draw' => true, // NOW eligible
-                'temp_identifier' => null, // Clear temp identifier
+                'is_eligible_for_draw' => true,
+                'temp_identifier' => null,
             ]);
 
             // Update weekly draw stats
             $this->updateWeeklyDrawStats($donation->week_id);
 
-            Log::info('Payment verified and completed', [
+            Log::info('✅ Payment verified', [
                 'donation_id' => $donation->id,
                 'user_id' => $user->id,
-                'amount' => $donation->amount
             ]);
         }
 
@@ -208,34 +224,38 @@ class DonationService
     }
 
     /**
-     * Check payment status
-     */
-    public function checkPaymentStatus(string $paymentId): array
-    {
-        $donation = Donation::where('stripe_payment_id', $paymentId)->first();
-
-        if (!$donation) {
-            throw new Exception('Payment not found');
-        }
-
-        return [
-            'status' => $donation->stripe_payment_status,
-            'amount' => $donation->amount,
-            'donated_at' => $donation->donated_at,
-            'is_eligible_for_draw' => $donation->is_eligible_for_draw,
-        ];
-    }
-
-    /**
-     * Handle Stripe checkout completed webhook
-     * SECURITY: Update user information from verified Stripe data
+     * Handle Stripe checkout completed webhook with DUPLICATE CHECK
      */
     public function handleCheckoutCompleted($session): void
     {
         $donation = Donation::where('stripe_payment_id', $session->id)->first();
 
         if ($donation && $donation->stripe_payment_status !== 'completed') {
-            // Get or create user from Stripe checkout data
+            $customerEmail = $session->customer_details->email;
+
+            // Check for duplicate donation in same week
+            $existingDonation = Donation::where('week_id', $donation->week_id)
+                ->where('stripe_payment_status', 'completed')
+                ->whereHas('user', function ($query) use ($customerEmail) {
+                    $query->where('email', $customerEmail);
+                })
+                ->first();
+
+            if ($existingDonation) {
+                $donation->update([
+                    'stripe_payment_status' => 'duplicate',
+                    'is_eligible_for_draw' => false,
+                ]);
+
+                Log::warning('🚫 Webhook: Duplicate donation blocked', [
+                    'email' => $customerEmail,
+                    'week_id' => $donation->week_id
+                ]);
+
+                return;
+            }
+
+            // Get or create user
             $user = $this->getOrCreateUserFromStripe($session);
 
             $donation->update([
@@ -248,7 +268,7 @@ class DonationService
 
             $this->updateWeeklyDrawStats($donation->week_id);
 
-            Log::info('Webhook: Checkout completed', [
+            Log::info('✅ Webhook: Checkout completed', [
                 'donation_id' => $donation->id,
                 'user_id' => $user->id
             ]);
@@ -256,14 +276,12 @@ class DonationService
     }
 
     /**
-     * Get or create user from Stripe session data
-     * SECURITY: Only use verified Stripe customer data
+     * Get or create user from Stripe (SECURITY: Verified data only)
      */
     protected function getOrCreateUserFromStripe($session): User
     {
         $customerDetails = $session->customer_details;
 
-        // Validate email
         if (!filter_var($customerDetails->email, FILTER_VALIDATE_EMAIL)) {
             throw new Exception('Invalid email from Stripe');
         }
@@ -274,51 +292,10 @@ class DonationService
                 'name' => $customerDetails->name ?? 'Anonymous Donor',
                 'phone' => $customerDetails->phone ?? null,
                 'email_verified_at' => now(),
-                // 'password' => Hash::make($customerDetails->password),
+                'password' => bcrypt(Str::random(16)), // Random secure password
                 'role' => 'donor',
-                'password' => rand(11111111,99999999),
             ]
         );
-    }
-
-    /**
-     * Handle payment succeeded webhook
-     */
-    public function handlePaymentSucceeded($paymentIntent): void
-    {
-        $donation = Donation::where('stripe_charge_id', $paymentIntent->id)->first();
-
-        if ($donation) {
-            $donation->update([
-                'stripe_payment_status' => 'completed',
-                'is_eligible_for_draw' => true,
-            ]);
-
-            $this->updateWeeklyDrawStats($donation->week_id);
-
-            Log::info('Webhook: Payment succeeded', [
-                'donation_id' => $donation->id
-            ]);
-        }
-    }
-
-    /**
-     * Handle payment failed webhook
-     */
-    public function handlePaymentFailed($paymentIntent): void
-    {
-        $donation = Donation::where('stripe_charge_id', $paymentIntent->id)->first();
-
-        if ($donation) {
-            $donation->update([
-                'stripe_payment_status' => 'failed',
-                'is_eligible_for_draw' => false,
-            ]);
-
-            Log::warning('Webhook: Payment failed', [
-                'donation_id' => $donation->id
-            ]);
-        }
     }
 
     /**
@@ -339,6 +316,57 @@ class DonationService
                 'total_participants' => $stats->participants ?? 0,
             ]);
         }
+    }
+
+    /**
+     * Handle payment succeeded webhook
+     */
+    public function handlePaymentSucceeded($paymentIntent): void
+    {
+        $donation = Donation::where('stripe_charge_id', $paymentIntent->id)->first();
+
+        if ($donation) {
+            $donation->update([
+                'stripe_payment_status' => 'completed',
+                'is_eligible_for_draw' => true,
+            ]);
+
+            $this->updateWeeklyDrawStats($donation->week_id);
+        }
+    }
+
+    /**
+     * Handle payment failed webhook
+     */
+    public function handlePaymentFailed($paymentIntent): void
+    {
+        $donation = Donation::where('stripe_charge_id', $paymentIntent->id)->first();
+
+        if ($donation) {
+            $donation->update([
+                'stripe_payment_status' => 'failed',
+                'is_eligible_for_draw' => false,
+            ]);
+        }
+    }
+
+    /**
+     * Check payment status
+     */
+    public function checkPaymentStatus(string $paymentId): array
+    {
+        $donation = Donation::where('stripe_payment_id', $paymentId)->first();
+
+        if (!$donation) {
+            throw new Exception('Payment not found');
+        }
+
+        return [
+            'status' => $donation->stripe_payment_status,
+            'amount' => $donation->amount,
+            'donated_at' => $donation->donated_at,
+            'is_eligible_for_draw' => $donation->is_eligible_for_draw,
+        ];
     }
 
     /**

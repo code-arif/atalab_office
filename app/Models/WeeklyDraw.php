@@ -3,10 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class WeeklyDraw extends Model
 {
+    use HasFactory;
+    use SoftDeletes;
     protected $fillable = [
         'week_number',
         'start_date',
@@ -31,15 +35,27 @@ class WeeklyDraw extends Model
         'winners_selected' => 'boolean',
     ];
 
+    /**
+     * RELATIONSHIPS
+     */
+
+    /**
+     * Get all donations for this week
+     */
     public function donations(): HasMany
     {
         return $this->hasMany(Donation::class, 'week_id');
     }
 
+
+    /**
+     * Get all winners for this draw
+     */
     public function winners(): HasMany
     {
         return $this->hasMany(DrawWinner::class);
     }
+
 
     public function isActive(): bool
     {
@@ -70,5 +86,72 @@ class WeeklyDraw extends Model
             return max(0, now()->diffInSeconds($this->claim_deadline, false));
         }
         return 0;
+    }
+
+
+    /**
+     * Get completed donations only
+     */
+    public function completedDonations()
+    {
+        return $this->donations()->completed();
+    }
+
+    /**
+     * Get eligible donations for draw
+     */
+    public function eligibleDonations()
+    {
+        return $this->donations()->eligible();
+    }
+
+    /**
+     * SCOPES
+     */
+
+    /**
+     * Scope to get active draws
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    /**
+     * Scope to get claiming draws
+     */
+    public function scopeClaiming($query)
+    {
+        return $query->where('status', 'claiming');
+    }
+
+    /**
+     * Scope to get completed draws
+     */
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', 'completed');
+    }
+
+    /**
+     * ACCESSORS
+     */
+
+    /**
+     * Get expected winners based on current participants
+     */
+    public function getExpectedWinnersAttribute(): int
+    {
+        return $this->total_participants > 0
+            ? (int) ceil($this->total_participants / 400)
+            : 0;
+    }
+
+    /**
+     * Get distribution pool after admin commission
+     */
+    public function getDistributionPoolAttribute(): float
+    {
+        return $this->total_pool - $this->admin_commission;
     }
 }

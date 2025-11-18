@@ -3,7 +3,6 @@
 @section('title', 'Weekly Draws Management')
 
 @section('content')
-    <!--app-content open-->
     <div class="app-content main-content mt-0">
         <div class="side-app">
             <div class="main-container container-fluid">
@@ -11,34 +10,29 @@
                 <div class="page-header">
                     <div>
                         <h1 class="page-title">Weekly Draws Management</h1>
+                        <p class="text-muted">Automated draw system - No manual intervention required</p>
                     </div>
                     <div class="ms-auto pageheader-btn">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="javascript:void(0);">Draws</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">All Draws</li>
-                        </ol>
+                        <a href="{{ route('weekly-draws.trashed') }}" class="btn btn-secondary">
+                            <i class="fe fe-trash-2 me-2"></i>Trash Bin
+                        </a>
                     </div>
                 </div>
 
                 <!-- Statistics Cards -->
                 <div class="row mb-4">
-                    <!-- Active Draws -->
-                    <div class="col-xl-3 col-lg-6 col-md-6 col-xm-12">
+                    <div class="col-xl-3 col-lg-6 col-md-6">
                         <div class="card overflow-hidden sales-card bg-primary-gradient">
-                            <div class="ps-3 pt-3 pe-3 pb-2 pt-0">
-                                <div class="">
-                                    <h6 class="mb-3 tx-12 text-white">ACTIVE DRAWS</h6>
-                                </div>
+                            <div class="ps-3 pt-3 pe-3 pb-2">
+                                <h6 class="mb-3 tx-12 text-white">ACTIVE DRAWS</h6>
                                 <div class="pb-0 mt-0">
                                     <div class="d-flex">
-                                        <div class="">
-                                            <h4 class="tx-20 fw-bold mb-1 text-white" id="active_draws_count">
-                                                {{ $activeDraws }}</h4>
+                                        <div>
+                                            <h4 class="tx-20 fw-bold mb-1 text-white">{{ $activeDraws }}</h4>
                                             <p class="mb-0 tx-12 text-white op-7">Currently Running</p>
                                         </div>
                                         <span class="float-end my-auto ms-auto">
-                                            <i class="fas fa-play-circle text-white"></i>
-                                            <span class="text-white op-7"> Draws</span>
+                                            <i class="fas fa-play-circle text-white fs-3"></i>
                                         </span>
                                     </div>
                                 </div>
@@ -46,23 +40,19 @@
                         </div>
                     </div>
 
-                    <!-- Total Pool -->
-                    <div class="col-xl-3 col-lg-6 col-md-6 col-xm-12">
+                    <div class="col-xl-3 col-lg-6 col-md-6">
                         <div class="card overflow-hidden sales-card bg-success-gradient">
-                            <div class="ps-3 pt-3 pe-3 pb-2 pt-0">
-                                <div class="">
-                                    <h6 class="mb-3 tx-12 text-white">TOTAL POOL</h6>
-                                </div>
+                            <div class="ps-3 pt-3 pe-3 pb-2">
+                                <h6 class="mb-3 tx-12 text-white">TOTAL POOL</h6>
                                 <div class="pb-0 mt-0">
                                     <div class="d-flex">
-                                        <div class="">
+                                        <div>
                                             <h4 class="tx-20 fw-bold mb-1 text-white">${{ number_format($totalPool, 2) }}
                                             </h4>
                                             <p class="mb-0 tx-12 text-white op-7">Current Week</p>
                                         </div>
                                         <span class="float-end my-auto ms-auto">
-                                            <i class="fas fa-dollar-sign text-white"></i>
-                                            <span class="text-white op-7"> USD</span>
+                                            <i class="fas fa-dollar-sign text-white fs-3"></i>
                                         </span>
                                     </div>
                                 </div>
@@ -70,22 +60,19 @@
                         </div>
                     </div>
 
-                    <!-- Total Participants -->
-                    <div class="col-xl-3 col-lg-6 col-md-6 col-xm-12">
+                    <div class="col-xl-3 col-lg-6 col-md-6">
                         <div class="card overflow-hidden sales-card bg-warning-gradient">
-                            <div class="ps-3 pt-3 pe-3 pb-2 pt-0">
-                                <div class="">
-                                    <h6 class="mb-3 tx-12 text-white">PARTICIPANTS</h6>
-                                </div>
+                            <div class="ps-3 pt-3 pe-3 pb-2">
+                                <h6 class="mb-3 tx-12 text-white">PARTICIPANTS</h6>
                                 <div class="pb-0 mt-0">
                                     <div class="d-flex">
-                                        <div class="">
-                                            <h4 class="tx-20 fw-bold mb-1 text-white">{{ $totalParticipants }}</h4>
+                                        <div>
+                                            <h4 class="tx-20 fw-bold mb-1 text-white">
+                                                {{ number_format($totalParticipants) }}</h4>
                                             <p class="mb-0 tx-12 text-white op-7">Current Week</p>
                                         </div>
                                         <span class="float-end my-auto ms-auto">
-                                            <i class="fas fa-users text-white"></i>
-                                            <span class="text-white op-7"> Users</span>
+                                            <i class="fas fa-users text-white fs-3"></i>
                                         </span>
                                     </div>
                                 </div>
@@ -93,22 +80,18 @@
                         </div>
                     </div>
 
-                    <!-- Total Draws -->
-                    <div class="col-xl-3 col-lg-6 col-md-6 col-xm-12">
-                        <div class="card overflow-hidden sales-card bg-danger-gradient">
-                            <div class="ps-3 pt-3 pe-3 pb-2 pt-0">
-                                <div class="">
-                                    <h6 class="mb-3 tx-12 text-white">TOTAL DRAWS</h6>
-                                </div>
+                    <div class="col-xl-3 col-lg-6 col-md-6">
+                        <div class="card overflow-hidden sales-card bg-info-gradient">
+                            <div class="ps-3 pt-3 pe-3 pb-2">
+                                <h6 class="mb-3 tx-12 text-white">TOTAL DRAWS</h6>
                                 <div class="pb-0 mt-0">
                                     <div class="d-flex">
-                                        <div class="">
+                                        <div>
                                             <h4 class="tx-20 fw-bold mb-1 text-white">{{ $totalDraws }}</h4>
                                             <p class="mb-0 tx-12 text-white op-7">All Time</p>
                                         </div>
                                         <span class="float-end my-auto ms-auto">
-                                            <i class="fas fa-trophy text-white"></i>
-                                            <span class="text-white op-7"> Draws</span>
+                                            <i class="fas fa-trophy text-white fs-3"></i>
                                         </span>
                                     </div>
                                 </div>
@@ -117,18 +100,24 @@
                     </div>
                 </div>
 
+                <!-- Info Alert -->
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <i class="fe fe-info me-2"></i>
+                    <strong>Automated System:</strong> Draws are automatically created every Monday at 12:00 AM and
+                    finalized every Sunday at 5:00 PM. Winner selection is fully automated.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
                 <!-- Main Table -->
                 <div class="row">
                     <div class="col-12">
-                        <div class="card box-shadow-0">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">All Weekly Draws</h3>
+                            </div>
                             <div class="card-body">
-
-                                <div class="border-bottom mb-3 pb-5">
-                                    <h3 class="card-title">All Weekly Draws</h3>
-                                </div>
-
                                 <div class="table-responsive">
-                                    <table class="table text-nowrap mb-0 table-bordered" id="datatable">
+                                    <table class="table table-bordered mb-0" id="datatable">
                                         <thead>
                                             <tr>
                                                 <th>#</th>
@@ -138,7 +127,8 @@
                                                 <th>End Date</th>
                                                 <th>Total Pool</th>
                                                 <th>Participants</th>
-                                                <th>Recipients</th>
+                                                <th>Expected Winners</th>
+                                                <th>Actual Recipients</th>
                                                 <th>Commission</th>
                                                 <th>Winners Selected</th>
                                                 <th>Action</th>
@@ -147,7 +137,6 @@
                                         <tbody></tbody>
                                     </table>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -156,22 +145,17 @@
             </div>
         </div>
     </div>
-    <!-- CONTAINER CLOSED -->
 
-    <!-- View Draw Details Modal -->
-    <div class="modal fade" id="viewDrawModal" tabindex="-1" aria-labelledby="viewDrawModalLabel" aria-hidden="true">
+    <!-- View Draw Modal -->
+    <div class="modal fade" id="viewDrawModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="viewDrawModalLabel">
-                        <i class="fe fe-eye me-2"></i>Draw Details
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                    <h5 class="modal-title"><i class="fe fe-eye me-2"></i>Draw Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <!-- Left Column -->
                         <div class="col-md-6">
                             <div class="card border">
                                 <div class="card-header bg-light">
@@ -222,7 +206,6 @@
                             </div>
                         </div>
 
-                        <!-- Right Column -->
                         <div class="col-md-6">
                             <div class="card border">
                                 <div class="card-header bg-light">
@@ -257,12 +240,16 @@
                                             <td id="view_participants" class="text-warning fw-bold">---</td>
                                         </tr>
                                         <tr>
-                                            <td class="fw-bold">Total Recipients:</td>
-                                            <td id="view_recipients" class="text-danger fw-bold">---</td>
+                                            <td class="fw-bold">Expected Winners:</td>
+                                            <td id="view_expected_winners" class="text-info fw-bold">---</td>
                                         </tr>
                                         <tr>
-                                            <td class="fw-bold">Odds of Winning:</td>
-                                            <td id="view_odds" class="text-muted">---</td>
+                                            <td class="fw-bold">Actual Recipients:</td>
+                                            <td id="view_recipients" class="text-success fw-bold">---</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Odds:</td>
+                                            <td id="view_odds" class="text-muted">1:400</td>
                                         </tr>
                                     </table>
                                 </div>
@@ -281,16 +268,11 @@
 
 @push('styles')
     <style>
-        .sales-card {
-            border-radius: 10px;
-        }
-
         .badge-status {
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
-            text-transform: uppercase;
         }
 
         .status-active {
@@ -308,14 +290,6 @@
             color: white;
         }
 
-        .card-header.bg-light {
-            background-color: #f8f9fa !important;
-        }
-
-        #datatable tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-
         .btn-action-group {
             display: flex;
             gap: 5px;
@@ -326,32 +300,24 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
 
-            // Initialize DataTable
             let dTable = $('#datatable').DataTable({
                 order: [
                     [1, 'desc']
-                ], // Order by week number descending
+                ],
                 lengthMenu: [
-                    [20, 50, 100, 300, 500],
-                    [20, 50, 100, 300, "All"]
+                    [20, 50, 100],
+                    [20, 50, 100]
                 ],
                 processing: true,
                 responsive: true,
                 serverSide: true,
-                language: {
-                    processing: `<div class="text-center"><img src="{{ asset('default/loader.gif') }}" style="width:50px;"></div>`
-                },
-                ajax: {
-                    url: "{{ route('weekly-draws.index') }}",
-                    type: "GET"
-                },
+                ajax: "{{ route('weekly-draws.index') }}",
                 columns: [{
                         data: 'DT_RowIndex',
                         orderable: false,
@@ -376,6 +342,9 @@
                         data: 'total_participants'
                     },
                     {
+                        data: 'expected_winners'
+                    },
+                    {
                         data: 'total_recipients'
                     },
                     {
@@ -392,272 +361,59 @@
                 ]
             });
 
-            // Create New Draw
-            $('#createDrawBtn').click(function() {
-                Swal.fire({
-                    title: 'Create New Weekly Draw?',
-                    text: 'This will start a new 7-day draw cycle.',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, Create!',
-                    cancelButtonText: 'Cancel',
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        createNewDraw();
-                    }
-                });
-            });
-
-            function createNewDraw() {
-                $.ajax({
-                    url: "{{ route('weekly-draws.store') }}",
-                    type: 'POST',
-                    beforeSend: function() {
-                        Swal.fire({
-                            title: 'Creating Draw...',
-                            text: 'Please wait',
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-                    },
-                    success: function(res) {
-                        Swal.close();
-                        if (res.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: res.message,
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-                            dTable.ajax.reload();
-                            setTimeout(() => {
-                                location.reload();
-                            }, 2000);
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: res.message
-                            });
-                        }
-                    },
-                    error: function(xhr) {
-                        Swal.close();
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: xhr.responseJSON?.message || 'Failed to create draw'
-                        });
-                    }
-                });
-            }
-
-            // View Draw Details
+            // View Draw
             $(document).on('click', '.viewDraw', function() {
                 let id = $(this).data('id');
-                let url = "{{ route('weekly-draws.show', ':id') }}".replace(':id', id);
-
-                $.get(url, function(res) {
+                $.get("{{ route('weekly-draws.show', '') }}/" + id, function(res) {
                     if (res.success) {
-                        let data = res.data;
-
-                        // Basic Info
-                        $('#view_week_number').text('Week #' + data.week_number);
-
-                        // Status Badge
-                        let statusBadge = '';
-                        if (data.status === 'active') {
-                            statusBadge =
-                                '<span class="badge badge-status py-3 status-active">Active</span>';
-                        } else if (data.status === 'claiming') {
-                            statusBadge =
-                                '<span class="badge badge-status py-3 status-claiming">Claiming</span>';
-                        } else {
-                            statusBadge =
-                                '<span class="badge badge-status py-3 status-completed">Completed</span>';
-                        }
-                        $('#view_status').html(statusBadge);
-
-                        // Winners Selected
-                        let winnersSelected = data.winners_selected ?
+                        let d = res.data;
+                        // alert(d);
+                        $('#view_week_number').text('Week #' + d.week_number);
+                        $('#view_status').html(
+                            `<span class="badge status-${d.status}">${d.status}</span>`);
+                        $('#view_winners_selected').html(d.winners_selected ?
                             '<span class="badge bg-success">Yes</span>' :
-                            '<span class="badge bg-secondary">No</span>';
-                        $('#view_winners_selected').html(winnersSelected);
-
-                        // Timeline
-                        $('#view_start_date').text(formatDate(data.start_date));
-                        $('#view_end_date').text(formatDate(data.end_date));
-                        $('#view_countdown_ends').text(formatDate(data.countdown_ends_at));
-                        $('#view_claim_deadline').text(formatDate(data.claim_deadline));
-
-                        // Financial
-                        $('#view_total_pool').text('$' + parseFloat(data.total_pool).toFixed(2));
-                        $('#view_commission').text('$' + parseFloat(data.admin_commission).toFixed(
-                            2));
-
-                        let distributionPool = parseFloat(data.total_pool) - parseFloat(data
-                            .admin_commission);
-                        $('#view_distribution_pool').text('$' + distributionPool.toFixed(2));
-
-                        // Stats
-                        $('#view_participants').text(data.total_participants);
-                        $('#view_recipients').text(data.total_recipients || 'TBD');
-
-                        let odds = data.total_participants > 0 && data.total_recipients > 0 ?
-                            '1 in ' + Math.ceil(data.total_participants / data.total_recipients) :
-                            'N/A';
-                        $('#view_odds').text(odds);
-
+                            '<span class="badge bg-secondary">No</span>');
+                        $('#view_start_date').text(new Date(d.start_date).toLocaleString());
+                        $('#view_end_date').text(new Date(d.end_date).toLocaleString());
+                        $('#view_countdown_ends').text(new Date(d.countdown_ends_at)
+                        .toLocaleString());
+                        $('#view_claim_deadline').text(new Date(d.claim_deadline).toLocaleString());
+                        $('#view_total_pool').text('$' + parseFloat(d.total_pool).toFixed(2));
+                        $('#view_commission').text('$' + parseFloat(d.admin_commission).toFixed(2));
+                        $('#view_distribution_pool').text('$' + d.distribution_pool.toFixed(2));
+                        $('#view_participants').text(d.total_participants);
+                        $('#view_expected_winners').text(d.expected_winners);
+                        $('#view_recipients').text(d.total_recipients || 'Pending');
                         $('#viewDrawModal').modal('show');
-                    } else {
-                        toastr.error(res.message || 'Failed to load draw details.');
                     }
-                }).fail(function() {
-                    toastr.error('Server error. Please try again.');
                 });
             });
 
-            // Format Date Helper
-            function formatDate(dateString) {
-                if (!dateString) return 'N/A';
-                let date = new Date(dateString);
-                return date.toLocaleString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            }
-
-            // Finalize Draw
-            window.finalizeDraw = function(id) {
+            // Soft Delete
+            window.softDeleteDraw = function(id) {
                 Swal.fire({
-                    title: 'Finalize Draw?',
-                    text: 'This will end the active period and start the claiming period.',
+                    title: 'Move to Trash?',
+                    text: 'You can restore it later from trash bin.',
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: 'Yes, Finalize!',
-                    cancelButtonText: 'Cancel'
+                    confirmButtonText: 'Yes, Move!',
+                    confirmButtonColor: '#d33'
                 }).then(result => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: "{{ route('weekly-draws.finalize', ':id') }}".replace(':id',
-                                id),
-                            type: 'POST',
+                            url: "{{ route('weekly-draws.destroy', '') }}/" + id,
+                            type: 'DELETE',
                             success: function(res) {
                                 if (res.success) {
                                     toastr.success(res.message);
                                     dTable.ajax.reload();
-                                } else {
-                                    toastr.error(res.message);
                                 }
-                            },
-                            error: function(xhr) {
-                                toastr.error(xhr.responseJSON?.message ||
-                                    'Failed to finalize draw');
                             }
                         });
                     }
                 });
             };
-
-            // Select Winners
-            window.selectWinners = function(id) {
-                Swal.fire({
-                    title: 'Select Winners?',
-                    text: 'This will randomly select winners for this draw.',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, Select Winners!',
-                    cancelButtonText: 'Cancel'
-                }).then(result => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: "{{ route('weekly-draws.select-winners', ':id') }}".replace(
-                                ':id', id),
-                            type: 'POST',
-                            beforeSend: function() {
-                                Swal.fire({
-                                    title: 'Selecting Winners...',
-                                    text: 'Please wait',
-                                    allowOutsideClick: false,
-                                    didOpen: () => {
-                                        Swal.showLoading();
-                                    }
-                                });
-                            },
-                            success: function(res) {
-                                Swal.close();
-                                if (res.success) {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Winners Selected!',
-                                        html: `<p>${res.winners.length} winners have been selected!</p>
-                                               <p>Total Distributed: $${res.total_distributed}</p>`,
-                                        confirmButtonText: 'OK'
-                                    });
-                                    dTable.ajax.reload();
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error!',
-                                        text: res.message
-                                    });
-                                }
-                            },
-                            error: function(xhr) {
-                                Swal.close();
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error!',
-                                    text: xhr.responseJSON?.message ||
-                                        'Failed to select winners'
-                                });
-                            }
-                        });
-                    }
-                });
-            };
-
-            // Delete Draw
-            window.showDeleteConfirm = function(id) {
-                Swal.fire({
-                    title: 'Delete Draw?',
-                    text: 'This action cannot be undone!',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, Delete!',
-                    cancelButtonText: 'Cancel',
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6'
-                }).then(result => {
-                    if (result.isConfirmed) deleteDraw(id);
-                });
-            };
-
-            function deleteDraw(id) {
-                $.ajax({
-                    url: "{{ route('weekly-draws.destroy', '') }}/" + id,
-                    type: 'DELETE',
-                    success: function(res) {
-                        if (res.success) {
-                            toastr.success(res.message);
-                            dTable.ajax.reload();
-                        } else {
-                            toastr.error(res.message);
-                        }
-                    },
-                    error: function() {
-                        toastr.error('Failed to delete.');
-                    }
-                });
-            }
         });
     </script>
 @endpush

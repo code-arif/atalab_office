@@ -2,12 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\User;
+
 use App\Models\WeeklyDraw;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
-use Stripe\Transfer;
-use Stripe\Payout;
 
 class StripeService
 {

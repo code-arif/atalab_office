@@ -63,7 +63,7 @@
                     </a>
                     <ul class="slide-menu">
                         <li><a href="{{ route('weekly-draws.index') }}" class="slide-item">Weekly Draw</a></li>
-                        <li><a href="#" class="slide-item">Winners</a></li>
+                        <li><a href="{{ route('draw-winners.index') }}" class="slide-item">Winners</a></li>
                     </ul>
                 </li>
 

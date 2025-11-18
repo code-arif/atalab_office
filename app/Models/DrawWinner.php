@@ -45,4 +45,44 @@ class DrawWinner extends Model
             && $this->weeklyDraw->isClaiming()
             && $this->payout_status === 'pending';
     }
+
+
+    public function verification()
+    {
+        return $this->hasOne(WinnerVerification::class);
+    }
+
+    // Helper Methods
+    // public function canClaim(): bool
+    // {
+    //     if ($this->claimed) {
+    //         return false;
+    //     }
+
+    //     $claimDeadline = $this->weeklyDraw->claim_deadline;
+    //     return now()->lessThan($claimDeadline);
+    // }
+
+    public function isClaimExpired(): bool
+    {
+        $claimDeadline = $this->weeklyDraw->claim_deadline;
+        return now()->greaterThan($claimDeadline);
+    }
+
+    public function getClaimStatusAttribute(): string
+    {
+        if ($this->claimed) {
+            return 'claimed';
+        }
+
+        if ($this->isClaimExpired()) {
+            return 'expired';
+        }
+
+        if ($this->verification && $this->verification->verification_status === 'approved') {
+            return 'approved_pending_payout';
+        }
+
+        return 'pending';
+    }
 }

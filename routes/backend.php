@@ -187,23 +187,32 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::prefix('weekly-draws')->name('weekly-draws.')->group(function () {
         Route::get('/', [WeeklyDrawController::class, 'index'])->name('index'); // working
-        Route::post('/store', [WeeklyDrawController::class, 'store'])->name('store'); // working
-        Route::get('/{id}', [WeeklyDrawController::class, 'show'])->name('show');
-        Route::post('/{id}/finalize', [WeeklyDrawController::class, 'finalize'])->name('finalize');
-        Route::post('/{id}/select-winners', [WeeklyDrawController::class, 'selectWinners'])->name('select-winners');
-        Route::delete('/{id}', [WeeklyDrawController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}', [WeeklyDrawController::class, 'show'])->name('show'); // working
+        Route::get('/deleted/trashed', [WeeklyDrawController::class, 'trashed'])->name('trashed'); // working
+        Route::delete('/{id}', [WeeklyDrawController::class, 'destroy'])->name('destroy'); // working
+
+        Route::post('/restore/{id}', [WeeklyDrawController::class, 'restore'])->name('restore'); // working
+        Route::delete('/force-delete/{id}', [WeeklyDrawController::class, 'forceDelete'])->name('force-delete'); // working
     });
 
-    Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-        // View all draws (auto-generated)
-        // Route::get('/draws', [WeeklyDrawController::class, 'index']);
+    Route::prefix('draw-winners')->name('draw-winners.')->group(function () {
+        // Winner Management
+        Route::get('/', [DrawWinnerController::class, 'index'])->name('index'); // working
+        Route::get('/show/{id}', [DrawWinnerController::class, 'show'])->name('show'); // working
 
-        // // Manual override (emergency only)
-        // Route::post('/draws/emergency-create', [WeeklyDrawController::class, 'store']);
-        // Route::post('/draws/{id}/emergency-finalize', [WeeklyDrawController::class, 'finalize']);
+        // Claim Verification Routes
+        Route::post('/initiate-verification/{id}', [DrawWinnerController::class, 'initiateVerification'])->name('initiate-verification');
+        Route::post('/verify-identity/{id}', [DrawWinnerController::class, 'verifyIdentity'])->name('verify-identity');
+        Route::post('/verify-bank/{id}', [DrawWinnerController::class, 'verifyBank'])->name('verify-bank');
+        Route::post('/approve-claim/{id}', [DrawWinnerController::class, 'approveClaim'])->name('approve-claim');
+        Route::post('/reject-claim/{id}', [DrawWinnerController::class, 'rejectClaim'])->name('reject-claim');
 
-        // View winners
-        Route::get('/winners', [DrawWinnerController::class, 'index']);
+        // Verification Status Check
+        Route::get('/verification-status/{id}', [DrawWinnerController::class, 'verificationStatus'])->name('verification-status');
+
+        // Payout Management
+        Route::post('/process-payout/{id}', [DrawWinnerController::class, 'processPayout'])->name('process-payout');
+        Route::get('/payout-history/{id}', [DrawWinnerController::class, 'payoutHistory'])->name('payout-history');
     });
 });
 
