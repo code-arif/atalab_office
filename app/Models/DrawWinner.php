@@ -46,7 +46,6 @@ class DrawWinner extends Model
             && $this->payout_status === 'pending';
     }
 
-
     public function verification()
     {
         return $this->hasOne(WinnerVerification::class);

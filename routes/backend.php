@@ -20,6 +20,7 @@ use App\Http\Controllers\Web\Backend\Settings\SettingController;
 use App\Http\Controllers\Web\Backend\CMS\ContactUsPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\OurStoryController;
 use App\Http\Controllers\Web\Backend\CMS\TaxPolicyPageController;
+use App\Http\Controllers\Web\Backend\Donation\DonationController;
 use App\Http\Controllers\Web\Backend\CMS\Home\WeBelieveController;
 use App\Http\Controllers\Web\Backend\CMS\EligibilityPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\DisclaimerController;
@@ -34,6 +35,7 @@ use App\Http\Controllers\Web\Backend\CMS\Home\FounderStatementController;
 use App\Http\Controllers\Web\Backend\CMS\OurStory\OurStoryPageController;
 use App\Http\Controllers\Web\Backend\CMS\HowItWorks\StructurePageController;
 use App\Http\Controllers\Web\Backend\CMS\HowItWorks\HowItWorksPageController;
+use App\Http\Controllers\Web\Backend\Donation\WinnerVerificationController;
 
 Route::middleware(['auth', 'admin'])->group(function () {
     // Dashboard API endpoints for real-time updates
@@ -167,24 +169,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 
     // Weekly Draw Management
-    // Route::get('/weekly-draw/all', [WeeklyDrawController::class, 'getAllDraws'])->name('get.all.weekly.draw');
-    // // Route::post('/weekly-draw/create', [WeeklyDrawController::class, 'createNewDraw'])->name('');
-    // // Route::post('/weekly-draw/{weekId}/finalize', [WeeklyDrawController::class, 'finalizeDraw']);
-    // // Route::post('/weekly-draw/{weekId}/select-winners', [WeeklyDrawController::class, 'selectWinners']);
-
-    // // Donation Management
-    // Route::get('/donations', [DonationController::class, 'getAllDonations']);
-    // Route::get('/donations/week/{weekId}', [DonationController::class, 'getDonationsByWeek']);
-
-    // // Winner Management
-    // Route::get('/winners', [DrawWinnerController::class, 'getAllWinners']);
-    // Route::post('/winners/{winnerId}/process-payout', [DrawWinnerController::class, 'processPayout']);
-    // Route::get('/winners/pending-payouts', [DrawWinnerController::class, 'getPendingPayouts']);
-
-    // // Statistics
-    // Route::get('/stats/overview', [WeeklyDrawController::class, 'getOverviewStats']);
-
-
     Route::prefix('weekly-draws')->name('weekly-draws.')->group(function () {
         Route::get('/', [WeeklyDrawController::class, 'index'])->name('index'); // working
         Route::get('/{id}', [WeeklyDrawController::class, 'show'])->name('show'); // working
@@ -195,24 +179,43 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::delete('/force-delete/{id}', [WeeklyDrawController::class, 'forceDelete'])->name('force-delete'); // working
     });
 
+    // winner management
     Route::prefix('draw-winners')->name('draw-winners.')->group(function () {
-        // Winner Management
+        // Main Winner Management
         Route::get('/', [DrawWinnerController::class, 'index'])->name('index'); // working
         Route::get('/show/{id}', [DrawWinnerController::class, 'show'])->name('show'); // working
 
-        // Claim Verification Routes
-        Route::post('/initiate-verification/{id}', [DrawWinnerController::class, 'initiateVerification'])->name('initiate-verification');
-        Route::post('/verify-identity/{id}', [DrawWinnerController::class, 'verifyIdentity'])->name('verify-identity');
-        Route::post('/verify-bank/{id}', [DrawWinnerController::class, 'verifyBank'])->name('verify-bank');
-        Route::post('/approve-claim/{id}', [DrawWinnerController::class, 'approveClaim'])->name('approve-claim');
-        Route::post('/reject-claim/{id}', [DrawWinnerController::class, 'rejectClaim'])->name('reject-claim');
-
-        // Verification Status Check
-        Route::get('/verification-status/{id}', [DrawWinnerController::class, 'verificationStatus'])->name('verification-status');
+        // Claim Management
+        Route::post('/mark-claimed/{id}', [DrawWinnerController::class, 'markClaimed'])->name('mark-claimed'); // working
 
         // Payout Management
-        Route::post('/process-payout/{id}', [DrawWinnerController::class, 'processPayout'])->name('process-payout');
-        Route::get('/payout-history/{id}', [DrawWinnerController::class, 'payoutHistory'])->name('payout-history');
+        Route::post('/process-payout/{id}', [DrawWinnerController::class, 'processPayout'])->name('process-payout'); // working
+        Route::post('/update-payout-status/{id}', [DrawWinnerController::class, 'updatePayoutStatus'])->name('update-payout-status'); // working
+
+        // Export
+        Route::get('/export', [DrawWinnerController::class, 'export'])->name('export'); // working
+    });
+
+    // winner verification]
+    Route::prefix('draw-winners')->name('draw-winners.')->group(function () {
+        Route::get('/', [DrawWinnerController::class, 'index'])->name('index');
+        Route::get('/show/{id}', [DrawWinnerController::class, 'show'])->name('show');
+
+        // Verification Routes - Using winner ID
+        Route::get('/{winner}/verify', [WinnerVerificationController::class, 'showVerificationPage'])->name('verify');
+        Route::post('/{winner}/initiate-verification', [WinnerVerificationController::class, 'initiateVerification'])->name('initiate-verification');
+        Route::post('/{winner}/verify-identity', [WinnerVerificationController::class, 'verifyIdentity'])->name('verify-identity');
+        Route::post('/{winner}/verify-contact', [WinnerVerificationController::class, 'verifyContact'])->name('verify-contact');
+        Route::post('/{winner}/verify-bank', [WinnerVerificationController::class, 'verifyBank'])->name('verify-bank');
+        Route::post('/{winner}/approve-claim', [WinnerVerificationController::class, 'approveClaim'])->name('approve-claim');
+        Route::post('/{winner}/reject-claim', [WinnerVerificationController::class, 'rejectClaim'])->name('reject-claim');
+        Route::get('/{winner}/verification-status', [WinnerVerificationController::class, 'getVerificationStatus'])->name('verification-status');
+    });
+    // donor manage
+    Route::prefix('donors')->name('donors.')->group(function () {
+        Route::get('/', [DonationController::class, 'index'])->name('index');
+        Route::get('/show/{id}', [DonationController::class, 'show'])->name('show');
+        Route::get('/export', [DonationController::class, 'export'])->name('export');
     });
 });
 

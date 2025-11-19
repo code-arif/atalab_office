@@ -12,7 +12,7 @@ use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 
-class DrawWinnerController extends Controller
+class TestCodeController extends Controller
 {
     /**
      * Display all winners with advanced filtering
@@ -24,7 +24,7 @@ class DrawWinnerController extends Controller
                 ->select('draw_winners.*');
 
             // Apply filters
-            if ($request->filled('claim_status')) {
+            if ($request->has('claim_status') && $request->claim_status !== '') {
                 if ($request->claim_status === 'claimed') {
                     $query->where('claimed', true);
                 } elseif ($request->claim_status === 'unclaimed') {
@@ -32,30 +32,29 @@ class DrawWinnerController extends Controller
                 }
             }
 
-            if ($request->filled('payout_status')) {
+            if ($request->has('payout_status') && $request->payout_status !== '') {
                 $query->where('payout_status', $request->payout_status);
             }
 
-            if ($request->filled('week_id')) {
+            if ($request->has('week_id') && $request->week_id !== '') {
                 $query->where('weekly_draw_id', $request->week_id);
             }
 
-            if ($request->filled('date_from')) {
-                $query->whereDate('draw_winners.created_at', '>=', $request->date_from);
+            if ($request->has('date_from') && $request->date_from !== '') {
+                $query->whereDate('created_at', '>=', $request->date_from);
             }
 
-            if ($request->filled('date_to')) {
-                $query->whereDate('draw_winners.created_at', '<=', $request->date_to);
+            if ($request->has('date_to') && $request->date_to !== '') {
+                $query->whereDate('created_at', '<=', $request->date_to);
             }
 
-            if ($request->filled('min_amount')) {
+            if ($request->has('min_amount') && $request->min_amount !== '') {
                 $query->where('amount_won', '>=', $request->min_amount);
             }
 
-            if ($request->filled('max_amount')) {
+            if ($request->has('max_amount') && $request->max_amount !== '') {
                 $query->where('amount_won', '<=', $request->max_amount);
             }
-
 
             return DataTables::eloquent($query)
                 ->addIndexColumn()
@@ -65,9 +64,9 @@ class DrawWinnerController extends Controller
                 ->addColumn('amount', fn($row) => '<span class="badge bg-success fs-6">$' . number_format($row->amount_won, 2) . '</span>')
                 ->addColumn('claim_status', function ($row) {
                     if ($row->claimed) {
-                        return '<span class="badge badge-sm bg-success py-2"><i class="fe fe-check me-1" style="font-size:10px;"></i>Claimed</span>';
+                        return '<span class="badge bg-success"><i class="fe fe-check me-1"></i>Claimed</span>';
                     } else {
-                        return '<span class="badge badge-sm bg-warning py-2"><i class="fe fe-clock me-1" style="font-size:10px;"></i>Unclaimed</span>';
+                        return '<span class="badge bg-warning"><i class="fe fe-clock me-1"></i>Unclaimed</span>';
                     }
                 })
                 ->addColumn('claimed_date', function ($row) {
@@ -79,8 +78,8 @@ class DrawWinnerController extends Controller
                     $badges = [
                         'pending' => '<span class="badge bg-secondary">Pending</span>',
                         'processing' => '<span class="badge bg-info">Processing</span>',
-                        'completed' => '<span class="badge bg-success badge-sm py-2"><i class="fe fe-check-circle me-1" style="font-size:10px;"></i>Completed</span>',
-                        'failed' => '<span class="badge badge-sm bg-danger"><i class="fe fe-x-circle me-1"></i>Failed</span>',
+                        'completed' => '<span class="badge bg-success"><i class="fe fe-check-circle me-1"></i>Completed</span>',
+                        'failed' => '<span class="badge bg-danger"><i class="fe fe-x-circle me-1"></i>Failed</span>',
                     ];
                     return $badges[$row->payout_status] ?? '<span class="badge bg-secondary">N/A</span>';
                 })
@@ -112,9 +111,6 @@ class DrawWinnerController extends Controller
                             <i class="fe fe-dollar-sign"></i>
                         </button>';
                     }
-
-                    // Add Verification Info
-                    
 
                     $actions .= '</div>';
                     return $actions;

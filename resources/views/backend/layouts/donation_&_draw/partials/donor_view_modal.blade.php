@@ -1,0 +1,101 @@
+<div class="modal fade" id="viewDonorModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fe fe-eye me-2"></i>Donor & Donation Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card border mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fe fe-user me-2"></i>Donor Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-borderless table-sm">
+                                    <tr>
+                                        <td class="fw-bold">Name:</td>
+                                        <td id="d_name">---</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Email:</td>
+                                        <td id="d_email">---</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Phone:</td>
+                                        <td id="d_phone">---</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="card border">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fe fe-calendar me-2"></i>Draw Week</h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-borderless table-sm">
+                                    <tr>
+                                        <td class="fw-bold">Week:</td>
+                                        <td id="d_week">---</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fe fe-dollar-sign me-2"></i>Donation Details</h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-borderless table-sm">
+                                    <tr>
+                                        <td class="fw-bold">Amount:</td>
+                                        <td class="text-success fw-bold" id="d_amount">---</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Donated At:</td>
+                                        <td id="d_donated_at">---</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Status:</td>
+                                        <td id="d_status">---</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="card border">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fe fe-credit-card me-2"></i>Payment Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-borderless table-sm">
+                                    <tr>
+                                        <td class="fw-bold">Payment ID:</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <code id="d_payment_id"
+                                                    class="text-break text-monospace small me-2">---</code>
+                                                <button class="btn btn-sm btn-outline-secondary copy-btn"
+                                                    data-clipboard-target="#d_payment_id">
+                                                    <i class="fe fe-copy"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
