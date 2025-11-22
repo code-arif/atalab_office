@@ -35,7 +35,7 @@ class AutomateWeeklyDraws extends Command
         ]);
 
         // TESTING: Tuesday 12:05 (for your current time)
-        if ($now->isTuesday() && $now->hour === 14 && $now->minute === 05) {
+        if ($now->isWednesday() && $now->hour === 18 && $now->minute === 33) {
             Log::info('TEST: Triggering new draw creation');
             $this->createNewDraw();
         }

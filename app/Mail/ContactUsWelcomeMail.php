@@ -6,10 +6,11 @@ use App\Models\ContactUs;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class ContactUsMail extends Mailable
+class ContactUsWelcomeMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -17,6 +18,7 @@ class ContactUsMail extends Mailable
 
     public function __construct(ContactUs $contact)
     {
+        // dd($contact);
         $this->contact = $contact;
     }
 
@@ -26,7 +28,7 @@ class ContactUsMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New Contact Message from ' . $this->contact->name,
+            subject: 'Welcome to ' . env('APP_NAME', 'The Dignity Draw, Inc.'),
         );
     }
 
@@ -36,13 +38,10 @@ class ContactUsMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.contact.contact_notification_admin',
+            view: 'emails.contact.contact_notification_user',
             with: [
                 'name'    => $this->contact->name,
                 'email'   => $this->contact->email,
-                'phone'   => $this->contact->phone,
-                'msg' => $this->contact->message,
-                'sent_at' => $this->contact->created_at->format('F d, Y h:i A'),
             ]
         );
     }

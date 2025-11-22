@@ -211,6 +211,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/{winner}/reject-claim', [WinnerVerificationController::class, 'rejectClaim'])->name('reject-claim');
         Route::get('/{winner}/verification-status', [WinnerVerificationController::class, 'getVerificationStatus'])->name('verification-status');
     });
+    
     // donor manage
     Route::prefix('donors')->name('donors.')->group(function () {
         Route::get('/', [DonationController::class, 'index'])->name('index');

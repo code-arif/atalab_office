@@ -18,6 +18,7 @@ class DrawSettingsController extends Controller
         $settings = DrawSetting::latest()->get();
 
         return response()->json([
+            'message' => 'Donation settings retrieved!',
             'success' => true,
             'data' => DrawSettingResource::collection($settings)
         ]);

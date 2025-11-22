@@ -353,7 +353,7 @@
     </div>
 
     <!-- Mark Claimed Modal -->
-    <div class="modal fade" id="markClaimedModal" tabindex="-1">
+    {{-- <div class="modal fade" id="markClaimedModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
@@ -390,7 +390,7 @@
                 </form>
             </div>
         </div>
-    </div>
+    </div> --}}
 
 @endsection
 

@@ -1,18 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\WorkController;
 use App\Http\Controllers\Api\CMS\CmsController;
 use App\Http\Controllers\Api\ContactController;
-use App\Http\Controllers\Api\LocationController;
-use App\Http\Controllers\Api\UserListController;
 use App\Http\Controllers\Api\Draw\DrawController;
-use App\Http\Controllers\Api\WorkScheduleRequest;
 use App\Http\Controllers\Api\NewsletterController;
 use App\Http\Controllers\Api\TestimonialController;
 use App\Http\Controllers\Api\DrawSettingsController;
-use App\Http\Controllers\Api\Winner\WinningController;
-use Laravel\Cashier\Http\Controllers\WebhookController;
 use App\Http\Controllers\Api\Donation\DonationController;
 use App\Http\Controllers\Api\Auth\AuthenticationController;
 use App\Http\Controllers\Api\Donation\WeeklyDrawController;
@@ -52,13 +46,13 @@ Route::group(['middleware' => 'guest:api'], function () {
     });
 
     // subscribe newsletter
-    Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe']);
+    Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe']); // working
 
     // countact us
-    Route::post('/contact-us', [ContactController::class, 'store']);
+    Route::post('/contact-us', [ContactController::class, 'store']); // working
 
     // get draw setting table
-    Route::get('/draw-settings', [DrawSettingsController::class, 'index']);
+    Route::get('/draw-settings', [DrawSettingsController::class, 'index']); // working
 
 });
 

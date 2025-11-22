@@ -9,7 +9,25 @@ use App\Http\Controllers\Controller;
 
 class WinnerVerificationController extends Controller
 {
-    // inital verification
+    // Show verification page
+    public function showVerificationPage(DrawWinner $winner)
+    {
+        $winner->load(['user', 'weeklyDraw', 'verification']);
+
+        // Auto-create verification if not exists
+        if (!$winner->verification) {
+            WinnerVerification::create([
+                'draw_winner_id' => $winner->id,
+                'verified_by' => auth()->id(),
+                'verification_status' => 'pending'
+            ]);
+            $winner->load('verification');
+        }
+
+        return view('backend.layouts.donation_&_draw.winner_verification', compact('winner'));
+    }
+
+    // Initial verification
     public function initiateVerification(DrawWinner $winner)
     {
         $verification = WinnerVerification::firstOrCreate(
@@ -20,7 +38,7 @@ class WinnerVerificationController extends Controller
         return response()->json(['success' => true, 'verification' => $verification]);
     }
 
-    // identity verification
+    // Identity verification
     public function verifyIdentity(Request $request, DrawWinner $winner)
     {
         $request->validate([
@@ -45,11 +63,14 @@ class WinnerVerificationController extends Controller
             'verification_status' => 'contact_verification',
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Identity verified successfully']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Identity verified successfully',
+            'next_step' => 2
+        ]);
     }
 
-
-    // contact info verification
+    // Contact info verification
     public function verifyContact(DrawWinner $winner)
     {
         $verification = $winner->verification;
@@ -65,13 +86,17 @@ class WinnerVerificationController extends Controller
             'verification_status' => 'bank_verification',
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Contact verified']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Contact verified successfully',
+            'next_step' => 3
+        ]);
     }
 
-
-    // bank info verifcation
+    // Bank info verification
     public function verifyBank(Request $request, DrawWinner $winner)
     {
+        // dd($request->all());
         $request->validate([
             'bank_name' => 'required|string',
             'account_holder_name' => 'required|string',
@@ -88,14 +113,17 @@ class WinnerVerificationController extends Controller
             'account_number_last4' => $request->account_number_last4,
             'routing_number' => $request->routing_number,
             'bank_verified_at' => now(),
-            'verification_status' => 'approved', // or keep pending until final approve
+            'verification_status' => 'approved',
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Bank verified']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Bank account verified successfully',
+            'next_step' => 4
+        ]);
     }
 
-
-    // approvel claim
+    // Approve claim
     public function approveClaim(Request $request, DrawWinner $winner)
     {
         $verification = $winner->verification;
@@ -116,10 +144,14 @@ class WinnerVerificationController extends Controller
             'payout_status' => 'pending'
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Claim approved successfully']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Claim approved successfully! Winner can now receive payout.',
+            'redirect' => route('draw-winners.index')
+        ]);
     }
 
-    // reject claim
+    // Reject claim
     public function rejectClaim(Request $request, DrawWinner $winner)
     {
         $request->validate(['rejection_reason' => 'required|string|min:10']);
@@ -133,15 +165,19 @@ class WinnerVerificationController extends Controller
             ]);
         }
 
-        return response()->json(['success' => true, 'message' => 'Claim rejected']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Claim rejected',
+            'redirect' => route('draw-winners.index')
+        ]);
     }
 
-
-    // get verification status
+    // Get verification status
     public function getVerificationStatus(DrawWinner $winner)
     {
         $verification = $winner->verification;
         $progress = 0;
+
         if ($verification) {
             if ($verification->identity_verified) $progress += 33;
             if ($verification->email_verified && $verification->phone_verified) $progress += 33;
@@ -149,6 +185,7 @@ class WinnerVerificationController extends Controller
         }
 
         return response()->json([
+            'success' => true,
             'verification' => $verification,
             'progress' => $progress,
             'can_approve' => $verification && $verification->identity_verified && $verification->bank_verified

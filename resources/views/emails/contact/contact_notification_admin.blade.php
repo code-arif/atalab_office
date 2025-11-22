@@ -112,7 +112,7 @@
                                         </p>
                                         <p
                                             style="margin:0;color:#333;font-size:15px;line-height:1.7;white-space:pre-wrap;">
-                                            {{ $message }}</p>
+                                            {{ $msg }}</p>
                                     </td>
                                 </tr>
                             </table>
@@ -129,10 +129,6 @@
                                     </td>
                                 </tr>
                             </table>
-
-                            <p style="margin:25px 0 0;color:#666;font-size:14px;line-height:1.6;text-align:center;">
-                                This is an automated notification from your contact form.
-                            </p>
                         </td>
                     </tr>
 

@@ -6,6 +6,7 @@ use App\Models\ContactUs;
 use App\Mail\ContactUsMail;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use App\Mail\ContactUsWelcomeMail;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
@@ -54,6 +55,8 @@ class ContactController extends Controller
             // Send email to admin
             $adminEmail = env('ADMIN_EMAIL', 'rufuzxyz@gmail.com');
             Mail::to($adminEmail)->send(new ContactUsMail($contact));
+            sleep(1);
+            Mail::to($contact->email)->send(new ContactUsWelcomeMail($contact));
 
             // Hit rate limiter
             RateLimiter::hit($emailKey, 3600); // 1 hour

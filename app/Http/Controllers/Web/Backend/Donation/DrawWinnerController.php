@@ -95,26 +95,43 @@ class DrawWinnerController extends Controller
                     $actions = '<div class="btn-group" role="group">';
 
                     // View Details
-                    $actions .= '<button type="button" class="btn btn-sm btn-info viewWinner" data-id="' . $row->id . '" title="View Details">
+                    $actions .= '<button type="button" class="btn btn-sm btn-info"
+                        onclick="window.location.href=\'' . route('draw-winners.verify', $row->id) . '\'"
+                        title="View Details">
                         <i class="fe fe-eye"></i>
                     </button>';
 
-                    // Update Status
+                    // Verify Winner - Main Action Button
                     if (!$row->claimed) {
-                        $actions .= '<button type="button" class="btn btn-sm btn-success markClaimed" data-id="' . $row->id . '" title="Mark as Claimed">
-                            <i class="fe fe-check"></i>
-                        </button>';
+                        $actions .= '<a href="' . route('draw-winners.verify', $row->id) . '"
+                                        class="btn btn-sm btn-primary" title="Verify Winner">
+                                        <i class="fe fe-shield"></i> Verify
+                                        </a>';
                     }
 
-                    // Process Payout
+                    // Process Payout - If already verified and approved
                     if ($row->claimed && $row->payout_status === 'pending') {
-                        $actions .= '<button type="button" class="btn btn-sm btn-primary processPayout" data-id="' . $row->id . '" title="Process Payout">
+                        $actions .= '<button type="button" class="btn btn-sm btn-success processPayout"
+                            data-id="' . $row->id . '" title="Process Payout">
                             <i class="fe fe-dollar-sign"></i>
                         </button>';
                     }
 
-                    // Add Verification Info
-                    
+                    // Show verification status badge
+                    if ($row->verification) {
+                        $statusColors = [
+                            'pending' => 'secondary',
+                            'identity_review' => 'info',
+                            'contact_verification' => 'info',
+                            'bank_verification' => 'info',
+                            'approved' => 'success',
+                            'rejected' => 'danger'
+                        ];
+                        $color = $statusColors[$row->verification->verification_status] ?? 'secondary';
+                        $actions .= '<span class="badge bg-' . $color . ' ms-2">' .
+                            ucfirst(str_replace('_', ' ', $row->verification->verification_status)) .
+                            '</span>';
+                    }
 
                     $actions .= '</div>';
                     return $actions;
