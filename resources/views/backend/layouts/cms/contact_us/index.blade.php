@@ -72,8 +72,8 @@
                                         {{-- Description --}}
                                         <div class="form-group mb-3">
                                             <label for="description" class="form-label">Description</label>
-                                            <textarea name="description" id="summernote" class="form-control @error('description') is-invalid @enderror"
-                                                rows="6" placeholder="Enter description">{{ $data->description ?? old('description') }}</textarea>
+                                            <textarea name="description" class="form-control @error('description') is-invalid @enderror"
+                                                rows="4" placeholder="Enter description">{{ $data->description ?? old('description') }}</textarea>
                                             @error('description')
                                                 <span class="text-danger">{{ $message }}</span>
                                             @enderror
@@ -94,27 +94,3 @@
     </div>
 
 @endsection
-
-@push('scripts')
-    {{-- Include Summernote JS --}}
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
-
-    <script>
-        $(document).ready(function() {
-            $('#summernote').summernote({
-                placeholder: 'Enter section description...',
-                tabsize: 2,
-                height: 250,
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'underline', 'italic', 'clear']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['insert', ['link', 'picture']],
-                    ['view', ['fullscreen', 'codeview', 'help']]
-                ]
-            });
-        });
-    </script>
-@endpush

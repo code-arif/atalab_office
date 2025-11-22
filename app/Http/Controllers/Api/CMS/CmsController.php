@@ -126,7 +126,8 @@ class CmsController extends Controller
 
     /**
      * Get contact us page CMS data
-     */    public function contactUs()
+     */
+    public function contactUs()
     {
         $data = CMS::where('page', 'contact-us')->get();
         return $this->success(CMSResource::collection($data), 'Contact us data retrieved successfully');

@@ -22,7 +22,7 @@ Route::group(['middleware' => 'guest:api'], function () {
     // Login & Register
     Route::post('/login', [AuthenticationController::class, 'login']);
 
-    // cmss route gorup
+    // cms route gorup
     Route::group(['prefix' => 'cms'], function () {
         Route::get('/home', [CmsController::class, 'home']); // cms home page data
         Route::get('/slider', [CmsController::class, 'getSlider']); // Slider

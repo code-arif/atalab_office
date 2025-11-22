@@ -6,7 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Footer extends Model
 {
-    protected $guarded = ['id'];
+
+    protected $fillable = [
+        'logo',
+        'business_name',
+        'slogan',
+        'subscribe_title',
+        'description',
+        'subscribe_description',
+        'copyright',
+        'social_links',
+    ];
+
 
     protected $casts = [
         'social_links' => 'array',

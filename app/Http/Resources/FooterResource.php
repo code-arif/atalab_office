@@ -22,8 +22,6 @@ class FooterResource extends JsonResource
             'subscribe_description' => $this->subscribe_description,
             'copyright' => $this->copyright,
             'social_links' => $this->formatSocialLinks($this->social_links),
-            // 'created_at' => $this->created_at,
-            // 'updated_at' => $this->updated_at,
         ];
     }
 

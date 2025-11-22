@@ -20,6 +20,7 @@ class FooterManageController extends Controller
     // Handle footer update
     public function update(Request $request)
     {
+        dd($request->all());
         $request->validate([
             'logo' => 'nullable|max:2048',
             'business_name' => 'nullable|string|max:255',
