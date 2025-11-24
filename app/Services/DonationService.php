@@ -177,7 +177,7 @@ class DonationService
         if ($session->payment_status === 'paid') {
             $customerEmail = $session->customer_details->email;
 
-            // 🔴 CRITICAL: Check if email already donated in this week
+            // CRITICAL: Check if email already donated in this week
             $existingDonation = Donation::where('week_id', $donation->week_id)
                 ->where('stripe_payment_status', 'completed')
                 ->whereHas('user', function ($query) use ($customerEmail) {
@@ -192,7 +192,7 @@ class DonationService
                     'is_eligible_for_draw' => false,
                 ]);
 
-                Log::warning('🚫 Duplicate donation detected', [
+                Log::warning('Duplicate donation detected', [
                     'email' => $customerEmail,
                     'week_id' => $donation->week_id
                 ]);
@@ -214,7 +214,7 @@ class DonationService
             // Update weekly draw stats
             $this->updateWeeklyDrawStats($donation->week_id);
 
-            Log::info('✅ Payment verified', [
+            Log::info('Payment verified', [
                 'donation_id' => $donation->id,
                 'user_id' => $user->id,
             ]);
@@ -247,7 +247,7 @@ class DonationService
                     'is_eligible_for_draw' => false,
                 ]);
 
-                Log::warning('🚫 Webhook: Duplicate donation blocked', [
+                Log::warning('Webhook: Duplicate donation blocked', [
                     'email' => $customerEmail,
                     'week_id' => $donation->week_id
                 ]);

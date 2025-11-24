@@ -32,6 +32,7 @@ use App\Http\Controllers\Web\Backend\CMS\OfficersCompPageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\DistributionController;
 use App\Http\Controllers\Web\Backend\CMS\Home\NameSelectedController;
 use App\Http\Controllers\Web\Backend\CMS\Home\FounderStatementController;
+use App\Http\Controllers\Web\Backend\CMS\Home\VideoController;
 use App\Http\Controllers\Web\Backend\CMS\OurStory\OurStoryPageController;
 use App\Http\Controllers\Web\Backend\CMS\HowItWorks\StructurePageController;
 use App\Http\Controllers\Web\Backend\CMS\HowItWorks\HowItWorksPageController;
@@ -76,6 +77,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/home/disctibution/item/store', [DistributionController::class, 'itemStore'])->name('home.distribution.item.store');
         Route::post('/home/disctibution/item/update/{id}', [DistributionController::class, 'itemUpdate'])->name('home.distribution.item.update');
         Route::delete('/home/disctibution/item/destroy/{id}', [DistributionController::class, 'itemDelete'])->name('home.distribution.item.delete');
+
+        // home sample video
+        Route::get('/home/video',[VideoController::class, 'index'])->name('home.video.section');
+        Route::post('/home/video/update',[VideoController::class, 'update'])->name('home.video.section.update');
 
         // home page percentage section
         Route::get('/home/percentage', [PercentageController::class, 'index'])->name('home.percentage.section');
@@ -211,7 +216,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/{winner}/reject-claim', [WinnerVerificationController::class, 'rejectClaim'])->name('reject-claim');
         Route::get('/{winner}/verification-status', [WinnerVerificationController::class, 'getVerificationStatus'])->name('verification-status');
     });
-    
+
     // donor manage
     Route::prefix('donors')->name('donors.')->group(function () {
         Route::get('/', [DonationController::class, 'index'])->name('index');

@@ -36,8 +36,8 @@ class DonationController extends Controller
     {
         try {
             // Generate success/cancel URLs automatically
-            $baseUrl = 'https://atalab1115_laravel.test';
-            $successUrl = $baseUrl . '/donation/success?session_id={CHECKOUT_SESSION_ID}';
+            $baseUrl = 'http://localhost:5173';
+            $successUrl = $baseUrl . '/success?session_id={CHECKOUT_SESSION_ID}';
             $cancelUrl = $baseUrl . '/donation/cancel';
 
             $result = $this->donationService->createStandardDonation(

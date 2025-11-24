@@ -87,6 +87,7 @@
                         <li><a href="{{ route('cms.home.hero.section') }}" class="slide-item">Hero Section</a></li>
                         <li><a href="{{ route('cms.home.distribution.section') }}" class="slide-item">Distribution
                                 Table</a>
+                        <li><a href="{{ route('cms.home.video.section') }}" class="slide-item">Video</a>
                         </li>
                         <li><a href="{{ route('cms.home.percentage.section') }}" class="slide-item">Percentage</a></li>
                         <li><a href="{{ route('cms.home.selected_name.section') }}" class="slide-item">Selected
