@@ -4,10 +4,8 @@ namespace App\Services;
 
 use Exception;
 use Stripe\Stripe;
-use App\Models\User;
 use App\Models\Donation;
 use App\Models\WeeklyDraw;
-use Illuminate\Support\Str;
 use Stripe\Checkout\Session;
 use App\Events\DonationCreated;
 use Illuminate\Support\Facades\DB;
@@ -16,19 +14,28 @@ use Illuminate\Support\Facades\Log;
 class DonationService
 {
     protected $stripeService;
+    protected $registrationService;
 
-    public function __construct(StripeService $stripeService)
+    public function __construct(StripeService $stripeService, RegistrationService $registrationService)
     {
         $this->stripeService = $stripeService;
+        $this->registrationService = $registrationService;
         Stripe::setApiKey(config('services.stripe.secret'));
     }
 
     /**
-     * Create standard $25 donation with DUPLICATE CHECK
+     * Create standard $25 donation (WITH SESSION VALIDATION)
      */
-    public function createStandardDonation(string $successUrl, string $cancelUrl): array
+    public function createStandardDonation(string $sessionToken, string $successUrl, string $cancelUrl): array
     {
-        return DB::transaction(function () use ($successUrl, $cancelUrl) {
+        return DB::transaction(function () use ($sessionToken, $successUrl, $cancelUrl) {
+            // Validate session token
+            $user = $this->registrationService->validateSession($sessionToken);
+
+            if (!$user) {
+                throw new Exception('Invalid or expired session. Please register again.');
+            }
+
             // Get current active draw
             $currentDraw = WeeklyDraw::where('status', 'active')->first();
 
@@ -41,33 +48,52 @@ class DonationService
                 throw new Exception('Donations are currently paused. Please try again on Monday at 12:00 AM.');
             }
 
+            // CRITICAL: Check if user already donated this week
+            $existingDonation = Donation::where('user_id', $user->id)
+                ->where('week_id', $currentDraw->id)
+                ->where('stripe_payment_status', 'completed')
+                ->first();
+
+            if ($existingDonation) {
+                throw new Exception('You have already donated this week. Only one donation per week is allowed.');
+            }
+
+            // Check for pending donation
+            $pendingDonation = Donation::where('user_id', $user->id)
+                ->where('week_id', $currentDraw->id)
+                ->where('stripe_payment_status', 'pending')
+                ->first();
+
+            if ($pendingDonation) {
+                throw new Exception('You already have a pending donation. Please complete or cancel it first.');
+            }
+
             // Create Stripe checkout session
             $session = $this->stripeService->createCheckoutSession(
                 25.00,
                 $currentDraw,
                 'standard',
                 $successUrl,
-                $cancelUrl
+                $cancelUrl,
+                $user // Pass user for pre-filled checkout
             );
 
-            // Create unique temporary identifier
-            $tempIdentifier = 'temp_' . Str::uuid();
-
-            // Create pending donation
+            // Create donation record
             $donation = Donation::create([
-                'user_id' => null,
-                'temp_identifier' => $tempIdentifier,
+                'user_id' => $user->id,
                 'week_id' => $currentDraw->id,
                 'amount' => 25.00,
                 'stripe_payment_id' => $session->id,
                 'stripe_payment_status' => 'pending',
                 'is_eligible_for_draw' => false,
                 'payment_type' => 'standard',
-                'donated_at' => now(),
+                'donated_at' => now(config('app.timezone')),
             ]);
 
             Log::info('Standard donation initiated', [
                 'donation_id' => $donation->id,
+                'user_id' => $user->id,
+                'donor_id' => $user->donor_id,
                 'session_id' => $session->id,
             ]);
 
@@ -82,14 +108,21 @@ class DonationService
     }
 
     /**
-     * Create custom amount donation with DUPLICATE CHECK
+     * Create custom amount donation (WITH SESSION VALIDATION)
      */
-    public function createCustomDonation(float $amount, string $successUrl, string $cancelUrl): array
+    public function createCustomDonation(string $sessionToken, float $amount, string $successUrl, string $cancelUrl): array
     {
-        return DB::transaction(function () use ($amount, $successUrl, $cancelUrl) {
+        return DB::transaction(function () use ($sessionToken, $amount, $successUrl, $cancelUrl) {
             // Validate minimum amount
             if ($amount < 26) {
                 throw new Exception('Custom donation must be at least $26');
+            }
+
+            // Validate session token
+            $user = $this->registrationService->validateSession($sessionToken);
+
+            if (!$user) {
+                throw new Exception('Invalid or expired session. Please register again.');
             }
 
             // Get current active draw
@@ -104,32 +137,42 @@ class DonationService
                 throw new Exception('Donations are currently paused. Please try again on Monday at 12:00 AM.');
             }
 
+            // CRITICAL: Check if user already donated this week
+            $existingDonation = Donation::where('user_id', $user->id)
+                ->where('week_id', $currentDraw->id)
+                ->where('stripe_payment_status', 'completed')
+                ->first();
+
+            if ($existingDonation) {
+                throw new Exception('You have already donated this week. Only one donation per week is allowed.');
+            }
+
             // Create Stripe checkout session
             $session = $this->stripeService->createCheckoutSession(
                 $amount,
                 $currentDraw,
                 'custom',
                 $successUrl,
-                $cancelUrl
+                $cancelUrl,
+                $user
             );
 
-            $tempIdentifier = 'temp_' . Str::uuid();
-
-            // Create pending donation
+            // Create donation record
             $donation = Donation::create([
-                'user_id' => null,
-                'temp_identifier' => $tempIdentifier,
+                'user_id' => $user->id,
                 'week_id' => $currentDraw->id,
                 'amount' => $amount,
                 'stripe_payment_id' => $session->id,
                 'stripe_payment_status' => 'pending',
                 'is_eligible_for_draw' => false,
                 'payment_type' => 'custom',
-                'donated_at' => now(),
+                'donated_at' => now(config('app.timezone')),
             ]);
 
             Log::info('Custom donation initiated', [
                 'donation_id' => $donation->id,
+                'user_id' => $user->id,
+                'donor_id' => $user->donor_id,
                 'amount' => $amount,
             ]);
 
@@ -146,14 +189,14 @@ class DonationService
      */
     protected function isDonationAllowed(): bool
     {
-        $now = \Carbon\Carbon::now('Asia/Dhaka');
+        $now = now(config('app.timezone'));
 
         // Sunday 5 PM onwards - PAUSED
         if ($now->isSunday() && $now->hour >= 17) {
             return false;
         }
 
-        // Monday before 12 AM - PAUSED (technically this is still Sunday night)
+        // Monday before 12 AM - PAUSED
         if ($now->isMonday() && $now->hour < 0) {
             return false;
         }
@@ -162,7 +205,7 @@ class DonationService
     }
 
     /**
-     * Verify payment with DUPLICATE EMAIL CHECK
+     * Verify payment after Stripe redirect
      */
     public function verifyPayment(string $sessionId): Donation
     {
@@ -174,49 +217,22 @@ class DonationService
             throw new Exception('Donation not found');
         }
 
-        if ($session->payment_status === 'paid') {
-            $customerEmail = $session->customer_details->email;
-
-            // CRITICAL: Check if email already donated in this week
-            $existingDonation = Donation::where('week_id', $donation->week_id)
-                ->where('stripe_payment_status', 'completed')
-                ->whereHas('user', function ($query) use ($customerEmail) {
-                    $query->where('email', $customerEmail);
-                })
-                ->first();
-
-            if ($existingDonation) {
-                // Mark as duplicate and refund
-                $donation->update([
-                    'stripe_payment_status' => 'duplicate',
-                    'is_eligible_for_draw' => false,
-                ]);
-
-                Log::warning('Duplicate donation detected', [
-                    'email' => $customerEmail,
-                    'week_id' => $donation->week_id
-                ]);
-
-                throw new Exception('You have already donated this week. Only one donation per week is allowed.');
-            }
-
-            // Get or create user
-            $user = $this->getOrCreateUserFromStripe($session);
-
+        if ($session->payment_status === 'paid' && $donation->stripe_payment_status !== 'completed') {
             $donation->update([
-                'user_id' => $user->id,
                 'stripe_payment_status' => 'completed',
                 'stripe_charge_id' => $session->payment_intent,
                 'is_eligible_for_draw' => true,
-                'temp_identifier' => null,
             ]);
 
             // Update weekly draw stats
             $this->updateWeeklyDrawStats($donation->week_id);
 
+            // Mark session as donated
+            $this->registrationService->markSessionAsDonated($session->metadata->session_token ?? '');
+
             Log::info('Payment verified', [
                 'donation_id' => $donation->id,
-                'user_id' => $user->id,
+                'user_id' => $donation->user_id,
             ]);
         }
 
@@ -224,78 +240,26 @@ class DonationService
     }
 
     /**
-     * Handle Stripe checkout completed webhook with DUPLICATE CHECK
+     * Handle Stripe checkout completed webhook
      */
     public function handleCheckoutCompleted($session): void
     {
         $donation = Donation::where('stripe_payment_id', $session->id)->first();
 
         if ($donation && $donation->stripe_payment_status !== 'completed') {
-            $customerEmail = $session->customer_details->email;
-
-            // Check for duplicate donation in same week
-            $existingDonation = Donation::where('week_id', $donation->week_id)
-                ->where('stripe_payment_status', 'completed')
-                ->whereHas('user', function ($query) use ($customerEmail) {
-                    $query->where('email', $customerEmail);
-                })
-                ->first();
-
-            if ($existingDonation) {
-                $donation->update([
-                    'stripe_payment_status' => 'duplicate',
-                    'is_eligible_for_draw' => false,
-                ]);
-
-                Log::warning('Webhook: Duplicate donation blocked', [
-                    'email' => $customerEmail,
-                    'week_id' => $donation->week_id
-                ]);
-
-                return;
-            }
-
-            // Get or create user
-            $user = $this->getOrCreateUserFromStripe($session);
-
             $donation->update([
-                'user_id' => $user->id,
                 'stripe_payment_status' => 'completed',
                 'stripe_charge_id' => $session->payment_intent,
                 'is_eligible_for_draw' => true,
-                'temp_identifier' => null,
             ]);
 
             $this->updateWeeklyDrawStats($donation->week_id);
 
             Log::info('✅ Webhook: Checkout completed', [
                 'donation_id' => $donation->id,
-                'user_id' => $user->id
+                'user_id' => $donation->user_id
             ]);
         }
-    }
-
-    /**
-     * Get or create user from Stripe (SECURITY: Verified data only)
-     */
-    protected function getOrCreateUserFromStripe($session): User
-    {
-        $customerDetails = $session->customer_details;
-
-        if (!filter_var($customerDetails->email, FILTER_VALIDATE_EMAIL)) {
-            throw new Exception('Invalid email from Stripe');
-        }
-
-        return User::firstOrCreate(
-            ['email' => $customerDetails->email],
-            [
-                'name' => $customerDetails->name ?? 'Anonymous Donor',
-                'phone' => $customerDetails->phone ?? null,
-                'email_verified_at' => now(),
-                'password' => bcrypt(Str::random(16)), // Random secure password
-                'role' => 'donor',
-            ]
-        );
     }
 
     /**

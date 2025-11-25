@@ -3,17 +3,13 @@
 namespace App\Http\Controllers\Api\Donation;
 
 use Stripe\Webhook;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Stripe\Checkout\Session;
 use App\Services\StripeService;
 use App\Services\DonationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use Stripe\Exception\ApiErrorException;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class DonationController extends Controller
 {
@@ -26,20 +22,29 @@ class DonationController extends Controller
         $this->stripeService = $stripeService;
     }
 
-
     /**
-     * Create standard $25 donation
-     * No user data required - collected in Stripe checkout
+     * Create standard $25 donation (REQUIRES SESSION TOKEN)
      */
     public function createStandardDonation(Request $request): JsonResponse
     {
+        $validator = Validator::make($request->all(), [
+            'session_token' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         try {
-            // Generate success/cancel URLs automatically
-            $baseUrl = 'http://localhost:5173';
+            $baseUrl = config('app.frontend_url', 'http://localhost:5173');
             $successUrl = $baseUrl . '/success?session_id={CHECKOUT_SESSION_ID}';
             $cancelUrl = $baseUrl . '/donation/cancel';
 
             $result = $this->donationService->createStandardDonation(
+                $request->session_token,
                 $successUrl,
                 $cancelUrl
             );
@@ -53,17 +58,17 @@ class DonationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
     /**
-     * Create custom amount donation
-     * Only amount required - user data collected in Stripe checkout
+     * Create custom amount donation (REQUIRES SESSION TOKEN)
      */
     public function createCustomDonation(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
+            'session_token' => 'required|string',
             'amount' => 'required|numeric|min:26',
         ]);
 
@@ -75,12 +80,12 @@ class DonationController extends Controller
         }
 
         try {
-            // Generate success/cancel URLs automatically
-            $baseUrl = config('app.frontend_url') ?: config('app.url');
-            $successUrl = $baseUrl . '/donation/success?session_id={CHECKOUT_SESSION_ID}';
+            $baseUrl = config('app.frontend_url', 'http://localhost:5173');
+            $successUrl = $baseUrl . '/success?session_id={CHECKOUT_SESSION_ID}';
             $cancelUrl = $baseUrl . '/donation/cancel';
 
             $result = $this->donationService->createCustomDonation(
+                $request->session_token,
                 $request->amount,
                 $successUrl,
                 $cancelUrl
@@ -95,12 +100,12 @@ class DonationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
     /**
-     * Verify payment after Stripe redirect for locl host.
+     * Verify payment after Stripe redirect
      */
     public function verifyPayment(Request $request): JsonResponse
     {
@@ -151,7 +156,7 @@ class DonationController extends Controller
     }
 
     /**
-     * Handle Stripe Webhook
+     * Handle Stripe Webhook (MOST IMPORTANT FOR PAYMENT COMPLETION)
      */
     public function handleStripeWebhook(Request $request): JsonResponse
     {
@@ -159,29 +164,54 @@ class DonationController extends Controller
         $sigHeader = $request->header('Stripe-Signature');
         $webhookSecret = config('services.stripe.webhook_secret');
 
+        // Log webhook received
+        Log::info('Webhook received', [
+            'payload' => $payload,
+            'signature' => $sigHeader
+        ]);
+
         try {
+            // Verify webhook signature
             $event = Webhook::constructEvent($payload, $sigHeader, $webhookSecret);
 
+            Log::info('Webhook event type: ' . $event->type);
+
+            // Handle different event types
             switch ($event->type) {
                 case 'checkout.session.completed':
                     $this->donationService->handleCheckoutCompleted($event->data->object);
+                    Log::info('Checkout completed webhook processed');
                     break;
 
                 case 'payment_intent.succeeded':
                     $this->donationService->handlePaymentSucceeded($event->data->object);
+                    Log::info('Payment succeeded webhook processed');
                     break;
 
                 case 'payment_intent.payment_failed':
                     $this->donationService->handlePaymentFailed($event->data->object);
+                    Log::info('Payment failed webhook processed');
                     break;
+
+                default:
+                    Log::info('Unhandled webhook event: ' . $event->type);
             }
 
-            return response()->json(['success' => true]);
+            return response()->json(['success' => true], 200);
+        } catch (\UnexpectedValueException $e) {
+            // Invalid payload
+            Log::error('Invalid webhook payload', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Invalid payload'], 400);
+        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+            // Invalid signature
+            Log::error('Invalid webhook signature', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Invalid signature'], 400);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 400);
+            Log::error('Webhook processing failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 

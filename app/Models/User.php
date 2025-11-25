@@ -24,6 +24,12 @@ class User extends Authenticatable implements JWTSubject
         'google_access_token',
         'google_refresh_token',
         'google_token_expires_at',
+        'otp_code',
+        'otp_expires_at',
+        'email_verified_at',
+        'phone_verified_at',
+        'registered_at',
+        'registration_ip'
     ];
 
     protected $hidden = [

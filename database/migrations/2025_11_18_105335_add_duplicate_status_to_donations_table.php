@@ -11,13 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Update stripe_payment_status enum to include 'duplicate'
-        // Note: For MySQL, we need to modify the column
-
         Schema::table('donations', function (Blueprint $table) {
-            // For PostgreSQL (if using)
-            // DB::statement("ALTER TABLE donations DROP CONSTRAINT IF EXISTS donations_stripe_payment_status_check");
-
             // For MySQL - Modify column
             $table->string('stripe_payment_status', 50)->default('pending')->change();
         });

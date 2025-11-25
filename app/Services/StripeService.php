@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-
-use App\Models\WeeklyDraw;
 use Stripe\Stripe;
+use App\Models\WeeklyDraw;
+use App\Models\User;
 use Stripe\Checkout\Session;
 
 class StripeService
@@ -15,125 +15,56 @@ class StripeService
     }
 
     /**
-     * Create Stripe checkout session
-     * Collects user information in Stripe checkout form
+     * Create Stripe checkout session with pre-filled customer data
      */
     public function createCheckoutSession(
         float $amount,
         WeeklyDraw $draw,
-        string $paymentType,
+        string $type,
         string $successUrl,
-        string $cancelUrl
+        string $cancelUrl,
+        ?User $user = null
     ): Session {
-        $session = Session::create([
+
+        $metadata = [
+            'week_id' => $draw->id,
+            'week_number' => $draw->week_number,
+            'payment_type' => $type,
+        ];
+
+        // Pre-fill customer information if user exists
+        $sessionData = [
             'payment_method_types' => ['card'],
             'line_items' => [[
                 'price_data' => [
                     'currency' => 'usd',
-                    'unit_amount' => (int)($amount * 100), // Convert to cents
                     'product_data' => [
-                        'name' => $paymentType === 'standard'
-                            ? 'Weekly Draw Donation - $25'
-                            : 'Custom Weekly Draw Donation',
-                        'description' => "Donation for Week #{$draw->week_number}",
+                        'name' => $type === 'standard'
+                            ? 'Standard Donation - $25'
+                            : "Custom Donation - $" . number_format($amount, 2),
+                        'description' => "Weekly Draw #{$draw->week_number}",
                     ],
+                    'unit_amount' => $amount * 100, // Convert to cents
                 ],
                 'quantity' => 1,
             ]],
             'mode' => 'payment',
             'success_url' => $successUrl,
             'cancel_url' => $cancelUrl,
-            // Stripe will collect customer info
-            'billing_address_collection' => 'auto',
-            'phone_number_collection' => [
-                'enabled' => true,
-            ],
-            'metadata' => [
-                'week_id' => $draw->id,
-                'payment_type' => $paymentType,
-                'week_number' => $draw->week_number,
-            ],
-        ]);
+            'metadata' => $metadata,
+        ];
 
-        return $session;
-    }
+        // Pre-fill customer data if user exists
+        if ($user) {
+            $sessionData['customer_email'] = $user->email;
+            $sessionData['customer_creation'] = 'always';
 
-    /**
-     * Process payout to winner
-     * Note: This requires Stripe Connect or manual bank transfer
-     */
-    public function processPayoutToWinner(string $recipientEmail, float $amount, string $description): array
-    {
-        try {
-            // For real implementation, you would need:
-            // 1. Stripe Connect account for each winner
-            // 2. Or collect bank details and use Stripe Payouts API
-            // 3. Or use a third-party service like PayPal
-
-            // This is a placeholder - implement based on your payout method
-
-            // Example with Stripe Connect Transfer:
-            // $transfer = Transfer::create([
-            //     'amount' => (int)($amount * 100),
-            //     'currency' => 'usd',
-            //     'destination' => $stripeConnectAccountId,
-            //     'description' => $description,
-            // ]);
-
-            return [
-                'success' => true,
-                'payout_id' => 'po_' . uniqid(),
-                'amount' => $amount,
-                'status' => 'processing'
-            ];
-        } catch (\Exception $e) {
-            throw new \Exception('Payout failed: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Refund a payment
-     */
-    public function refundPayment(string $chargeId, float $amount = null): array
-    {
-        try {
-            $refundData = [
-                'charge' => $chargeId,
-            ];
-
-            if ($amount) {
-                $refundData['amount'] = (int)($amount * 100);
+            // Add phone if available (Stripe format: E.164)
+            if ($user->phone) {
+                $sessionData['phone_number_collection'] = ['enabled' => true];
             }
-
-            $refund = \Stripe\Refund::create($refundData);
-
-            return [
-                'success' => true,
-                'refund_id' => $refund->id,
-                'status' => $refund->status,
-            ];
-        } catch (\Exception $e) {
-            throw new \Exception('Refund failed: ' . $e->getMessage());
         }
-    }
 
-    /**
-     * Get payment details
-     */
-    public function getPaymentDetails(string $paymentIntentId): array
-    {
-        try {
-            $paymentIntent = \Stripe\PaymentIntent::retrieve($paymentIntentId);
-
-            return [
-                'id' => $paymentIntent->id,
-                'amount' => $paymentIntent->amount / 100,
-                'currency' => $paymentIntent->currency,
-                'status' => $paymentIntent->status,
-                'created' => $paymentIntent->created,
-            ];
-        } catch (\Exception $e) {
-            throw new \Exception('Failed to retrieve payment details: ' . $e->getMessage());
-        }
+        return Session::create($sessionData);
     }
 }

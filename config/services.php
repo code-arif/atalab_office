@@ -53,17 +53,25 @@ return [
         ],
     ],
 
-    'stripe' => [
-        'key' => env('STRIPE_KEY'),
-        'secret' => env('STRIPE_SECRET'),
-        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET')
-    ],
-
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect_uri' => env('GOOGLE_REDIRECT_URI'),
         'calendar_id' => env('GOOGLE_CALENDAR_ID', 'primary'),
+    ],
+
+    // Stripe Configuration
+    'stripe' => [
+        'secret' => env('STRIPE_SECRET'),
+        'public_key' => env('STRIPE_PUBLIC_KEY'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+    ],
+
+    // Twilio Configuration (for SMS OTP)
+    'twilio' => [
+        'sid' => env('TWILIO_SID'),
+        'token' => env('TWILIO_TOKEN'),
+        'from' => env('TWILIO_FROM'), // Your Twilio phone number
     ],
 
 ];
