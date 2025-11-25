@@ -24,6 +24,7 @@ class CMSResource extends JsonResource
             'sub_description' => $this->when($this->sub_description, $this->sub_description),
             'image' => $this->when($this->image && $this->image !== '', asset($this->image)),
             'btn_text' => $this->when($this->btn_text, $this->btn_text),
+            'video_path' => $this->when($this->video_path && $this->video_path !== '', asset($this->video_path)),
         ];
     }
 }

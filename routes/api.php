@@ -3,13 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CMS\CmsController;
 use App\Http\Controllers\Api\ContactController;
-use App\Http\Controllers\Api\Draw\DrawController;
 use App\Http\Controllers\Api\NewsletterController;
 use App\Http\Controllers\Api\TestimonialController;
 use App\Http\Controllers\Api\DrawSettingsController;
 use App\Http\Controllers\Api\Donation\DonationController;
 use App\Http\Controllers\Api\Auth\AuthenticationController;
 use App\Http\Controllers\Api\Donation\WeeklyDrawController;
+use App\Http\Controllers\Api\Draw\DrawWinnerController;
+use App\Http\Controllers\Api\Winner\WinningController;
 
 //health-check
 Route::get("/check", function () {
@@ -70,12 +71,12 @@ Route::group(['middleware' => 'auth:api'], function () {
 */
 
 // Draw Information (Public)
-Route::prefix('draws')->group(function () {
-    Route::get('/current', [DrawController::class, 'current']);
-    Route::get('/history', [DrawController::class, 'history']);
-    Route::get('/{id}', [DrawController::class, 'show']);
-    Route::get('/{id}/leaderboard', [DrawController::class, 'leaderboard']);
-});
+// Route::prefix('draws')->group(function () {
+//     Route::get('/current', [DrawController::class, 'current']);
+//     Route::get('/history', [DrawController::class, 'history']);
+//     Route::get('/{id}', [DrawController::class, 'show']);
+//     Route::get('/{id}/leaderboard', [DrawController::class, 'leaderboard']);
+// });
 
 /*
 |--------------------------------------------------------------------------
@@ -101,7 +102,7 @@ Route::prefix('v1')->group(function () {
 
     // // Winner Routes
     // Route::get('/winners/week/{weekNumber}', [DrawWinnerController::class, 'getWeeklyWinners']);
-    // Route::get('/winners/latest', [DrawWinnerController::class, 'getLatestWinners']);
+    // Route::get('/winners/latest', [WinningController::class, 'myWinnings']);
 });
 
 // Route::post('/checkout', [DonationController::class,'checkout']);

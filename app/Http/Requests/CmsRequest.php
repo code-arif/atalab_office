@@ -39,7 +39,7 @@ class CmsRequest extends FormRequest
             'address'          => 'nullable|string|max:255',
             'slogan'           => 'nullable|string|max:255',
             'business_name'    => 'nullable|string|max:255',
-            'video_path'       => 'nullable|image|max:102400'
+            'video_path'       => 'nullable|max:102400'
         ];
     }
 }
