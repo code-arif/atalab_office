@@ -21,15 +21,12 @@ class User extends Authenticatable implements JWTSubject
         'role',
         'avatar',
         'address',
-        'google_access_token',
-        'google_refresh_token',
-        'google_token_expires_at',
-        'otp_code',
-        'otp_expires_at',
+        'donor_id',
         'email_verified_at',
         'phone_verified_at',
         'registered_at',
-        'registration_ip'
+        'registration_ip',
+        'stripe_customer_id',
     ];
 
     protected $hidden = [

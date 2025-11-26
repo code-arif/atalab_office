@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Exception;
 use Stripe\Stripe;
+use App\Models\User;
 use App\Models\Donation;
 use App\Models\WeeklyDraw;
 use Stripe\Checkout\Session;
@@ -24,16 +25,16 @@ class DonationService
     }
 
     /**
-     * Create standard $25 donation (WITH SESSION VALIDATION)
+     * Create standard $25 donation (USER ID BASED)
      */
-    public function createStandardDonation(string $sessionToken, string $successUrl, string $cancelUrl): array
+    public function createStandardDonation(int $userId, string $successUrl, string $cancelUrl): array
     {
-        return DB::transaction(function () use ($sessionToken, $successUrl, $cancelUrl) {
-            // Validate session token
-            $user = $this->registrationService->validateSession($sessionToken);
+        return DB::transaction(function () use ($userId, $successUrl, $cancelUrl) {
+            // Validate user
+            $user = User::find($userId);
 
-            if (!$user) {
-                throw new Exception('Invalid or expired session. Please register again.');
+            if (!$user || !$user->email_verified_at || !$user->phone_verified_at) {
+                throw new Exception('User not verified. Please complete registration first.');
             }
 
             // Get current active draw
@@ -43,29 +44,14 @@ class DonationService
                 throw new Exception('No active draw available. Donations are paused.');
             }
 
-            // Check if donations are allowed (not Sunday 5 PM - Monday 12 AM)
+            // Check donation time window
             if (!$this->isDonationAllowed()) {
                 throw new Exception('Donations are currently paused. Please try again on Monday at 12:00 AM.');
             }
 
-            // CRITICAL: Check if user already donated this week
-            $existingDonation = Donation::where('user_id', $user->id)
-                ->where('week_id', $currentDraw->id)
-                ->where('stripe_payment_status', 'completed')
-                ->first();
-
-            if ($existingDonation) {
+            // Check if user can donate this week
+            if (!$this->registrationService->canUserDonate($userId, $currentDraw->id)) {
                 throw new Exception('You have already donated this week. Only one donation per week is allowed.');
-            }
-
-            // Check for pending donation
-            $pendingDonation = Donation::where('user_id', $user->id)
-                ->where('week_id', $currentDraw->id)
-                ->where('stripe_payment_status', 'pending')
-                ->first();
-
-            if ($pendingDonation) {
-                throw new Exception('You already have a pending donation. Please complete or cancel it first.');
             }
 
             // Create Stripe checkout session
@@ -75,7 +61,7 @@ class DonationService
                 'standard',
                 $successUrl,
                 $cancelUrl,
-                $user // Pass user for pre-filled checkout
+                $user
             );
 
             // Create donation record
@@ -93,7 +79,6 @@ class DonationService
             Log::info('Standard donation initiated', [
                 'donation_id' => $donation->id,
                 'user_id' => $user->id,
-                'donor_id' => $user->donor_id,
                 'session_id' => $session->id,
             ]);
 
@@ -108,46 +93,35 @@ class DonationService
     }
 
     /**
-     * Create custom amount donation (WITH SESSION VALIDATION)
+     * Create custom amount donation (USER ID BASED)
      */
-    public function createCustomDonation(string $sessionToken, float $amount, string $successUrl, string $cancelUrl): array
+    public function createCustomDonation(int $userId, float $amount, string $successUrl, string $cancelUrl): array
     {
-        return DB::transaction(function () use ($sessionToken, $amount, $successUrl, $cancelUrl) {
-            // Validate minimum amount
+        return DB::transaction(function () use ($userId, $amount, $successUrl, $cancelUrl) {
             if ($amount < 26) {
                 throw new Exception('Custom donation must be at least $26');
             }
 
-            // Validate session token
-            $user = $this->registrationService->validateSession($sessionToken);
+            $user = User::find($userId);
 
-            if (!$user) {
-                throw new Exception('Invalid or expired session. Please register again.');
+            if (!$user || !$user->email_verified_at || !$user->phone_verified_at) {
+                throw new Exception('User not verified. Please complete registration first.');
             }
 
-            // Get current active draw
             $currentDraw = WeeklyDraw::where('status', 'active')->first();
 
             if (!$currentDraw) {
                 throw new Exception('No active draw available. Donations are paused.');
             }
 
-            // Check if donations are allowed
             if (!$this->isDonationAllowed()) {
                 throw new Exception('Donations are currently paused. Please try again on Monday at 12:00 AM.');
             }
 
-            // CRITICAL: Check if user already donated this week
-            $existingDonation = Donation::where('user_id', $user->id)
-                ->where('week_id', $currentDraw->id)
-                ->where('stripe_payment_status', 'completed')
-                ->first();
-
-            if ($existingDonation) {
+            if (!$this->registrationService->canUserDonate($userId, $currentDraw->id)) {
                 throw new Exception('You have already donated this week. Only one donation per week is allowed.');
             }
 
-            // Create Stripe checkout session
             $session = $this->stripeService->createCheckoutSession(
                 $amount,
                 $currentDraw,
@@ -157,7 +131,6 @@ class DonationService
                 $user
             );
 
-            // Create donation record
             $donation = Donation::create([
                 'user_id' => $user->id,
                 'week_id' => $currentDraw->id,
@@ -172,7 +145,6 @@ class DonationService
             Log::info('Custom donation initiated', [
                 'donation_id' => $donation->id,
                 'user_id' => $user->id,
-                'donor_id' => $user->donor_id,
                 'amount' => $amount,
             ]);
 
@@ -191,12 +163,10 @@ class DonationService
     {
         $now = now(config('app.timezone'));
 
-        // Sunday 5 PM onwards - PAUSED
         if ($now->isSunday() && $now->hour >= 17) {
             return false;
         }
 
-        // Monday before 12 AM - PAUSED
         if ($now->isMonday() && $now->hour < 0) {
             return false;
         }
@@ -224,19 +194,19 @@ class DonationService
                 'is_eligible_for_draw' => true,
             ]);
 
+            // IMPORTANT: Assign donor_id on first donation
+            $this->registrationService->assignDonorId($donation->user_id);
+
             // Update weekly draw stats
             $this->updateWeeklyDrawStats($donation->week_id);
 
-            // Mark session as donated
-            $this->registrationService->markSessionAsDonated($session->metadata->session_token ?? '');
-
-            Log::info('Payment verified', [
+            Log::info('Payment verified and donor_id assigned', [
                 'donation_id' => $donation->id,
                 'user_id' => $donation->user_id,
             ]);
         }
 
-        return $donation->fresh();
+        return $donation->fresh()->load('user');
     }
 
     /**
@@ -253,9 +223,12 @@ class DonationService
                 'is_eligible_for_draw' => true,
             ]);
 
+            // Assign donor_id
+            $this->registrationService->assignDonorId($donation->user_id);
+
             $this->updateWeeklyDrawStats($donation->week_id);
 
-            Log::info('✅ Webhook: Checkout completed', [
+            Log::info('Checkout completed', [
                 'donation_id' => $donation->id,
                 'user_id' => $donation->user_id
             ]);

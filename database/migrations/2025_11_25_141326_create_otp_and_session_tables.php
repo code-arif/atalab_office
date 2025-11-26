@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Create OTP logs table for audit trail
+        // OTP Logs Table (for audit)
         Schema::create('otp_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('otp_code', 4);
             $table->enum('type', ['email', 'phone', 'both'])->default('both');
             $table->enum('status', ['sent', 'verified', 'expired', 'failed'])->default('sent');
@@ -23,19 +25,8 @@ return new class extends Migration
             $table->ipAddress('ip_address')->nullable();
             $table->timestamps();
 
-            $table->index(['user_id', 'status']);
-            $table->index('expires_at');
-        });
-
-        // Create user sessions table for 1-hour registration tracking
-        Schema::create('user_sessions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('session_token')->unique();
-            $table->enum('status', ['pending_donation', 'donated', 'expired'])->default('pending_donation');
-            $table->timestamp('expires_at');
-            $table->timestamps();
-
+            $table->index(['email', 'status']);
+            $table->index(['phone', 'status']);
             $table->index(['user_id', 'status']);
             $table->index('expires_at');
         });
@@ -46,7 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_sessions');
         Schema::dropIfExists('otp_logs');
     }
 };

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Exception;
 use Twilio\Rest\Client;
 use Illuminate\Support\Facades\Log;
 
@@ -38,7 +39,7 @@ class TwilioService
             ]);
 
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to send SMS', [
                 'phone' => $phone,
                 'error' => $e->getMessage()

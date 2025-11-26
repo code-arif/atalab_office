@@ -37,21 +37,21 @@ class AutomateWeeklyDraws extends Command
         ]);
 
         // PRODUCTION: Monday 12:00 AM - Create New Draw
-        if ($now->isMonday() && $now->hour === 0 && $now->minute === 0) {
-            Log::info('Triggering new draw creation (Monday 12:00 AM)');
-            $this->createNewDraw();
-        }
+        // if ($now->isMonday() && $now->hour === 0 && $now->minute === 0) {
+        //     Log::info('Triggering new draw creation (Monday 12:00 AM)');
+        //     $this->createNewDraw();
+        // }
 
         // PRODUCTION: Sunday 5:00 PM - Finalize & Select Winners
-        if ($now->isSunday() && $now->hour === 17 && $now->minute === 0) {
-            Log::info('Triggering draw finalization (Sunday 5:00 PM)');
-            $this->finalizeAndSelectWinners();
-        }
+        // if ($now->isSunday() && $now->hour === 17 && $now->minute === 0) {
+        //     Log::info('Triggering draw finalization (Sunday 5:00 PM)');
+        //     $this->finalizeAndSelectWinners();
+        // }
 
         // TESTING MODE (UNCOMMENT FOR TESTING)
-        /*
+
         // TEST: Wednesday 6:33 PM - Create New Draw
-        if ($now->isWednesday() && $now->hour === 18 && $now->minute === 33) {
+        if ($now->isWednesday() && $now->hour === 12 && $now->minute === 33) {
             Log::info('TEST: Triggering new draw creation');
             $this->createNewDraw();
         }
@@ -61,7 +61,7 @@ class AutomateWeeklyDraws extends Command
             Log::info('TEST: Triggering draw finalization');
             $this->finalizeAndSelectWinners();
         }
-        */
+
 
         return 0;
     }

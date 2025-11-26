@@ -11,29 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Enhanced Users Table (NO session_token, NO temp fields)
         Schema::table('users', function (Blueprint $table) {
-            //
-        });
+            // Sequential donor ID (assigned ONLY after first donation)
+            $table->string('donor_id', 20)->unique()->nullable()->after('address');
 
-        // Add registration fields to users table
-        Schema::table('users', function (Blueprint $table) {
-            // Unique donor ID (sequential)
-            $table->string('donor_id', 20)->unique()->nullable()->after('id');
-
-            // OTP verification
-            $table->string('otp_code', 4)->nullable();
-            $table->timestamp('otp_expires_at')->nullable();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->timestamp('phone_verified_at')->nullable();
+            // Verification timestamps
+            $table->timestamp('email_verified_at')->nullable()->after('donor_id');
+            $table->timestamp('phone_verified_at')->nullable()->after('email_verified_at');
 
             // Registration tracking
-            $table->timestamp('registered_at')->nullable();
-            $table->ipAddress('registration_ip')->nullable();
+            $table->timestamp('registered_at')->nullable()->after('phone_verified_at');
+            $table->ipAddress('registration_ip')->nullable()->after('registered_at');
 
-            // Indexes for performance
+            $table->string('stripe_customer_id')->nullable()->after('registration_ip');
+
+            // Indexes
             $table->index('donor_id');
             $table->index(['email', 'email_verified_at']);
             $table->index(['phone', 'phone_verified_at']);
+            $table->index('stripe_customer_id');
         });
     }
 
@@ -45,12 +42,11 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn([
                 'donor_id',
-                'otp_code',
-                'otp_expires_at',
                 'email_verified_at',
                 'phone_verified_at',
                 'registered_at',
-                'registration_ip'
+                'registration_ip',
+                'stripe_customer_id'
             ]);
         });
     }

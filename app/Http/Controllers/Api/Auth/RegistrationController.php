@@ -19,26 +19,21 @@ class RegistrationController extends Controller
     }
 
     /**
-     * Register new user
-     * ZOBAYER HOSEN
-     * Zobayer Hosen a new era start of as a backend developer. I always try to my best work as a fullstack developer.
-     * a full stack developer as a full stack developer.
-     * A full Stack Developer as A Full Stack Developer.
+     * Register new user (sends OTP, stores in cache)
      */
     public function register(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'full_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email',
             'phone' => [
                 'required',
                 'string',
                 'regex:/^\+1\d{10}$/',
-                'unique:users,phone',
             ],
             'address' => 'required|string|max:500',
         ], [
-            'phone.regex' => 'Please enter a valid phone number',
+            'phone.regex' => 'Please enter a valid phone number (e.g., +12345678901)',
         ]);
 
         if ($validator->fails()) {
@@ -61,7 +56,7 @@ class RegistrationController extends Controller
     }
 
     /**
-     * Verify OTP
+     * Verify OTP (creates user in database)
      */
     public function verifyOTP(Request $request): JsonResponse
     {
@@ -84,7 +79,7 @@ class RegistrationController extends Controller
             );
 
             return response()->json($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -98,7 +93,7 @@ class RegistrationController extends Controller
     public function resendOTP(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'identifier' => 'required|string', // email or phone
+            'identifier' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -112,7 +107,7 @@ class RegistrationController extends Controller
             $result = $this->registrationService->resendOTP($request->identifier);
 
             return response()->json($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -121,12 +116,12 @@ class RegistrationController extends Controller
     }
 
     /**
-     * Validate session token
+     * Check user status (for frontend routing)
      */
-    public function validateSession(Request $request): JsonResponse
+    public function checkUserStatus(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'session_token' => 'required|string',
+            'identifier' => 'required|string', // email or phone
         ]);
 
         if ($validator->fails()) {
@@ -137,23 +132,46 @@ class RegistrationController extends Controller
         }
 
         try {
-            $user = $this->registrationService->validateSession($request->session_token);
+            $identifier = $request->identifier;
+
+            $user = \App\Models\User::where('email', $identifier)
+                ->orWhere('phone', $identifier)
+                ->first();
 
             if (!$user) {
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid or expired session'
-                ], 401);
+                    'success' => true,
+                    'status' => 'not_registered',
+                    'message' => 'User not found. Please register.'
+                ]);
             }
 
+            // Check verification status
+            if (!$user->email_verified_at || !$user->phone_verified_at) {
+                return response()->json([
+                    'success' => true,
+                    'status' => 'not_verified',
+                    'message' => 'Please verify your OTP.'
+                ]);
+            }
+
+            // Check if donor
+            if ($user->donor_id) {
+                return response()->json([
+                    'success' => true,
+                    'status' => 'donor',
+                    'user_id' => $user->id,
+                    'donor_id' => $user->donor_id,
+                    'message' => 'User is a registered donor.'
+                ]);
+            }
+
+            // Verified but not donated yet
             return response()->json([
                 'success' => true,
-                'user' => [
-                    'id' => $user->id,
-                    'donor_id' => $user->donor_id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                ]
+                'status' => 'verified',
+                'user_id' => $user->id,
+                'message' => 'User verified. Ready to donate.'
             ]);
         } catch (Exception $e) {
             return response()->json([

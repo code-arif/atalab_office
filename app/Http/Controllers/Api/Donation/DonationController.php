@@ -23,12 +23,12 @@ class DonationController extends Controller
     }
 
     /**
-     * Create standard $25 donation (REQUIRES SESSION TOKEN)
+     * Create standard $25 donation (USER ID REQUIRED)
      */
     public function createStandardDonation(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'session_token' => 'required|string',
+            'user_id' => 'required|integer|exists:users,id',
         ]);
 
         if ($validator->fails()) {
@@ -44,7 +44,7 @@ class DonationController extends Controller
             $cancelUrl = $baseUrl . '/donation/cancel';
 
             $result = $this->donationService->createStandardDonation(
-                $request->session_token,
+                $request->user_id,
                 $successUrl,
                 $cancelUrl
             );
@@ -63,12 +63,12 @@ class DonationController extends Controller
     }
 
     /**
-     * Create custom amount donation (REQUIRES SESSION TOKEN)
+     * Create custom amount donation (USER ID REQUIRED)
      */
     public function createCustomDonation(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'session_token' => 'required|string',
+            'user_id' => 'required|integer|exists:users,id',
             'amount' => 'required|numeric|min:26',
         ]);
 
@@ -85,7 +85,7 @@ class DonationController extends Controller
             $cancelUrl = $baseUrl . '/donation/cancel';
 
             $result = $this->donationService->createCustomDonation(
-                $request->session_token,
+                $request->user_id,
                 $request->amount,
                 $successUrl,
                 $cancelUrl
@@ -105,7 +105,7 @@ class DonationController extends Controller
     }
 
     /**
-     * Verify payment after Stripe redirect
+     * Verify payment
      */
     public function verifyPayment(Request $request): JsonResponse
     {
@@ -125,7 +125,8 @@ class DonationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'donation' => $donation
+                'donation' => $donation,
+                'donor_id' => $donation->user->donor_id,
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -156,7 +157,7 @@ class DonationController extends Controller
     }
 
     /**
-     * Handle Stripe Webhook (MOST IMPORTANT FOR PAYMENT COMPLETION)
+     * Handle Stripe Webhook
      */
     public function handleStripeWebhook(Request $request): JsonResponse
     {
@@ -164,19 +165,16 @@ class DonationController extends Controller
         $sigHeader = $request->header('Stripe-Signature');
         $webhookSecret = config('services.stripe.webhook_secret');
 
-        // Log webhook received
         Log::info('Webhook received', [
             'payload' => $payload,
             'signature' => $sigHeader
         ]);
 
         try {
-            // Verify webhook signature
             $event = Webhook::constructEvent($payload, $sigHeader, $webhookSecret);
 
             Log::info('Webhook event type: ' . $event->type);
 
-            // Handle different event types
             switch ($event->type) {
                 case 'checkout.session.completed':
                     $this->donationService->handleCheckoutCompleted($event->data->object);
@@ -185,7 +183,7 @@ class DonationController extends Controller
 
                 case 'payment_intent.succeeded':
                     $this->donationService->handlePaymentSucceeded($event->data->object);
-                    Log::info('Payment succeeded webhook processed');
+                Log::info('Payment succeeded webhook processed');
                     break;
 
                 case 'payment_intent.payment_failed':
@@ -198,14 +196,6 @@ class DonationController extends Controller
             }
 
             return response()->json(['success' => true], 200);
-        } catch (\UnexpectedValueException $e) {
-            // Invalid payload
-            Log::error('Invalid webhook payload', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Invalid payload'], 400);
-        } catch (\Stripe\Exception\SignatureVerificationException $e) {
-            // Invalid signature
-            Log::error('Invalid webhook signature', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Invalid signature'], 400);
         } catch (\Exception $e) {
             Log::error('Webhook processing failed', [
                 'error' => $e->getMessage(),

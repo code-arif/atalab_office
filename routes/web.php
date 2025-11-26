@@ -1,12 +1,13 @@
 <?php
 
-use App\Http\Controllers\Calendar\EventManageGoogleController;
-use App\Http\Controllers\Calendar\GetEventFromGoogleController;
-use App\Http\Controllers\Calendar\SyncEventFromGoogleController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\GoogleCalendarController;
+use App\Http\Controllers\Api\Donation\DonationController;
 use App\Http\Controllers\Api\Auth\AuthenticationController;
+use App\Http\Controllers\Calendar\EventManageGoogleController;
+use App\Http\Controllers\Calendar\GetEventFromGoogleController;
+use App\Http\Controllers\Calendar\SyncEventFromGoogleController;
 
 
 Route::get('/', function () {
@@ -107,23 +108,10 @@ Route::get('/verify-email/{token}', [AuthenticationController::class, 'verifyEma
 
 
 
-Route::middleware(['auth','admin'])->group(function () {
-    // Calendar Routes
-    Route::get('/calendar', [GoogleCalendarController::class, 'index'])->name('calendar.index'); // working
-    Route::get('/calendar/events', [GetEventFromGoogleController::class, 'getEvents'])->name('calendar.events'); // working
-
-    // Google OAuth Routes
-    Route::get('/google/redirect', [GoogleCalendarController::class, 'redirectToGoogle'])->name('google.redirect'); // working
-    Route::get('/google/callback', [GoogleCalendarController::class, 'handleGoogleCallback'])->name('google.callback'); // working
-    Route::get('/google/disconnect', [GoogleCalendarController::class, 'disconnect'])->name('google.disconnect'); // working
-    Route::post('/google/sync', [SyncEventFromGoogleController::class, 'syncFromGoogle'])->name('google.sync'); // working
-
-    // Work CRUD Routes (Modal based)
-    Route::post('/calendar/store', [EventManageGoogleController::class, 'store'])->name('calendar.store'); // working
-    Route::get('/calendar/{work}', [EventManageGoogleController::class, 'show'])->name('calendar.show'); // working
-    Route::post('/calendar/{work}', [EventManageGoogleController::class, 'update'])->name('calendar.update'); // working
-    Route::delete('/calendar/{work}', [EventManageGoogleController::class, 'destroy'])->name('calendar.destroy'); // working
-});
+// ============================================
+// STRIPE WEBHOOK (NO AUTH REQUIRED)
+// ============================================
+Route::post('/webhook/stripe', [DonationController::class, 'handleStripeWebhook']);
 
 
 require __DIR__ . '/auth.php';

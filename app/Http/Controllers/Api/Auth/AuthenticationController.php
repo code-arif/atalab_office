@@ -15,14 +15,6 @@ use Illuminate\Support\Facades\Validator;
 class AuthenticationController extends Controller
 {
     use ApiResponse;
-
-    /**
-     * user registratgion
-     */
-    public function registration(){
-        
-    }
-
     /*
     ** User login
     */

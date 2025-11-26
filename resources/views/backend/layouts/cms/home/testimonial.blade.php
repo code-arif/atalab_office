@@ -286,7 +286,7 @@
                     [10, 25, 50, 100, "All"]
                 ],
                 processing: true,
-                responsive: true,
+                responsive: false,
                 serverSide: true,
                 language: {
                     processing: `<div class="text-center"><img src="{{ asset('default/loader.gif') }}" style="width:50px;"></div>`
