@@ -42,17 +42,20 @@ class Helper
         return false;
     }
 
-     /**
-     * Helper function to calculate age from date_of_birth
-     */
-    public static function calculateAge($date_of_birth): int
+
+    //! File or Image Upload
+    public static function fileUpload($file, string $folder, string $name): ?string
     {
-        if (!$date_of_birth) {
-            return 0;
+        if (!$file->isValid()) {
+            return null;
         }
 
-        $dob = new DateTime($date_of_birth);
-        $now = new DateTime();
-        return $now->diff($dob)->y;
+        $imageName = Str::slug($name) . '.' . $file->extension();
+        $path      = public_path('uploads/' . $folder);
+        if (!file_exists($path)) {
+            mkdir($path, 0777, true);
+        }
+        $file->move($path, $imageName);
+        return 'uploads/' . $folder . '/' . $imageName;
     }
 }

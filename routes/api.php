@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CMS\CmsController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\NewsletterController;
 use App\Http\Controllers\Api\TestimonialController;
+use App\Http\Controllers\Api\Chat\ChatApiController;
 use App\Http\Controllers\Api\DrawSettingsController;
 use App\Http\Controllers\Api\Auth\RegistrationController;
 use App\Http\Controllers\Api\Donation\DonationController;
@@ -95,4 +96,16 @@ Route::prefix('v1')->group(function () {
         Route::post('/verify', [DonationController::class, 'verifyPayment']);
         Route::get('/{paymentId}/status', [DonationController::class, 'checkPaymentStatus']);
     });
+});
+
+
+
+// ============================================
+// GUEST CHAT ROUTES (NO AUTH REQUIRED)
+// ============================================
+Route::prefix('chat/guest')->name('chat.guest.')->group(function () {
+    Route::post('/register', [ChatApiController::class, 'guestRegister'])->name('register');
+    Route::post('/send', [ChatApiController::class, 'guestSendMessage'])->name('send');
+    Route::get('/conversation', [ChatApiController::class, 'guestGetConversation'])->name('conversation');
+    Route::post('/typing', [ChatApiController::class, 'guestTyping'])->name('typing');
 });

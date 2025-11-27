@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Web\Backend\Chat\ChatWebController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\Backend\ReviewController;
 use App\Http\Controllers\Web\Backend\ContactUsController;
@@ -79,8 +80,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::delete('/home/disctibution/item/destroy/{id}', [DistributionController::class, 'itemDelete'])->name('home.distribution.item.delete');
 
         // home sample video
-        Route::get('/home/video',[VideoController::class, 'index'])->name('home.video.section');
-        Route::post('/home/video/update',[VideoController::class, 'update'])->name('home.video.section.update');
+        Route::get('/home/video', [VideoController::class, 'index'])->name('home.video.section');
+        Route::post('/home/video/update', [VideoController::class, 'update'])->name('home.video.section.update');
 
         // home page percentage section
         Route::get('/home/percentage', [PercentageController::class, 'index'])->name('home.percentage.section');
@@ -223,8 +224,30 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/show/{id}', [DonationController::class, 'show'])->name('show');
         Route::get('/export', [DonationController::class, 'export'])->name('export');
     });
-});
 
+
+    // ============================================
+    // WEB CHAT ROUTES (For Admin Dashboard)
+    // ============================================
+    Route::prefix('chat')->name('chat.')->group(function () {
+        Route::get('/', [ChatWebController::class, 'index'])->name('index');
+        Route::get('/list', [ChatWebController::class, 'list'])->name('list');
+        Route::get('/search', [ChatWebController::class, 'search'])->name('search');
+        Route::get('/conversation/{receiver_id}', [ChatWebController::class, 'conversation'])->name('conversation');
+        Route::post('/send/{receiver_id}', [ChatWebController::class, 'send'])->name('send');
+        Route::get('/room/{receiver_id}', [ChatWebController::class, 'getRoom'])->name('room');
+
+        // Admin specific routes
+        Route::put('/message/{message_id}/edit', [ChatWebController::class, 'editMessage'])->name('message.edit');
+        Route::delete('/message/{message_id}', [ChatWebController::class, 'deleteMessage'])->name('message.delete');
+        Route::delete('/conversation/{receiver_id}', [ChatWebController::class, 'deleteChat'])->name('conversation.delete');
+
+        // Status routes
+        Route::post('/typing', [ChatWebController::class, 'typing'])->name('typing');
+        Route::get('/seen/all/{receiver_id}', [ChatWebController::class, 'seenAll'])->name('seen.all');
+        Route::get('/seen/single/{chat_id}', [ChatWebController::class, 'seenSingle'])->name('seen.single');
+    });
+});
 
 
 //! Route for Profile Settings

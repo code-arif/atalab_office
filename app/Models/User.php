@@ -124,4 +124,25 @@ class User extends Authenticatable implements JWTSubject
             ->where('created_at', '>=', now()->subMonths(6))
             ->exists();
     }
+
+    //chat model relation
+    public function senders()
+    {
+        return $this->hasMany(Chat::class, 'sender_id');
+    }
+
+    public function receivers()
+    {
+        return $this->hasMany(Chat::class, 'receiver_id');
+    }
+
+    public function sentMessages()
+    {
+        return $this->morphMany(Chat::class, 'sender', 'sender_type', 'sender_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->morphMany(Chat::class, 'receiver', 'receiver_type', 'receiver_id');
+    }
 }

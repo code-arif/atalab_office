@@ -1,94 +1,68 @@
 <?php
 
 use App\Models\Room;
-use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use App\Models\GuestUser;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
 |--------------------------------------------------------------------------
 | Broadcast Channels
 |--------------------------------------------------------------------------
-|
-| Here you may register all of the event broadcasting channels that your
-| application supports. The given channel authorization callbacks are
-| used to check if an authenticated user can listen to the channel.
-|
 */
 
 /**
- * Location Tracking Channels
- * Public channel - Anyone can listen to team locations
+ * Chat Room Channel
+ * Anyone in the room can listen (guest or authenticated user)
  */
-Broadcast::channel('team-location.{teamId}', function ($user, $teamId) {
-    // Option 1: Public channel (anyone can listen)
-    // return true;
+Broadcast::channel('chat-room.{room_id}', function ($user, $room_id) {
+    $room = Room::find($room_id);
 
-    // Option 2: Only admin can listen (recommended for admin dashboard)
-    if ($user->role === 'admin') {
-        return true;
+    if (!$room) return false;
+
+    // Check if user is a participant (could be User or GuestUser)
+    if ($user instanceof User) {
+        return ($user->id == $room->user_one_id && $room->user_one_type == User::class) ||
+            ($user->id == $room->user_two_id && $room->user_two_type == User::class);
     }
 
-    // Option 3: Team members can listen to their own team
-    $isMember = DB::table('team_users')
-        ->where('team_id', $teamId)
-        ->where('user_id', $user->id)
-        ->exists();
-
-    return $isMember;
-});
-
-/**
- * Private channel - User's personal notifications
- */
-Broadcast::channel('user.{userId}', function ($user, $userId) {
-    return (int) $user->id === (int) $userId;
-});
-
-/**
- * Presence channel - Who's online in a team
- * (Optional - for future features)
- */
-Broadcast::channel('team.{teamId}', function ($user, $teamId) {
-    $teamUser = DB::table('team_users')
-        ->where('team_id', $teamId)
-        ->where('user_id', $user->id)
-        ->first();
-
-    if ($teamUser) {
-        return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'avatar' => $user->avatar,
-            'is_leader' => $teamUser->is_leader
-        ];
+    if ($user instanceof GuestUser) {
+        return ($user->id == $room->user_one_id && $room->user_one_type == GuestUser::class) ||
+            ($user->id == $room->user_two_id && $room->user_two_type == GuestUser::class);
     }
 
     return false;
 });
 
 /**
- * Admin-only channel - All locations
+ * Receiver Channel
+ * For authenticated users receiving messages
  */
-Broadcast::channel('admin-tracking', function ($user) {
-    return $user->role === 'admin' ? [
-        'id' => $user->id,
-        'name' => $user->name
-    ] : false;
+Broadcast::channel('chat-receiver.{receiver_id}', function ($user, $receiver_id) {
+    if ($user instanceof User) {
+        return (int) $user->id === (int) $receiver_id;
+    }
+    return false;
 });
 
 /**
- * Work status updates channel
+ * Sender Channel
+ * For message status updates
  */
-Broadcast::channel('work.{workId}', function ($user, $workId) {
-    // Check if user's team is assigned to this work
-    $work = \App\Models\Work::find($workId);
+Broadcast::channel('chat-sender.{sender_id}', function ($user, $sender_id) {
+    if ($user instanceof User) {
+        return (int) $user->id === (int) $sender_id;
+    }
+    return false;
+});
 
-    if (!$work) return false;
-
-    $isMember = DB::table('team_users')
-        ->where('team_id', $work->team_id)
-        ->where('user_id', $user->id)
-        ->exists();
-
-    return $isMember || $user->role === 'admin';
+/**
+ * Guest Channel (Public for unauthenticated)
+ * For guest users to receive messages
+ * NOTE: This is a public channel since guests aren't authenticated
+ */
+Broadcast::channel('guest-chat.{session_id}', function ($user, $session_id) {
+    // For public access, always return true
+    // Security: validate session_id on backend before broadcasting
+    return true;
 });
