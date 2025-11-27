@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Broadcast;
 */
 
 /**
- * Chat Room Channel
- * Anyone in the room can listen (guest or authenticated user)
+ * Chat Room Channel - Private Channel
+ * Both authenticated users and guests can access this
  */
 Broadcast::channel('chat-room.{room_id}', function ($user, $room_id) {
     $room = Room::find($room_id);
@@ -35,8 +35,8 @@ Broadcast::channel('chat-room.{room_id}', function ($user, $room_id) {
 });
 
 /**
- * Receiver Channel
- * For authenticated users receiving messages
+ * Receiver Channel - Private Channel
+ * For authenticated users (Admin) receiving messages
  */
 Broadcast::channel('chat-receiver.{receiver_id}', function ($user, $receiver_id) {
     if ($user instanceof User) {
@@ -46,23 +46,12 @@ Broadcast::channel('chat-receiver.{receiver_id}', function ($user, $receiver_id)
 });
 
 /**
- * Sender Channel
- * For message status updates
+ * Sender Channel - Private Channel
+ * For message status updates (read receipts)
  */
 Broadcast::channel('chat-sender.{sender_id}', function ($user, $sender_id) {
     if ($user instanceof User) {
         return (int) $user->id === (int) $sender_id;
     }
     return false;
-});
-
-/**
- * Guest Channel (Public for unauthenticated)
- * For guest users to receive messages
- * NOTE: This is a public channel since guests aren't authenticated
- */
-Broadcast::channel('guest-chat.{session_id}', function ($user, $session_id) {
-    // For public access, always return true
-    // Security: validate session_id on backend before broadcasting
-    return true;
 });

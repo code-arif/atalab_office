@@ -502,6 +502,49 @@
             }
         });
 
+        function updateMessageStatus(messageId, status) {
+            let messageDiv = $(`.message[data-message-id="${messageId}"]`);
+            let statusIcon = messageDiv.find('.message-time i');
+
+            if (status === 'read') {
+                statusIcon.removeClass().addClass('bi bi-check-all text-primary');
+            } else if (status === 'delivered') {
+                statusIcon.removeClass().addClass('bi bi-check-all');
+            }
+        }
+
+        // ============================================
+        // CRITICAL: Multiple initialization methods
+        // ============================================
+        $(document).ready(function() {
+            console.log('Initializing user list...');
+            userList();
+        });
+
+        // Method 2: Window load (backup)
+        $(window).on('load', function() {
+            console.log('Chat initialized (window load). User ID:', USER_ID);
+            // Only call if not already called
+            if ($('#userList').children().length === 0) {
+                userList();
+            }
+        });
+
+        // Method 3: Immediate execution (last resort)
+        setTimeout(function() {
+            console.log('Chat initialized (timeout). User ID:', USER_ID);
+            // Only call if not already called
+            if ($('#userList').children().length === 0) {
+                userList();
+            }
+        }, 500);
+
+        // Auto-refresh every 5 minutes
+        // setInterval(() => {
+        //     console.log('Auto-refreshing user list...');
+        //     userList();
+        // }, 300000);
+
         // ============================================
         // Real-time Updates (Laravel Echo)
         // ============================================
@@ -525,51 +568,25 @@
         //         });
         // }
 
-        function updateMessageStatus(messageId, status) {
-            let messageDiv = $(`.message[data-message-id="${messageId}"]`);
-            let statusIcon = messageDiv.find('.message-time i');
 
-            if (status === 'read') {
-                statusIcon.removeClass().addClass('bi bi-check-all text-primary');
-            } else if (status === 'delivered') {
-                statusIcon.removeClass().addClass('bi bi-check-all');
-            }
+
+        var user_id = `{{ auth('web')->check() ? auth('web')->user()->id : null }}`;
+        console.log('User ID:', user_id);
+
+        if (user_id) {
+            document.addEventListener('DOMContentLoaded', function() {
+                Echo.private(`chat-receiver.${user_id}`)
+                    .listen('MessageSendEvent', function(e) {
+                        console.log('Received event:', e); // Debugging
+                        toastr.success(e.data.text ?? "New file received");
+                        let receiver_id = document.getElementById('ReceiverId').value;
+                        if (receiver_id) {
+                            userChat(receiver_id);
+                            userList();
+                        }
+                    });
+            });
         }
-
-        // ============================================
-        // CRITICAL: Multiple initialization methods
-        // ============================================
-
-        // Method 1: jQuery ready
-
-        $(document).ready(function() {
-            console.log('Initializing user list...');
-            userList();
-        });
-
-        // Method 2: Window load (backup)
-        $(window).on('load', function() {
-            console.log('🚀 Chat initialized (window load). User ID:', USER_ID);
-            // Only call if not already called
-            if ($('#userList').children().length === 0) {
-                userList();
-            }
-        });
-
-        // Method 3: Immediate execution (last resort)
-        setTimeout(function() {
-            console.log('🚀 Chat initialized (timeout). User ID:', USER_ID);
-            // Only call if not already called
-            if ($('#userList').children().length === 0) {
-                userList();
-            }
-        }, 500);
-
-        // Auto-refresh every 5 minutes
-        setInterval(() => {
-            console.log('🔄 Auto-refreshing user list...');
-            userList();
-        }, 300000);
     </script>
 @endpush
 

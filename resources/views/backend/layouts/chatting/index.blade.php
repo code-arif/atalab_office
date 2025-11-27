@@ -96,9 +96,6 @@
                                 <div class="input-container">
                                     <input class="message-input" placeholder="Type your message here..." type="text"
                                         id="Text">
-                                    <label for="File" id="FileLabel" class="file-input-label">
-                                        <i class="bi bi-image"></i>
-                                    </label>
                                     <input type="file" id="File" style="display: none;"
                                         accept=".jpg,.jpeg,.png,.gif">
                                     <input type="text" style="display: none;" id="ReceiverId" />
@@ -133,245 +130,271 @@
     <script src="https://cdn.jsdelivr.net/npm/pusher-js@7.2.0/dist/web/pusher.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo/dist/echo.iife.js"></script>
 
-    {{-- Global Variables --}}
-    <script>
-        let currentReceiverId = null;
-        let currentReceiverType = null;
-        let currentRoomId = null;
-        let typingTimeout = null;
-        let selectedMessages = new Set();
-        const USER_ID = {{ auth('web')->user()->id }};
-        const CSRF_TOKEN = "{{ csrf_token() }}";
-    </script>
 
     <script>
         // ============================================
-        // User List Functions
+        // Enhanced Chat JavaScript with All Fixes
         // ============================================
-        function userList() {
-            console.log('Loading user list...');
-            NProgress.start();
 
-            $.ajax({
-                url: `{{ route('chat.list') }}`,
-                type: "GET",
-                success: function(response) {
-                    console.log('User list loaded:', response);
-                    NProgress.done();
-                    $('#userList').empty();
+        $(document).ready(function() {
+            // Global Variables
+            let currentReceiverId = null;
+            let currentReceiverType = null;
+            let currentRoomId = null;
+            let typingTimeout = null;
+            const USER_ID = {{ auth('web')->user()->id }};
+            const CSRF_TOKEN = "{{ csrf_token() }}";
 
-                    if (!response.data || !response.data.users || response.data.users.length === 0) {
-                        $('#userList').append(
-                            '<div style="padding: 20px; text-align: center; color: #999;">No conversations yet</div>'
-                        );
-                        return;
-                    }
+            // ============================================
+            // Initialize
+            // ============================================
+            userList();
 
-                    $.each(response.data.users, function(index, user) {
-                        let avatar = user.display_avatar || user.avatar ||
-                            "{{ asset('default/profile.jpg') }}";
-                        let guestTag = user.is_guest ? '<span class="guest-tag">Guest</span>' : '';
-                        let userName = user.display_name || user.name || 'Guest User';
-                        let userType = user.user_type || 'App\\Models\\User';
+            // Refresh user list every 30 seconds
+            setInterval(() => {
+                if (!currentReceiverId) {
+                    userList();
+                }
+            }, 100000);
 
-                        let escapedUserType = userType.replace(/\\/g, '\\\\');
+            // ============================================
+            // User List Function
+            // ============================================
+            function userList() {
+                console.log('Loading user list...');
+                NProgress.start();
 
-                        let lastMessage = 'No messages yet';
-                        if (user.last_chat && user.last_chat.text) {
-                            lastMessage = user.last_chat.text.substring(0, 30);
-                            if (user.last_chat.text.length > 30) {
-                                lastMessage += '...';
+                $.ajax({
+                    url: `{{ route('chat.list') }}`,
+                    type: "GET",
+                    success: function(response) {
+                        console.log('User list loaded:', response);
+                        NProgress.done();
+                        $('#userList').empty();
+
+                        if (!response.data || !response.data.users || response.data.users.length ===
+                            0) {
+                            $('#userList').append(
+                                '<div style="padding: 20px; text-align: center; color: #999;">No conversations yet</div>'
+                            );
+                            return;
+                        }
+
+                        $.each(response.data.users, function(index, user) {
+                            let avatar = user.display_avatar || user.avatar ||
+                                "{{ asset('default/profile.jpg') }}";
+                            let guestTag = user.is_guest ?
+                                '<span class="guest-tag">Guest</span>' : '';
+                            let userName = user.display_name || user.name || 'Guest User';
+                            let userType = user.user_type || 'App\\Models\\User';
+                            let escapedUserType = userType.replace(/\\/g, '\\\\');
+
+                            let lastMessage = 'No messages yet';
+                            if (user.last_chat && user.last_chat.text) {
+                                lastMessage = user.last_chat.text.substring(0, 30);
+                                if (user.last_chat.text.length > 30) {
+                                    lastMessage += '...';
+                                }
                             }
-                        }
 
-                        let timeAgo = '';
-                        if (user.last_chat && user.last_chat.created_at) {
-                            timeAgo = dayjs(user.last_chat.created_at).fromNow();
-                        }
+                            // let timeAgo = user.last_chat.humanize_date || 'Never';
 
-                        $('#userList').append(`
-                            <a class="user-item" href="javascript:void(0)"
-                               onclick="userChat(${user.id}, '${escapedUserType}')"
-                               id="selectUser${user.id}"
-                               data-user-type="${userType}">
-                                <div class="user-avatar">
-                                    <img alt="avatar" src="${avatar}">
+                            let selectedClass = (currentReceiverId == user.id) ? 'selected' :
+                                '';
+
+                            $('#userList').append(`
+                        <a class="user-item ${selectedClass}" href="javascript:void(0)"
+                           onclick="userChat(${user.id}, '${escapedUserType}')"
+                           id="selectUser${user.id}"
+                           data-user-type="${userType}"
+                           data-user-id="${user.id}">
+                            <div class="user-avatar">
+                                <img alt="avatar" src="${avatar}">
+                            </div>
+                            <div class="user-info">
+                                <div class="user-name">
+                                    ${userName} ${guestTag}
                                 </div>
-                                <div class="user-info">
-                                    <div class="user-name">
-                                        ${userName} ${guestTag}
-                                    </div>
-                                    <div class="user-message">
-                                        ${lastMessage}
-                                    </div>
+                                <div class="user-message">
+                                    ${lastMessage}
                                 </div>
-                                <div class="user-meta">
-                                    <div class="user-time">
-                                        ${timeAgo}
-                                    </div>
-                                    ${user.unread_count > 0 ? `<span class="unread-badge">${user.unread_count}</span>` : ''}
+                            </div>
+                            <div class="user-meta">
+                                <div class="user-time">
+                                    ${user.last_chat.humanize_date}
                                 </div>
-                            </a>
-                        `);
-                    });
+                                ${user.unread_count > 0 ? `<span class="unread-badge">${user.unread_count}</span>` : ''}
+                            </div>
+                        </a>
+                    `);
+                        });
 
-                    console.log('User list rendered:', response.data.users.length, 'users');
-                },
-                error: function(xhr) {
-                    console.error('Error loading users:', xhr);
-                    NProgress.done();
-                    toastr.error('Failed to load conversations');
-                }
-            });
-        }
-
-
-        // ============================================
-        // Search Function
-        // ============================================
-        function userSearch() {
-            let keyword = $('#keyword').val().trim();
-
-            if (!keyword) {
-                userList();
-                return;
-            }
-
-            NProgress.start();
-            $.ajax({
-                url: `{{ route('chat.search') }}?keyword=${keyword}`,
-                type: "GET",
-                success: function(response) {
-                    NProgress.done();
-                    $('#userList').empty();
-
-                    $.each(response.data.users, function(index, user) {
-                        let avatar = user.avatar || "{{ asset('default/profile.jpg') }}";
-                        let guestTag = user.is_guest ? '<span class="guest-tag">👤 Guest</span>' : '';
-                        let userType = user.is_guest ? 'App\\\\Models\\\\GuestUser' :
-                            'App\\\\Models\\\\User';
-
-                        $('#userList').append(`
-                            <a class="user-item" href="javascript:void(0)"
-                               onclick="userChat(${user.id}, '${userType}')"
-                               id="selectUser${user.id}">
-                                <div class="user-avatar">
-                                    <img alt="avatar" src="${avatar}">
-                                </div>
-                                <div class="user-info">
-                                    <div class="user-name">${user.name} ${guestTag}</div>
-                                    <div class="user-message">${user.email}</div>
-                                </div>
-                            </a>
-                        `);
-                    });
-                },
-                error: function(xhr) {
-                    console.error('Error searching:', xhr);
-                    NProgress.done();
-                }
-            });
-        }
-
-
-
-        // ============================================
-        // Load Conversation
-        // ============================================
-        function userChat(receiver_id, receiver_type) {
-            console.log('Loading conversation:', receiver_id, receiver_type);
-            NProgress.start();
-            currentReceiverId = receiver_id;
-            currentReceiverType = receiver_type;
-            selectedMessages.clear();
-
-            $.ajax({
-                url: `{{ url('admin/chat/conversation') }}/${receiver_id}`,
-                type: "GET",
-                data: {
-                    receiver_type: receiver_type
-                },
-                success: function(response) {
-                    console.log('Conversation loaded:', response);
-                    NProgress.done();
-                    renderConversation(response.data);
-                    markAllAsSeen(receiver_id, receiver_type);
-                },
-                error: function(xhr) {
-                    console.error('Error loading conversation:', xhr);
-                    NProgress.done();
-                    toastr.error('Failed to load conversation');
-                }
-            });
-        }
-
-        // ============================================
-        // Render Conversation
-        // ============================================
-        function renderConversation(data) {
-            $('#ChatContent').empty();
-            $('#ReceiverId').val(data.receiver.id);
-            $('#ReceiverName').text(data.receiver.name);
-            $('#ReceiverRoll').text(data.receiver.role || 'Guest');
-            $('#RoomId').val(data.room.id);
-            currentRoomId = data.room.id;
-            currentReceiverType = data.receiver.user_type;
-
-            window.sessionStorage.setItem('room_id', data.room.id);
-
-            $('#welcomeScreen').hide();
-            $('#ChatBox').removeClass('d-none');
-
-            $('.user-item').removeClass('selected');
-            $('#selectUser' + data.receiver.id).addClass('selected');
-
-            let receiverAvatar = data.receiver.avatar || "{{ asset('default/profile.jpg') }}";
-            let senderAvatar = data.sender.avatar || "{{ asset('default/profile.jpg') }}";
-
-            $('#ReceiverImage').html(`<img alt="avatar" src="${receiverAvatar}">`);
-
-            if (data.chat && data.chat.length > 0) {
-                data.chat.forEach(chat => {
-                    appendMessage(chat, senderAvatar, receiverAvatar);
+                        console.log('User list rendered:', response.data.users.length, 'users');
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading users:', xhr);
+                        NProgress.done();
+                        toastr.error('Failed to load conversations');
+                    }
                 });
-            } else {
-                $('#ChatContent').append(
-                    '<div style="text-align: center; padding: 20px; color: #999;">No messages yet. Start the conversation!</div>'
-                );
             }
 
-            scrollToBottom();
-        }
+            // ============================================
+            // Search Function
+            // ============================================
+            window.userSearch = function() {
+                let keyword = $('#keyword').val().trim();
 
-        // ============================================
-        // Append Message
-        // ============================================
-        function appendMessage(chat, senderAvatar, receiverAvatar) {
-            let isSender = chat.sender_id == USER_ID && chat.sender_type == 'App\\Models\\User';
-            let chatClass = isSender ? 'message chat-right' : 'message chat-left';
-            let avatar = isSender ? senderAvatar : receiverAvatar;
-
-            let statusIcon = '';
-            if (isSender) {
-                if (chat.status === 'read') {
-                    statusIcon = '<i class="bi bi-check-all text-primary"></i>';
-                } else if (chat.status === 'delivered') {
-                    statusIcon = '<i class="bi bi-check-all"></i>';
-                } else {
-                    statusIcon = '<i class="bi bi-check"></i>';
+                if (!keyword) {
+                    userList();
+                    return;
                 }
+
+                NProgress.start();
+                $.ajax({
+                    url: `{{ route('chat.search') }}?keyword=${keyword}`,
+                    type: "GET",
+                    success: function(response) {
+                        NProgress.done();
+                        $('#userList').empty();
+
+                        if (!response.data || !response.data.users || response.data.users.length ===
+                            0) {
+                            $('#userList').append(
+                                '<div style="padding: 20px; text-align: center; color: #999;">No users found</div>'
+                            );
+                            return;
+                        }
+
+                        $.each(response.data.users, function(index, user) {
+                            let avatar = user.avatar ||
+                                "{{ asset('default/profile.jpg') }}";
+                            let guestTag = user.is_guest ?
+                                '<span class="guest-tag">Guest</span>' : '';
+                            let userType = user.is_guest ? 'App\\\\Models\\\\GuestUser' :
+                                'App\\\\Models\\\\User';
+
+                            $('#userList').append(`
+                        <a class="user-item" href="javascript:void(0)"
+                           onclick="userChat(${user.id}, '${userType}')"
+                           id="selectUser${user.id}"
+                           data-user-type="${userType}">
+                            <div class="user-avatar">
+                                <img alt="avatar" src="${avatar}">
+                            </div>
+                            <div class="user-info">
+                                <div class="user-name">${user.name} ${guestTag}</div>
+                                <div class="user-message">${user.email}</div>
+                            </div>
+                        </a>
+                    `);
+                        });
+                    },
+                    error: function(xhr) {
+                        console.error('Error searching:', xhr);
+                        NProgress.done();
+                        toastr.error('Search failed');
+                    }
+                });
             }
 
-            let editedTag = chat.is_edited ? '<span class="edited-tag">(edited)</span>' : '';
-            let messageContent = chat.text ? `<div class="message-bubble">${chat.text} ${editedTag}</div>` : '';
+            // ============================================
+            // Load Conversation
+            // ============================================
+            window.userChat = function(receiver_id, receiver_type) {
+                console.log('Loading conversation:', receiver_id, receiver_type);
+                NProgress.start();
+                currentReceiverId = receiver_id;
+                currentReceiverType = receiver_type;
 
-            let contextMenu = isSender ? `
+                $.ajax({
+                    url: `{{ url('admin/chat/conversation') }}/${receiver_id}`,
+                    type: "GET",
+                    data: {
+                        receiver_type: receiver_type
+                    },
+                    success: function(response) {
+                        console.log('Conversation loaded:', response);
+                        NProgress.done();
+                        renderConversation(response.data);
+                        markAllAsSeen(receiver_id, receiver_type);
+
+                        $(document).trigger('conversationOpened', [response.data.room.id]);
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading conversation:', xhr);
+                        NProgress.done();
+                        toastr.error('Failed to load conversation');
+                    }
+                });
+            }
+
+            // ============================================
+            // Render Conversation
+            // ============================================
+            function renderConversation(data) {
+                $('#ChatContent').empty();
+                $('#ReceiverId').val(data.receiver.id);
+                $('#ReceiverName').text(data.receiver.name);
+                $('#ReceiverRoll').text(data.receiver.role || 'Guest');
+                $('#RoomId').val(data.room.id);
+                currentRoomId = data.room.id;
+                currentReceiverType = data.receiver.user_type;
+
+                $('#welcomeScreen').hide();
+                $('#ChatBox').removeClass('d-none');
+
+                $('.user-item').removeClass('selected');
+                $('#selectUser' + data.receiver.id).addClass('selected');
+
+                let receiverAvatar = data.receiver.avatar || "{{ asset('default/profile.jpg') }}";
+                let senderAvatar = data.sender.avatar || "{{ asset('default/profile.jpg') }}";
+
+                $('#ReceiverImage').html(`<img alt="avatar" src="${receiverAvatar}">`);
+
+                if (data.chat && data.chat.length > 0) {
+                    data.chat.forEach(chat => {
+                        appendMessage(chat, senderAvatar, receiverAvatar);
+                    });
+                } else {
+                    $('#ChatContent').append(
+                        '<div style="text-align: center; padding: 20px; color: #999;">No messages yet. Start the conversation!</div>'
+                    );
+                }
+
+                scrollToBottom();
+            }
+
+            // ============================================
+            // Append Message
+            // ============================================
+            function appendMessage(chat, senderAvatar, receiverAvatar) {
+                let isSender = chat.sender_id == USER_ID && chat.sender_type == 'App\\Models\\User';
+                let chatClass = isSender ? 'message chat-right' : 'message chat-left';
+                let avatar = isSender ? senderAvatar : receiverAvatar;
+
+                let statusIcon = '';
+                if (isSender) {
+                    if (chat.status === 'read') {
+                        statusIcon = '<i class="bi bi-check-all text-primary"></i>';
+                    } else if (chat.status === 'delivered') {
+                        statusIcon = '<i class="bi bi-check-all"></i>';
+                    } else {
+                        statusIcon = '<i class="bi bi-check"></i>';
+                    }
+                }
+
+                let editedTag = chat.is_edited ? '<span class="edited-tag">(edited)</span>' : '';
+                let messageContent = chat.text ?
+                    `<div class="message-bubble">${escapeHtml(chat.text)} ${editedTag}</div>` : '';
+
+                let contextMenu = isSender ? `
                 <div class="message-context" onclick="showMessageMenu(${chat.id}, event)">
                     <i class="bi bi-three-dots-vertical"></i>
                 </div>
             ` : '';
 
-            $('#ChatContent').append(`
+                $('#ChatContent').append(`
                 <div class="${chatClass}" data-message-id="${chat.id}">
                     <div class="message-avatar">
                         <img alt="avatar" src="${avatar}">
@@ -385,401 +408,399 @@
                     ${contextMenu}
                 </div>
             `);
-        }
-
-
-        // ============================================
-        // Send Message
-        // ============================================
-        function sendMessage(receiver_id) {
-            let text = $('#Text').val().trim();
-
-            if (!text) {
-                toastr.warning('Please enter a message');
-                return;
             }
 
-            if (!currentReceiverType) {
-                toastr.error('Receiver type not found. Please select a conversation first.');
-                return;
+            // ============================================
+            // Send Message
+            // ============================================
+            window.sendMessage = function(receiver_id) {
+                let text = $('#Text').val().trim();
+
+                if (!text) {
+                    toastr.warning('Please enter a message');
+                    return;
+                }
+
+                if (!currentReceiverType) {
+                    toastr.error('Receiver type not found. Please select a conversation first.');
+                    return;
+                }
+
+                NProgress.start();
+
+                $.ajax({
+                    url: `{{ url('admin/chat/send') }}/${receiver_id}`,
+                    type: "POST",
+                    headers: {
+                        'X-CSRF-TOKEN': CSRF_TOKEN
+                    },
+                    data: {
+                        text: text,
+                        receiver_type: currentReceiverType
+                    },
+                    success: function(response) {
+                        NProgress.done();
+                        $('#Text').val('');
+                        userChat(receiver_id, currentReceiverType);
+                        userList();
+                        toastr.success('Message sent!');
+                    },
+                    error: function(xhr) {
+                        console.error('Error sending message:', xhr);
+                        NProgress.done();
+                        toastr.error(xhr.responseJSON?.message || 'Failed to send message');
+                    }
+                });
             }
 
-            NProgress.start();
+            // ============================================
+            // Message Context Menu
+            // ============================================
+            window.showMessageMenu = function(messageId, event) {
+                event.stopPropagation();
+                $('.message-menu').remove();
 
-            $.ajax({
-                url: `{{ url('admin/chat/send') }}/${receiver_id}`,
-                type: "POST",
-                headers: {
-                    'X-CSRF-TOKEN': CSRF_TOKEN
-                },
-                data: {
-                    text: text,
-                    receiver_type: currentReceiverType
-                },
-                success: function(response) {
-                    NProgress.done();
-                    $('#Text').val('');
-                    userChat(receiver_id, currentReceiverType);
-                    userList();
-                    toastr.success('Message sent successfully!');
-                },
-                error: function(xhr) {
-                    console.error('Error sending message:', xhr);
-                    NProgress.done();
-                    toastr.error(xhr.responseJSON?.message || 'Failed to send message');
+                let menu = $(`
+                    <div class="message-menu" style="position: absolute; z-index: 1000;">
+                        <div class="menu-item" onclick="editMessage(${messageId})">
+                            <i class="bi bi-pencil"></i> Edit
+                        </div>
+                        <div class="menu-item text-danger" onclick="deleteMessage(${messageId})">
+                            <i class="bi bi-trash"></i> Delete
+                        </div>
+                    </div>
+                `);
+
+                $('body').append(menu);
+
+                let rect = event.target.getBoundingClientRect();
+                menu.css({
+                    top: rect.bottom + 5 + 'px',
+                    left: rect.left - 100 + 'px'
+                });
+
+                $(document).one('click', function() {
+                    menu.remove();
+                });
+            }
+
+            // ============================================
+            // Edit Message
+            // ============================================
+            window.editMessage = function(messageId) {
+                $('.message-menu').remove();
+
+                let messageDiv = $(`.message[data-message-id="${messageId}"]`);
+                let currentText = messageDiv.find('.message-bubble').text().replace('(edited)', '').trim();
+
+                Swal.fire({
+                    title: 'Edit Message',
+                    input: 'textarea',
+                    inputValue: currentText,
+                    inputAttributes: {
+                        maxlength: 1000
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: 'Update',
+                    confirmButtonColor: '#55c7d9',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed && result.value.trim()) {
+                        updateMessage(messageId, result.value.trim());
+                    }
+                });
+            }
+
+
+            // ============================================
+            // Update Message
+            // ============================================
+            function updateMessage(messageId, newText) {
+                NProgress.start();
+
+                $.ajax({
+                    url: `{{ url('admin/chat/message') }}/${messageId}/edit`,
+                    type: "PUT",
+                    headers: {
+                        'X-CSRF-TOKEN': CSRF_TOKEN
+                    },
+                    data: {
+                        text: newText
+                    },
+                    success: function(response) {
+                        NProgress.done();
+                        toastr.success('Message updated!');
+                        userChat(currentReceiverId, currentReceiverType);
+                    },
+                    error: function(xhr) {
+                        console.error('Error updating message:', xhr);
+                        NProgress.done();
+                        toastr.error('Failed to update message');
+                    }
+                });
+            }
+
+            // ============================================
+            // Delete Message alert
+            // ============================================
+            window.deleteMessage = function(messageId) {
+                $('.message-menu').remove();
+
+                Swal.fire({
+                    title: 'Delete Message?',
+                    text: "This action cannot be undone!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        performDeleteMessage(messageId);
+                    }
+                });
+            }
+
+
+            // ============================================
+            // Delete Message
+            // ============================================
+            function performDeleteMessage(messageId) {
+                NProgress.start();
+
+                $.ajax({
+                    url: `{{ url('admin/chat/message') }}/${messageId}`,
+                    type: "DELETE",
+                    headers: {
+                        'X-CSRF-TOKEN': CSRF_TOKEN
+                    },
+                    success: function(response) {
+                        NProgress.done();
+                        toastr.success('Message deleted!');
+                        $(`.message[data-message-id="${messageId}"]`).fadeOut(300, function() {
+                            $(this).remove();
+                        });
+                    },
+                    error: function(xhr) {
+                        console.error('Error deleting message:', xhr);
+                        NProgress.done();
+                        toastr.error('Failed to delete message');
+                    }
+                });
+            }
+
+            // ============================================
+            // Confirm Delete Conversation
+            // ============================================
+            window.confirmDeleteConversation = function(receiverId) {
+                if (!receiverId || !currentReceiverType) {
+                    toastr.error('Please select a conversation first');
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Delete Entire Conversation?',
+                    text: "All messages will be permanently deleted!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        deleteConversation(receiverId);
+                    }
+                });
+            }
+
+            // ============================================
+            // Delete Conversation
+            // ============================================
+            function deleteConversation(receiverId) {
+                NProgress.start();
+
+                $.ajax({
+                    url: `{{ url('admin/chat/conversation') }}/${receiverId}`,
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': CSRF_TOKEN
+                    },
+                    data: {
+                        receiver_type: currentReceiverType
+                    },
+                    success: function(response) {
+                        NProgress.done();
+                        Swal.fire('Deleted!', response.message, 'success');
+                        formClear();
+                        $('#welcomeScreen').show();
+                        $('#ChatBox').addClass('d-none');
+                        currentReceiverId = null;
+                        currentReceiverType = null;
+                        currentRoomId = null;
+                        userList();
+                    },
+                    error: function(xhr) {
+                        console.error('Error deleting conversation:', xhr);
+                        NProgress.done();
+                        Swal.fire('Error', 'Failed to delete conversation', 'error');
+                    }
+                });
+            }
+
+            // ============================================
+            // Typing Indicator
+            // ============================================
+            $('#Text').on('input', function() {
+                if (!currentRoomId) return;
+                clearTimeout(typingTimeout);
+                sendTypingStatus(true);
+                typingTimeout = setTimeout(() => {
+                    sendTypingStatus(false);
+                }, 3000);
+            });
+
+            function sendTypingStatus(isTyping) {
+                if (!currentRoomId) return;
+
+                $.ajax({
+                    url: `{{ route('chat.typing') }}`,
+                    type: "POST",
+                    headers: {
+                        'X-CSRF-TOKEN': CSRF_TOKEN
+                    },
+                    data: {
+                        room_id: currentRoomId,
+                        is_typing: isTyping
+                    }
+                });
+            }
+
+            // ============================================
+            // Mark as Seen
+            // ============================================
+            function markAllAsSeen(receiverId, receiverType) {
+                $.ajax({
+                    url: `{{ url('admin/chat/seen/all') }}/${receiverId}`,
+                    type: "GET",
+                    data: {
+                        receiver_type: receiverType
+                    },
+                    success: function() {
+                        userList();
+                    }
+                });
+            }
+
+            // ============================================
+            // Helper Functions
+            // ============================================
+            function scrollToBottom() {
+                let chatContent = $('#ChatContent');
+                chatContent.scrollTop(chatContent[0].scrollHeight);
+            }
+
+            window.formClear = function() {
+                $('#Text').val('');
+                NProgress.done();
+            }
+
+            function escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, m => map[m]);
+            }
+
+            // ============================================
+            // Event Listeners
+            // ============================================
+            $('#Text').on('keypress', function(e) {
+                if (e.which === 13 && !e.shiftKey) {
+                    e.preventDefault();
+                    if (currentReceiverId) {
+                        sendMessage(currentReceiverId);
+                    }
                 }
             });
-        }
 
+            $('#keyword').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    userSearch();
+                }
+            });
 
-        // ============================================
-        // Typing Indicator
-        // ============================================
-        $('#Text').on('input', function() {
-            if (!currentRoomId) return;
-            clearTimeout(typingTimeout);
-            sendTypingStatus(true);
-            typingTimeout = setTimeout(() => {
-                sendTypingStatus(false);
-            }, 3000);
+            // Show/hide delete tooltip
+            $('#deleteBtn').on('click', function(e) {
+                e.stopPropagation();
+                $('#deleteTooltip').toggleClass('show');
+            });
+
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.tooltip-container').length) {
+                    $('#deleteTooltip').removeClass('show');
+                }
+            });
         });
+    </script>
 
-        function sendTypingStatus(isTyping) {
-            if (!currentRoomId) return;
+    <script>
+        var user_id = `{{ auth('web')->check() ? auth('web')->user()->id : null }}`;
 
-            $.ajax({
-                url: `{{ route('chat.typing') }}`,
-                type: "POST",
-                headers: {
-                    'X-CSRF-TOKEN': CSRF_TOKEN
-                },
-                data: {
-                    room_id: currentRoomId,
-                    is_typing: isTyping
-                }
-            });
-        }
+        if (user_id) {
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('Echo connecting for user:', user_id);
 
+                // Listen on receiver channel
+                Echo.private(`chat-receiver.${user_id}`)
+                    .listen('MessageSendEvent', function(e) {
+                        console.log('New message received:', e);
 
-        // ============================================
-        // Mark as Seen
-        // ============================================
-        function markAllAsSeen(receiverId, receiverType) {
-            $.ajax({
-                url: `{{ url('admin/chat/seen/all') }}/${receiverId}`,
-                type: "GET",
-                data: {
-                    receiver_type: receiverType
-                },
-                success: function() {
-                    userList();
-                }
-            });
-        }
+                        // Show notification
+                        toastr.success('New message received!');
 
+                        // Get current receiver ID
+                        let currentReceiverId = $('#ReceiverId').val();
+                        let currentReceiverType = null;
 
-        function sendTypingStatus(isTyping) {
-            if (!currentRoomId) return;
+                        // Determine receiver type from event data
+                        if (e.data && e.data.sender_type) {
+                            currentReceiverType = e.data.sender_type;
+                        }
 
-            $.ajax({
-                url: `{{ route('chat.typing') }}`,
-                type: "POST",
-                headers: {
-                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
-                },
-                data: {
-                    room_id: currentRoomId,
-                    is_typing: isTyping
-                }
-            });
-        }
+                        // If chat is open with this sender, reload conversation
+                        if (currentReceiverId && currentReceiverId == e.data.sender_id) {
+                            console.log('Reloading current conversation');
+                            userChat(e.data.sender_id, currentReceiverType);
+                        }
 
-        // ============================================
-        // Message Context Menu
-        // ============================================
-        function showMessageMenu(messageId, event) {
-            event.stopPropagation();
-
-            // Remove any existing menu
-            $('.message-menu').remove();
-
-            let menu = $(`
-        <div class="message-menu" style="position: absolute; z-index: 1000;">
-            <div class="menu-item" onclick="editMessage(${messageId})">
-                <i class="bi bi-pencil"></i> Edit
-            </div>
-            <div class="menu-item text-danger" onclick="deleteMessage(${messageId})">
-                <i class="bi bi-trash"></i> Delete
-            </div>
-        </div>
-    `);
-
-            $('body').append(menu);
-
-            // Position menu
-            let rect = event.target.getBoundingClientRect();
-            menu.css({
-                top: rect.bottom + 5 + 'px',
-                left: rect.left - 100 + 'px'
-            });
-
-            // Close on outside click
-            $(document).one('click', function() {
-                menu.remove();
-            });
-        }
-
-        // ============================================
-        // Edit Message
-        // ============================================
-        function editMessage(messageId) {
-            $('.message-menu').remove();
-
-            let messageDiv = $(`.message[data-message-id="${messageId}"]`);
-            let currentText = messageDiv.find('.message-bubble').text().replace('(edited)', '').trim();
-
-            Swal.fire({
-                title: 'Edit Message',
-                input: 'textarea',
-                inputValue: currentText,
-                inputAttributes: {
-                    maxlength: 1000
-                },
-                showCancelButton: true,
-                confirmButtonText: 'Update',
-                confirmButtonColor: '#55c7d9',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed && result.value.trim()) {
-                    updateMessage(messageId, result.value.trim());
-                }
-            });
-        }
-
-        function updateMessage(messageId, newText) {
-            NProgress.start();
-
-            $.ajax({
-                url: `/chat/message/${messageId}/edit`,
-                type: "PUT",
-                headers: {
-                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
-                },
-                data: {
-                    text: newText
-                },
-                success: function(response) {
-                    NProgress.done();
-                    toastr.success('Message updated successfully!');
-                    userChat(currentReceiverId);
-                },
-                error: function(xhr) {
-                    console.error('Error updating message:', xhr);
-                    NProgress.done();
-                    toastr.error('Failed to update message');
-                }
-            });
-        }
-
-        // ============================================
-        // Delete Message
-        // ============================================
-        function deleteMessage(messageId) {
-            $('.message-menu').remove();
-
-            Swal.fire({
-                title: 'Delete Message?',
-                text: "This action cannot be undone!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    performDeleteMessage(messageId);
-                }
-            });
-        }
-
-        function performDeleteMessage(messageId) {
-            NProgress.start();
-
-            $.ajax({
-                url: `/chat/message/${messageId}`,
-                type: "DELETE",
-                headers: {
-                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
-                },
-                success: function(response) {
-                    NProgress.done();
-                    toastr.success('Message deleted successfully!');
-                    $(`.message[data-message-id="${messageId}"]`).fadeOut(300, function() {
-                        $(this).remove();
+                        // Always refresh user list to show new message
+                        console.log('Refreshing user list');
+                        userList();
                     });
-                },
-                error: function(xhr) {
-                    console.error('Error deleting message:', xhr);
-                    NProgress.done();
-                    toastr.error('Failed to delete message');
-                }
+
+                // Optional: Listen on room channel if chat is open
+                $(document).on('conversationOpened', function(event, roomId) {
+                    if (roomId) {
+                        Echo.private(`chat-room.${roomId}`)
+                            .listen('MessageSendEvent', function(e) {
+                                console.log('Message in current room:', e);
+
+                                let currentReceiverId = $('#ReceiverId').val();
+                                if (currentReceiverId == e.data.sender_id) {
+                                    userChat(e.data.sender_id, e.data.sender_type);
+                                }
+                            });
+                    }
+                });
             });
         }
-
-        // ============================================
-        // Delete Conversation
-        // ============================================
-        function confirmDeleteConversation(receiverId) {
-            Swal.fire({
-                title: 'Delete Entire Conversation?',
-                text: "All messages will be permanently deleted!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    deleteConversation(receiverId);
-                }
-            });
-        }
-
-        function deleteConversation(receiverId) {
-            NProgress.start();
-
-            $.ajax({
-                url: `/chat/conversation/${receiverId}`,
-                type: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
-                },
-                success: function(response) {
-                    NProgress.done();
-                    Swal.fire('Deleted!', response.message, 'success');
-                    formClear();
-                    $('#welcomeScreen').show();
-                    $('#ChatBox').addClass('d-none');
-                    userList();
-                },
-                error: function(xhr) {
-                    console.error('Error deleting conversation:', xhr);
-                    NProgress.done();
-                    Swal.fire('Error', 'Failed to delete conversation', 'error');
-                }
-            });
-        }
-
-        // ============================================
-        // Mark as Seen
-        // ============================================
-        function markAllAsSeen(receiverId) {
-            $.ajax({
-                url: `{{ route('chat.seen.all', ':id') }}`.replace(':id', receiverId),
-                type: "GET",
-                success: function() {
-                    userList(); // Refresh to update unread counts
-                }
-            });
-        }
-
-        // ============================================
-        // Helper Functions
-        // ============================================
-        function scrollToBottom() {
-            let chatContent = $('#ChatContent');
-            chatContent.scrollTop(chatContent[0].scrollHeight);
-        }
-
-        function formClear() {
-            $('#Text').val('');
-            NProgress.done();
-        }
-
-        // ============================================
-        // Event Listeners
-        // ============================================
-        $('#Text').on('keypress', function(e) {
-            if (e.which === 13 && !e.shiftKey) {
-                e.preventDefault();
-                if (currentReceiverId) {
-                    sendMessage(currentReceiverId);
-                }
-            }
-        });
-
-        $('#keyword').on('keypress', function(e) {
-            if (e.which === 13) {
-                e.preventDefault();
-                userSearch();
-            }
-        });
-
-        // ============================================
-        // Real-time Updates (Laravel Echo)
-        // ============================================
-        const user_id = `{{ auth('web')->user()->id }}`;
-
-        // if (user_id) {
-        //     // Listen for new messages
-        //     Echo.private(`chat-receiver.${user_id}`)
-        //         .listen('MessageSendEvent', function(e) {
-        //             console.log('New message received:', e);
-        //             toastr.info('New message received');
-
-        //             if (currentReceiverId == e.data.sender_id) {
-        //                 userChat(currentReceiverId);
-        //             }
-
-        //             userList();
-        //         });
-
-        //     // Listen for typing indicators
-        //     if (currentRoomId) {
-        //         Echo.private(`chat-room.${currentRoomId}`)
-        //             .listen('TypingEvent', function(e) {
-        //                 if (e.user_id != user_id) {
-        //                     if (e.is_typing) {
-        //                         $('#ReceiverRoll').html('<i>typing...</i>');
-        //                     } else {
-        //                         $('#ReceiverRoll').text('Guest');
-        //                     }
-        //                 }
-        //             });
-        //     }
-
-        //     // Listen for message status updates
-        //     Echo.private(`chat-sender.${user_id}`)
-        //         .listen('MessageStatusEvent', function(e) {
-        //             console.log('Status update:', e);
-        //             updateMessageStatus(e.message_id, e.status);
-        //         });
-        // }
-
-        function updateMessageStatus(messageId, status) {
-            let messageDiv = $(`.message[data-message-id="${messageId}"]`);
-            let statusIcon = messageDiv.find('.message-time i');
-
-            if (status === 'read') {
-                statusIcon.removeClass().addClass('bi bi-check-all text-primary');
-            } else if (status === 'delivered') {
-                statusIcon.removeClass().addClass('bi bi-check-all');
-            }
-        }
-
-        // ============================================
-        // Initialize
-        // ============================================
-        $(document).ready(function() {
-            userList();
-
-            // Refresh user list every 5 minutes
-            setInterval(() => {
-                userList();
-            }, 300000);
-        });
     </script>
 @endpush
 
@@ -1126,7 +1147,7 @@
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #521aac28 100%);
             scrollbar-width: thin;
             scrollbar-color: #3498db4d transparent;
             max-height: 635px;
@@ -1136,6 +1157,7 @@
             display: flex;
             margin-bottom: 20px;
             animation: fadeInUp 0.5s ease;
+            position: relative;
         }
 
         @keyframes fadeInUp {
@@ -1382,28 +1404,27 @@
 
         /* Message Context Menu */
         .message-context {
-            position: absolute;
-            right: 10px;
-            top: 10px;
-            width: 30px;
+            position: relative;
             height: 30px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.05);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             opacity: 0;
             transition: all 0.3s ease;
+            top: 5px;
+            right: 8px;
+            width: 7%;
+            font-size: 15px
         }
 
         .message:hover .message-context {
             opacity: 1;
         }
 
-        .message-context:hover {
-            background: rgba(0, 0, 0, 0.1);
-        }
+        /* .message-context:hover {
+                                                                                background: rgba(0, 0, 0, 0.1);
+                                                                            } */
 
         .message-menu {
             background: white;

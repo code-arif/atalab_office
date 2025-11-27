@@ -76,8 +76,6 @@ Route::prefix('v1')->group(function () {
     // ============================================
     Route::prefix('auth')->group(function () {
         Route::post('/register', [RegistrationController::class, 'register']); // working
-        Route::post('/verify-otp', [RegistrationController::class, 'verifyOTP']); // working
-        Route::post('/resend-otp', [RegistrationController::class, 'resendOTP']); // working
     });
 
     // ============================================

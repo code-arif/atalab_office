@@ -82,19 +82,19 @@
     }
 
     // Notification
-    document.addEventListener('DOMContentLoaded', function() {
-        window.Echo.
-            .listen('NewNotificationEvent', (event) => {
-                toastr.success(event.data.message); // Ensure message is at the top level in the event data
-                notification(); // Call your custom notification function
-            });
-    });
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     window.Echo.
+    //         .listen('NewNotificationEvent', (event) => {
+    //             toastr.success(event.data.message); // Ensure message is at the top level in the event data
+    //             notification(); // Call your custom notification function
+    //         });
+    // });
 
     // Notification
-    document.addEventListener('DOMContentLoaded', function() {
-        window.Echo.channel('web-notifications')
-            .listen('WebNotificationEvent', (event) => {
-                toastr.success(event.data.message); // Ensure message is at the top level in the event data
-            });
-    });
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     window.Echo.channel('web-notifications')
+    //         .listen('WebNotificationEvent', (event) => {
+    //             toastr.success(event.data.message); // Ensure message is at the top level in the event data
+    //         });
+    // });
 </script>

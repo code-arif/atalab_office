@@ -78,7 +78,7 @@ class ChatApiController extends Controller
                 'admin' => [
                     'id' => $admin->id,
                     'name' => $admin->name,
-                    'avatar' => $admin->avatar ? url($admin->avatar) : asset('default/default_image.jpg'),
+                    'avatar' => $admin->avatar ? url($admin->avatar) : asset('default/profile.jpg'),
                     'role' => $admin->role,
                 ],
                 'automated_message' => 'Thank you! We have received your message. Please wait 30 minutes, you will be contacted shortly.'
@@ -231,7 +231,7 @@ class ChatApiController extends Controller
                 'admin' => [
                     'id' => $admin->id,
                     'name' => $admin->name,
-                    'avatar' => $admin->avatar ? url($admin->avatar) : asset('default/default_image.jpg'),
+                    'avatar' => $admin->avatar ? url($admin->avatar) : asset('default/profile.jpg'),
                 ],
                 'room' => $room,
                 'messages' => $messages,

@@ -106,7 +106,7 @@ class ChatWebController extends Controller
 
             if ($lastChat) {
                 $lastChat->humanize_date = \Carbon\Carbon::parse($lastChat->created_at)->diffForHumans();
-                $lastChat->short_text = Str::limit($lastChat->text, 30);
+                $lastChat->short_text = Str::limit($lastChat->text, 20);
             }
 
             return $user;
@@ -130,13 +130,18 @@ class ChatWebController extends Controller
         $user_id = Auth::id();
         $keyword = $request->get('keyword');
 
-        $users = User::select('id', 'name', 'email', 'avatar', 'last_activity_at')
+        $users = User::select('id', 'name', 'email', 'avatar')
             ->where('id', '!=', $user_id)
             ->where(function ($query) use ($keyword) {
                 $query->where('name', 'LIKE', "%{$keyword}%")
                     ->orWhere('email', 'LIKE', "%{$keyword}%");
             })
-            ->get();
+            ->get()
+            ->map(function ($user) {
+                $user->is_guest = false;
+                $user->user_type = User::class;
+                return $user;
+            });
 
         // Search guest users
         $guestUsers = GuestUser::where(function ($query) use ($keyword) {
@@ -145,6 +150,7 @@ class ChatWebController extends Controller
                 ->orWhere('phone', 'LIKE', "%{$keyword}%");
         })->get()->map(function ($guest) {
             $guest->is_guest = true;
+            $guest->user_type = GuestUser::class;
             return $guest;
         });
 
@@ -197,7 +203,6 @@ class ChatWebController extends Controller
         )
             ->with(['sender', 'receiver', 'room'])
             ->orderBy('created_at', 'asc')
-            ->limit(50)
             ->get();
 
         // Get or create room
@@ -297,7 +302,6 @@ class ChatWebController extends Controller
         ]);
     }
 
-
     /**
      * Edit message (Admin only)
      */
@@ -318,6 +322,7 @@ class ChatWebController extends Controller
 
         $chat = Chat::where('id', $message_id)
             ->where('sender_id', $authUser->id)
+            ->where('sender_type', User::class)
             ->first();
 
         if (!$chat) {
@@ -353,6 +358,7 @@ class ChatWebController extends Controller
 
         $chat = Chat::where('id', $message_id)
             ->where('sender_id', $authUser->id)
+            ->where('sender_type', User::class)
             ->first();
 
         if (!$chat) {
@@ -373,14 +379,21 @@ class ChatWebController extends Controller
     /**
      * Delete conversation
      */
-    public function deleteChat($receiver_id): JsonResponse
+    public function deleteChat(Request $request, $receiver_id): JsonResponse
     {
         $sender_id = Auth::id();
+        $receiver_type = $request->input('receiver_type', User::class);
 
-        $room = Room::where(function ($query) use ($receiver_id, $sender_id) {
-            $query->where('user_one_id', $sender_id)->where('user_two_id', $receiver_id);
-        })->orWhere(function ($query) use ($receiver_id, $sender_id) {
-            $query->where('user_one_id', $receiver_id)->where('user_two_id', $sender_id);
+        $room = Room::where(function ($query) use ($receiver_id, $sender_id, $receiver_type) {
+            $query->where('user_one_id', $sender_id)
+                ->where('user_one_type', User::class)
+                ->where('user_two_id', $receiver_id)
+                ->where('user_two_type', $receiver_type);
+        })->orWhere(function ($query) use ($receiver_id, $sender_id, $receiver_type) {
+            $query->where('user_one_id', $receiver_id)
+                ->where('user_one_type', $receiver_type)
+                ->where('user_two_id', $sender_id)
+                ->where('user_two_type', User::class);
         })->first();
 
         if (!$room) {
@@ -434,12 +447,15 @@ class ChatWebController extends Controller
     /**
      * Mark all as read
      */
-    public function seenAll($receiver_id): JsonResponse
+    public function seenAll(Request $request, $receiver_id): JsonResponse
     {
         $sender_id = Auth::id();
+        $receiver_type = $request->input('receiver_type', User::class);
 
         Chat::where('receiver_id', $sender_id)
+            ->where('receiver_type', User::class)
             ->where('sender_id', $receiver_id)
+            ->where('sender_type', $receiver_type)
             ->where('status', '!=', 'read')
             ->each(function ($chat) {
                 $chat->markAsRead();
@@ -461,6 +477,7 @@ class ChatWebController extends Controller
 
         $chat = Chat::where('id', $chat_id)
             ->where('receiver_id', $sender_id)
+            ->where('receiver_type', User::class)
             ->first();
 
         if ($chat && $chat->status !== 'read') {
@@ -471,38 +488,6 @@ class ChatWebController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Message marked as read'
-        ]);
-    }
-
-    /**
-     * Get room
-     */
-    public function getRoom($receiver_id): JsonResponse
-    {
-        $sender_id = Auth::id();
-
-        $room = Room::with([
-            'userOne:id,name,email,avatar,last_activity_at',
-            'userTwo:id,name,email,avatar,last_activity_at'
-        ])
-            ->where(function ($query) use ($receiver_id, $sender_id) {
-                $query->where('user_one_id', $receiver_id)->where('user_two_id', $sender_id);
-            })->orWhere(function ($query) use ($receiver_id, $sender_id) {
-                $query->where('user_one_id', $sender_id)->where('user_two_id', $receiver_id);
-            })->first();
-
-        if (!$room) {
-            $room = Room::create([
-                'user_one_id' => $sender_id,
-                'user_two_id' => $receiver_id,
-            ]);
-            $room->load(['userOne', 'userTwo']);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Room retrieved successfully',
-            'data' => ['room' => $room]
         ]);
     }
 }

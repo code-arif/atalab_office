@@ -18,14 +18,8 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('password')->nullable();
             $table->enum('role', ['donor', 'admin'])->nullable();
-
             $table->string('avatar')->nullable();
-
             $table->string('address')->nullable();
-
-            // unique but nullable
-            $table->unique('email');
-            $table->unique('phone');
 
             $table->timestamps();
         });
