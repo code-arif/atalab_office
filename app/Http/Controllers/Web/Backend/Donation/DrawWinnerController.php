@@ -95,26 +95,30 @@ class DrawWinnerController extends Controller
                     $actions = '<div class="btn-group" role="group">';
 
                     // View Details
-                    $actions .= '<button type="button" class="btn btn-sm btn-info"
-                        onclick="window.location.href=\'' . route('draw-winners.verify', $row->id) . '\'"
-                        title="View Details">
-                        <i class="fe fe-eye"></i>
+                    $actions .= '<button type="button" class="btn btn-sm btn-info viewWinner"
+                    data-id="' . $row->id . '"
+                    title="View Details">
+                     View Details
                     </button>';
 
                     // Verify Winner - Main Action Button
                     if (!$row->claimed) {
                         $actions .= '<a href="' . route('draw-winners.verify', $row->id) . '"
-                                        class="btn btn-sm btn-primary" title="Verify Winner">
-                                        <i class="fe fe-shield"></i> Verify
-                                        </a>';
+                        class="btn btn-sm btn-primary" title="Verify Winner"> Verify
+                        </a>';
                     }
 
                     // Process Payout - If already verified and approved
                     if ($row->claimed && $row->payout_status === 'pending') {
-                        $actions .= '<button type="button" class="btn btn-sm btn-success processPayout"
+                        // Check if verification is approved
+                        $isApproved = $row->verification && $row->verification->verification_status === 'approved';
+
+                        if ($isApproved) {
+                            $actions .= '<button type="button" class="btn btn-sm btn-success processPayout"
                             data-id="' . $row->id . '" title="Process Payout">
-                            <i class="fe fe-dollar-sign"></i>
+                            Process Payout
                         </button>';
+                        }
                     }
 
                     // Show verification status badge
@@ -128,8 +132,10 @@ class DrawWinnerController extends Controller
                             'rejected' => 'danger'
                         ];
                         $color = $statusColors[$row->verification->verification_status] ?? 'secondary';
-                        $actions .= '<span class="badge bg-' . $color . ' ms-2">' .
-                            ucfirst(str_replace('_', ' ', $row->verification->verification_status)) .
+                        $statusText = ucfirst(str_replace('_', ' ', $row->verification->verification_status));
+
+                        $actions .= '<span class="badge bg-' . $color . ' ms-2" style="font-size: 10px;">' .
+                            $statusText .
                             '</span>';
                     }
 
@@ -160,6 +166,7 @@ class DrawWinnerController extends Controller
         return view('backend.layouts.donation_&_draw.winners_index', compact('stats', 'weeks'));
     }
 
+
     /**
      * Show specific winner details
      */
@@ -169,17 +176,42 @@ class DrawWinnerController extends Controller
             $winner = DrawWinner::with([
                 'user:id,name,email,phone',
                 'weeklyDraw:id,week_number,start_date,end_date,total_pool',
-                'donation:id,amount,stripe_payment_id,donated_at'
+                'donation:id,amount,stripe_payment_id,donated_at',
+                'verification' => function ($query) {
+                    $query->with('verifiedBy:id,name');
+                }
             ])->findOrFail($id);
+
+            // Add verification progress
+            $verificationProgress = 0;
+            if ($winner->verification) {
+                if ($winner->verification->identity_verified) $verificationProgress += 25;
+                if ($winner->verification->email_verified && $winner->verification->phone_verified) $verificationProgress += 25;
+                if ($winner->verification->bank_verified) $verificationProgress += 25;
+                if ($winner->verification->verification_status === 'approved') $verificationProgress += 25;
+            }
 
             return response()->json([
                 'success' => true,
-                'data' => $winner
+                'data' => [
+                    'id' => $winner->id,
+                    'user' => $winner->user,
+                    'weekly_draw' => $winner->weeklyDraw,
+                    'donation' => $winner->donation,
+                    'amount_won' => $winner->amount_won,
+                    'claimed' => $winner->claimed,
+                    'claimed_at' => $winner->claimed_at,
+                    'claim_status' => $this->getClaimStatus($winner),
+                    'payout_status' => $winner->payout_status,
+                    'payout_stripe_id' => $winner->payout_stripe_id,
+                    'verification' => $winner->verification,
+                    'verification_progress' => $verificationProgress
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Winner not found'
+                'message' => 'Winner not found: ' . $e->getMessage()
             ], 404);
         }
     }
@@ -274,14 +306,6 @@ class DrawWinnerController extends Controller
             $winner->update([
                 'payout_status' => 'processing',
             ]);
-
-            // TODO: Integrate with Stripe Payout API here
-            // Example:
-            // $payout = \Stripe\Payout::create([
-            //     'amount' => $winner->amount_won * 100,
-            //     'currency' => 'usd',
-            //     'destination' => $winner->user->stripe_account_id,
-            // ]);
 
             // After successful payout
             $winner->update([
@@ -400,5 +424,26 @@ class DrawWinnerController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+
+
+    /**
+     * Helper method to determine claim status
+     */
+    private function getClaimStatus($winner)
+    {
+        if ($winner->claimed && $winner->verification && $winner->verification->verification_status === 'approved') {
+            if ($winner->payout_status === 'completed') {
+                return 'paid';
+            }
+            return 'approved_pending_payout';
+        }
+
+        if ($winner->claimed) {
+            return 'claimed';
+        }
+
+        return 'pending';
     }
 }

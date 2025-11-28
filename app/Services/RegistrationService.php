@@ -4,18 +4,14 @@ namespace App\Services;
 
 use Exception;
 use App\Models\User;
-use App\Models\OtpLog;
 use App\Models\Donation;
 use App\Models\WeeklyDraw;
-use App\Models\WinnerExclusion;
-use App\Models\UserWeekParticipation;
 use App\Mail\SendOTPMail;
 use App\Traits\ApiResponse;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Cache;
 
 class RegistrationService
 {
@@ -39,47 +35,27 @@ class RegistrationService
             return $this->handleExistingUser($existingUser);
         }
 
-        // STEP 2: Store registration data in cache (10 minutes)
-        $cacheKey = "registration:{$email}:{$phone}";
-
-        Cache::put($cacheKey, [
-            'full_name' => $data['full_name'],
-            'email' => $email,
-            'phone' => $phone,
+        // STEP 2: Store registration data user table
+        $user = User::create([
+            'name' => $data['full_name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'],
             'address' => $data['address'],
-            'registration_ip' => request()->ip(),
-        ], now()->addMinutes(10));
-
-        // STEP 3: Generate and send OTP
-        $otpCode = $this->generateOTP();
-        $expiresAt = now(config('app.timezone'))->addMinutes(10);
-
-        Cache::put("otp:{$email}:{$phone}", [
-            'otp_code' => $otpCode,
-            'expires_at' => $expiresAt,
-            'attempts' => 0,
-        ], now()->addMinutes(10));
-
-        OtpLog::create([
-            'email' => $email,
-            'phone' => $phone,
-            'user_id' => null,
-            'otp_code' => $otpCode,
-            'type' => 'both',
-            'status' => 'sent',
-            'expires_at' => $expiresAt,
-            'ip_address' => request()->ip(),
+            'password' => bcrypt(Str::random(32)),
+            'role' => 'donor',
         ]);
-
-        $this->sendOTP($email, $phone, $otpCode);
-
-        Log::info('Registration initiated', compact('email', 'phone'));
 
         return [
             'success' => true,
-            'status' => 'otp_sent',
+            'status' => 'new_user_created',
             'message' => 'OTP sent to your email. Please verify within 10 minutes.',
-            'otp_expires_in_minutes' => 10,
+            'data' => [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'full_name' => $user->name,
+                'address' => $user->address,
+            ],
         ];
     }
 
@@ -96,11 +72,6 @@ class RegistrationService
                 'success' => false,
                 'message' => 'No active draw available at the moment.',
             ];
-        }
-
-        // Case 1: User not verified yet
-        if (!$user->email_verified_at || !$user->phone_verified_at) {
-            return $this->resendOTPForUser($user);
         }
 
         // Case 2: Check if user can donate THIS WEEK
@@ -171,234 +142,18 @@ class RegistrationService
         }
 
         // Check 3: Is user verified?
-        $user = User::find($userId);
-        if (!$user || !$user->email_verified_at || !$user->phone_verified_at) {
-            return [
-                'eligible' => false,
-                'reason' => 'Please verify your email and phone first.',
-            ];
-        }
+        // $user = User::find($userId);
+        // if (!$user || !$user->email_verified_at || !$user->phone_verified_at) {
+        //     return [
+        //         'eligible' => false,
+        //         'reason' => 'Please verify your email and phone first.',
+        //     ];
+        // }
 
         return [
             'eligible' => true,
             'message' => 'User can donate to this week.',
         ];
-    }
-
-    /**
-     * Verify OTP and create/update user
-     */
-    public function verifyOTP(string $identifier, string $otpCode): array
-    {
-        return DB::transaction(function () use ($identifier, $otpCode) {
-            $existingUser = User::where('email', $identifier)
-                ->orWhere('phone', $identifier)
-                ->first();
-
-            if ($existingUser) {
-                return $this->verifyExistingUserOTP($existingUser, $otpCode);
-            }
-
-            // Find OTP log
-            $otpLog = OtpLog::where(function ($query) use ($identifier) {
-                $query->where('email', $identifier)
-                    ->orWhere('phone', $identifier);
-            })
-                ->where('status', 'sent')
-                ->orderBy('created_at', 'desc')
-                ->first();
-
-            if (!$otpLog) {
-                throw new Exception('No OTP request found. Please register again.');
-            }
-
-            $email = $otpLog->email;
-            $phone = $otpLog->phone;
-
-            // Get registration data from cache
-            $registrationCacheKey = "registration:{$email}:{$phone}";
-            $registrationData = Cache::get($registrationCacheKey);
-
-            if (!$registrationData) {
-                throw new Exception('Registration data expired. Please register again.');
-            }
-
-            // Get OTP data from cache
-            $otpCacheKey = "otp:{$email}:{$phone}";
-            $otpData = Cache::get($otpCacheKey);
-
-            if (!$otpData) {
-                throw new Exception('OTP expired. Please request a new one.');
-            }
-
-            // Verify OTP
-            if ($otpData['otp_code'] !== $otpCode) {
-                $otpData['attempts'] = ($otpData['attempts'] ?? 0) + 1;
-
-                if ($otpData['attempts'] >= 3) {
-                    Cache::forget($otpCacheKey);
-                    Cache::forget($registrationCacheKey);
-                    throw new Exception('Too many failed attempts. Please register again.');
-                }
-
-                Cache::put($otpCacheKey, $otpData, now()->addMinutes(10));
-                throw new Exception('Invalid OTP code. ' . (3 - $otpData['attempts']) . ' attempts remaining.');
-            }
-
-            // Check expiration
-            if (isset($otpData['expires_at']) && $otpData['expires_at']->isPast()) {
-                Cache::forget($otpCacheKey);
-                Cache::forget($registrationCacheKey);
-                throw new Exception('OTP has expired. Please register again.');
-            }
-
-            // CREATE USER
-            $user = User::create([
-                'name' => $registrationData['full_name'],
-                'email' => $registrationData['email'],
-                'phone' => $registrationData['phone'],
-                'address' => $registrationData['address'],
-                'password' => bcrypt(Str::random(32)),
-                'role' => 'donor',
-                'email_verified_at' => now(config('app.timezone')),
-                'phone_verified_at' => now(config('app.timezone')),
-                'registered_at' => now(config('app.timezone')),
-                'registration_ip' => $registrationData['registration_ip'],
-            ]);
-
-            // Update OTP log
-            OtpLog::where('email', $user->email)
-                ->where('phone', $user->phone)
-                ->where('otp_code', $otpCode)
-                ->where('status', 'sent')
-                ->update([
-                    'user_id' => $user->id,
-                    'status' => 'verified',
-                    'verified_at' => now(config('app.timezone')),
-                ]);
-
-            Cache::forget($registrationCacheKey);
-            Cache::forget($otpCacheKey);
-
-            Log::info('User verified and created', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-            ]);
-
-            return [
-                'success' => true,
-                'status' => 'verified',
-                'user_id' => $user->id,
-                'message' => 'Verification successful. You can now make a donation.',
-            ];
-        });
-    }
-
-    /**
-     * Verify OTP for existing user
-     */
-    protected function verifyExistingUserOTP(User $user, string $otpCode): array
-    {
-        $otpCacheKey = "otp:{$user->email}:{$user->phone}";
-        $otpData = Cache::get($otpCacheKey);
-
-        if (!$otpData || $otpData['otp_code'] !== $otpCode) {
-            throw new Exception('Invalid OTP code.');
-        }
-
-        if (isset($otpData['expires_at']) && $otpData['expires_at']->isPast()) {
-            throw new Exception('OTP has expired.');
-        }
-
-        $user->update([
-            'email_verified_at' => now(config('app.timezone')),
-            'phone_verified_at' => now(config('app.timezone')),
-        ]);
-
-        OtpLog::where('email', $user->email)
-            ->where('phone', $user->phone)
-            ->where('otp_code', $otpCode)
-            ->where('status', 'sent')
-            ->update([
-                'user_id' => $user->id,
-                'status' => 'verified',
-                'verified_at' => now(config('app.timezone')),
-            ]);
-
-        Cache::forget($otpCacheKey);
-
-        return [
-            'success' => true,
-            'status' => 'verified',
-            'user_id' => $user->id,
-            'data' => [
-                'email' => $user->email,
-                'phone' => $user->phone,
-                'name' => $user->name,
-                'address' => $user->address,
-                'id' => $user->id,
-            ],
-            'message' => 'Verification successful. You can now make a donation.',
-        ];
-    }
-
-    /**
-     * Resend OTP for existing user
-     */
-    protected function resendOTPForUser(User $user): array
-    {
-        // Rate limiting
-        $recentOTPs = OtpLog::where('user_id', $user->id)
-            ->where('created_at', '>', now(config('app.timezone'))->subMinutes(30))
-            ->count();
-
-        if ($recentOTPs >= 3) {
-            throw new Exception('Too many OTP requests. Please wait 30 minutes.');
-        }
-
-        $otpCode = $this->generateOTP();
-        $expiresAt = now(config('app.timezone'))->addMinutes(10);
-
-        Cache::put("otp:{$user->email}:{$user->phone}", [
-            'otp_code' => $otpCode,
-            'expires_at' => $expiresAt,
-            'attempts' => 0,
-        ], now()->addMinutes(10));
-
-        OtpLog::create([
-            'email' => $user->email,
-            'phone' => $user->phone,
-            'user_id' => $user->id,
-            'otp_code' => $otpCode,
-            'type' => 'both',
-            'status' => 'sent',
-            'expires_at' => $expiresAt,
-            'ip_address' => request()->ip(),
-        ]);
-
-        $this->sendOTP($user->email, $user->phone, $otpCode);
-
-        return [
-            'success' => true,
-            'status' => 'otp_resent',
-            'message' => 'OTP has been resent to your email and phone.',
-        ];
-    }
-
-    /**
-     * Resend OTP
-     */
-    public function resendOTP(string $identifier): array
-    {
-        $user = User::where('email', $identifier)
-            ->orWhere('phone', $identifier)
-            ->first();
-
-        if ($user) {
-            return $this->resendOTPForUser($user);
-        }
-
-        throw new Exception('No pending registration found. Please register first.');
     }
 
     /**

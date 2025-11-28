@@ -22,21 +22,12 @@ class User extends Authenticatable implements JWTSubject
         'avatar',
         'address',
         'donor_id',
-        'email_verified_at',
-        'phone_verified_at',
-        'registered_at',
-        'registration_ip',
         'stripe_customer_id',
-    ];
-
-    protected $hidden = [
-        'remember_token',
-        'google_access_token',
-        'google_refresh_token',
-    ];
-
-    protected $casts = [
-        'google_token_expires_at' => 'datetime',
+        'total_donations_count',
+        'lifetime_donation_amount',
+        'times_won',
+        'last_donation_at',
+        'last_won_at'
     ];
 
     public function getJWTIdentifier()

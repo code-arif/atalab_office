@@ -39,7 +39,7 @@ class DonationService
                 // Validate user
                 $user = User::lockForUpdate()->find($userId);
 
-                if (!$user || !$user->email_verified_at || !$user->phone_verified_at) {
+                if (!$user) {
                     throw new Exception('User not verified. Please complete registration first.');
                 }
 

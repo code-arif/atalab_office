@@ -74,11 +74,8 @@ Route::prefix('v1')->group(function () {
     // ============================================
     // REGISTRATION & OTP ROUTES
     // ============================================
-    Route::prefix('auth')->group(function () {
-        Route::post('/register', [RegistrationController::class, 'register']); // working
-        Route::post('/resend-otp', [RegistrationController::class, 'resendOTP']); // working
-        Route::post('/verify-otp', [RegistrationController::class, 'verifyOTP']); // working
-    });
+    Route::post('auth/register', [RegistrationController::class, 'register']); // working
+
 
     // ============================================
     // WEEKLY DRAW INFORMATION (PUBLIC)
@@ -96,6 +93,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/verify', [DonationController::class, 'verifyPayment']);
         Route::get('/{paymentId}/status', [DonationController::class, 'checkPaymentStatus']);
     });
+
+
+    // test
+    Route::get('/week/{weekId}/winners', [WeeklyDrawController::class, 'getWinners']);
 });
 
 

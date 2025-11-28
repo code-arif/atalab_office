@@ -343,6 +343,19 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="col-md-6">
+                            <div class="card border mb-3" id="identityInfoCard" style="display: none;">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fe fe-file-text me-2"></i>Identity Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Driver's License:</strong> <span id="view_license">---</span></p>
+                                    <p><strong>State:</strong> <span id="view_license_state">---</span></p>
+                                    <p><strong>Expiry:</strong> <span id="view_license_expiry">---</span></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -351,46 +364,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Mark Claimed Modal -->
-    {{-- <div class="modal fade" id="markClaimedModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="fe fe-check-circle me-2"></i>Mark as Claimed</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <form id="claimForm">
-                    <div class="modal-body">
-                        <input type="hidden" id="claim_winner_id">
-
-                        <div class="alert alert-info">
-                            <i class="fe fe-info me-2"></i>
-                            <strong>Note:</strong> Enter the Stripe payout ID to mark this winner as claimed.
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Stripe Payout ID <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="stripe_payout_id" required
-                                placeholder="po_1xxxxxxxxxxxxx">
-                            <small class="text-muted">The Stripe payout transaction ID</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Admin Notes (Optional)</label>
-                            <textarea class="form-control" id="admin_notes" rows="3" placeholder="Add any additional notes..."></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fe fe-check me-2"></i>Mark as Claimed
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div> --}}
 
 @endsection
 

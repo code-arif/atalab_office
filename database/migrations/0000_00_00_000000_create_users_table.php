@@ -20,7 +20,8 @@ return new class extends Migration
             $table->enum('role', ['donor', 'admin'])->nullable();
             $table->string('avatar')->nullable();
             $table->string('address')->nullable();
-
+            $table->string('donor_id', 20)->unique()->nullable();
+            $table->string('stripe_customer_id')->nullable();
             $table->timestamps();
         });
 

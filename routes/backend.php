@@ -185,12 +185,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::delete('/force-delete/{id}', [WeeklyDrawController::class, 'forceDelete'])->name('force-delete'); // working
     });
 
-    // winner management
-    Route::prefix('draw-winners')->name('draw-winners.')->group(function () {
-        // Main Winner Management
-        Route::get('/', [DrawWinnerController::class, 'index'])->name('index'); // working
-        Route::get('/show/{id}', [DrawWinnerController::class, 'show'])->name('show'); // working
 
+    // winner management [draw-winners]
+    Route::prefix('draw-winners')->name('draw-winners.')->group(function () {
+        Route::get('/', [DrawWinnerController::class, 'index'])->name('index');
+        Route::get('/show/{id}', [DrawWinnerController::class, 'show'])->name('show');
+        
         // Claim Management
         Route::post('/mark-claimed/{id}', [DrawWinnerController::class, 'markClaimed'])->name('mark-claimed'); // working
 
@@ -200,12 +200,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
         // Export
         Route::get('/export', [DrawWinnerController::class, 'export'])->name('export'); // working
-    });
-
-    // winner verification]
-    Route::prefix('draw-winners')->name('draw-winners.')->group(function () {
-        Route::get('/', [DrawWinnerController::class, 'index'])->name('index');
-        Route::get('/show/{id}', [DrawWinnerController::class, 'show'])->name('show');
 
         // Verification Routes - Using winner ID
         Route::get('/{winner}/verify', [WinnerVerificationController::class, 'showVerificationPage'])->name('verify');
@@ -220,9 +214,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // donor manage
     Route::prefix('donors')->name('donors.')->group(function () {
-        Route::get('/', [DonationController::class, 'index'])->name('index');
-        Route::get('/show/{id}', [DonationController::class, 'show'])->name('show');
-        Route::get('/export', [DonationController::class, 'export'])->name('export');
+        Route::get('/', [DonationController::class, 'index'])->name('index'); // working
+        Route::get('/show/{id}', [DonationController::class, 'show'])->name('show'); // working
+        Route::get('/export', [DonationController::class, 'export'])->name('export'); // working
     });
 
 

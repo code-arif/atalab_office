@@ -92,6 +92,10 @@
                         name: 'donor_name'
                     },
                     {
+                        data: 'donor_id',
+                        name: 'donor_id'
+                    },
+                    {
                         data: 'email',
                         name: 'email'
                     },
@@ -169,6 +173,16 @@
                         $('#d_status').html(d.stripe_payment_status === 'succeeded' ?
                             '<span class="badge bg-success">Paid</span>' :
                             '<span class="badge bg-warning">Pending</span>');
+                        $('#donor_id').text(d.user.donor_id);
+                        $('#stripe_customer_id').text(d.user.stripe_customer_id);
+                        $('#donation_attempt').text(d.user.total_donations_count);
+                        $('#lifetime_donate_amount').text(d.user.lifetime_donation_amount);
+                        $('#times_won').text(d.user.times_won);
+                        $('#last_donate_at').text(d.user.last_donation_at ?
+                            new Date(d.user.last_donation_at).toLocaleString() : 'Never');
+
+                        $('#last_won_at').text(d.user.last_won_at ?
+                            new Date(d.user.last_won_at).toLocaleString() : 'Never');
                         $('#viewDonorModal').modal('show');
                     }
                 });

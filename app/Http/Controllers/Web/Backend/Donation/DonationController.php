@@ -14,7 +14,7 @@ class DonationController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = Donation::with(['user:id,name,email,phone', 'weeklyDraw:id,week_number'])
+            $query = Donation::with(['user:id,name,email,phone,donor_id', 'weeklyDraw:id,week_number'])
                 ->select('donations.*');
 
             // Filters
@@ -45,6 +45,7 @@ class DonationController extends Controller
             return DataTables::eloquent($query)
                 ->addIndexColumn()
                 ->addColumn('donor_name', fn($row) => $row->user->name ?? 'N/A')
+                ->addColumn('donor_id', fn($row) => $row->user->donor_id ?? 'N/A')
                 ->addColumn('email', fn($row) => $row->user->email ?? 'N/A')
                 ->addColumn('phone', fn($row) => $row->user->phone ?? 'N/A')
                 ->addColumn('week', fn($row) => $row->weeklyDraw ? '<span class="badge bg-primary">Week #' . $row->weeklyDraw->week_number . '</span>' : '-')
@@ -61,7 +62,7 @@ class DonationController extends Controller
                     'action',
                     fn($row) =>
                     '<button type="button" class="btn btn-sm btn-info viewDonor" data-id="' . $row->id . '" title="View Details">
-                        <i class="fe fe-eye"></i>
+                        <i class="fe fe-eye" style="font-size: 10px;"></i>
                      </button>'
                 )
                 ->rawColumns(['week', 'amount', 'payment_status', 'action'])
