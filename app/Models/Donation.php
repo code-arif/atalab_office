@@ -21,6 +21,7 @@ class Donation extends Model
         'is_eligible_for_draw',
         'payment_type',
         'donated_at',
+        'attempt_number'
     ];
 
     protected $casts = [

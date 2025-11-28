@@ -226,6 +226,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     });
 
 
+
     // ============================================
     // WEB CHAT ROUTES (For Admin Dashboard)
     // ============================================
@@ -248,6 +249,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/seen/single/{chat_id}', [ChatWebController::class, 'seenSingle'])->name('seen.single');
     });
 });
+
 
 
 //! Route for Profile Settings

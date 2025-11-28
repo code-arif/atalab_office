@@ -105,7 +105,7 @@ class ChatWebController extends Controller
             $user->unread_count = $unreadCount;
 
             if ($lastChat) {
-                $lastChat->humanize_date = \Carbon\Carbon::parse($lastChat->created_at)->diffForHumans();
+                // $lastChat->humanize_date = \Carbon\Carbon::parse($lastChat->created_at)->diffForHumans();
                 $lastChat->short_text = Str::limit($lastChat->text, 20);
             }
 

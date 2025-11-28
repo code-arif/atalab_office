@@ -72,16 +72,16 @@ class Chat extends Model
         return strlen($this->text) > 30 ? substr($this->text, 0, 30) . '...' : $this->text;
     }
 
-  public function getHumanizeDateAttribute(): string
-{
-    $diff = $this->created_at->diffForHumans([
-        'parts' => 1,
-        'short' => true,
-        'syntax' => \Carbon\CarbonInterface::DIFF_RELATIVE_TO_NOW
-    ]);
+    public function getHumanizeDateAttribute(): string
+    {
+        $diff = $this->created_at->diffForHumans([
+            'parts' => 1,
+            'short' => true,
+            'syntax' => \Carbon\CarbonInterface::DIFF_RELATIVE_TO_NOW
+        ]);
 
-    return $diff;
-}
+        return $diff;
+    }
 
     public function getTypeAttribute(): string
     {

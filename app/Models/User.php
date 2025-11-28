@@ -115,6 +115,17 @@ class User extends Authenticatable implements JWTSubject
             ->exists();
     }
 
+
+    public function weekParticipations()
+    {
+        return $this->hasMany(UserWeekParticipation::class);
+    }
+
+    public function winnerExclusions()
+    {
+        return $this->hasMany(WinnerExclusion::class);
+    }
+
     /**
      * Check if user won in last 6 months
      */

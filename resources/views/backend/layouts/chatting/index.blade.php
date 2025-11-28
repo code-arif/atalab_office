@@ -104,9 +104,9 @@
                                 <button type="button" class="send-btn" onclick="sendMessage($('#ReceiverId').val())">
                                     <i class="bi bi-send"></i>
                                 </button>
-                                <button type="button" class="clear-btn" onclick="formClear()">
+                                {{-- <button type="button" class="clear-btn" onclick="formClear()">
                                     <i class="bi bi-arrow-clockwise"></i>
-                                </button>
+                                </button> --}}
                             </div>
                         </div>
                     </div>

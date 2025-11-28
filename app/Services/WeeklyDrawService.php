@@ -7,21 +7,18 @@ use Carbon\Carbon;
 use App\Models\Donation;
 use App\Models\DrawWinner;
 use App\Models\WeeklyDraw;
+use App\Models\WinnerExclusion;
+use App\Models\UserWeekParticipation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class WeeklyDrawService
 {
-    /**
-     * BUSINESS RULES:
-     * - Odds: 1 in 400 (every 400 participants = 1 winner)
-     * - Admin Fee: 7.5%
-     * - Minimum: 100 participants to run a draw
-     * - Always round UP winners (350 participants = 1 winner, not 0.875)
-     */
     private const ADMIN_FEE_PERCENTAGE = 0.075; // 7.5%
     private const ODDS_RATIO = 400; // 1 winner per 400 participants
-    private const MINIMUM_PARTICIPANTS = 100; // Minimum to run draw
+    private const MINIMUM_PARTICIPANTS = 100;
+    private const WINNER_EXCLUSION_MONTHS = 6;
 
     /**
      * Get current active draw
@@ -41,7 +38,7 @@ class WeeklyDrawService
     }
 
     /**
-     * Create new weekly draw (AUTOMATED - Monday 12:00 AM)
+     * Create new weekly draw
      */
     public function createNewDraw(): WeeklyDraw
     {
@@ -68,10 +65,14 @@ class WeeklyDrawService
                 'status' => 'active',
                 'total_pool' => 0,
                 'total_participants' => 0,
+                'eligible_participants' => 0,
                 'total_recipients' => 0,
                 'admin_commission' => 0,
                 'winners_selected' => false,
             ]);
+
+            // Cleanup expired exclusions
+            $this->cleanupExpiredExclusions();
 
             Log::info('New weekly draw created', [
                 'week_number' => $weekNumber,
@@ -84,7 +85,7 @@ class WeeklyDrawService
     }
 
     /**
-     * Finalize draw (AUTOMATED - Sunday 5 PM)
+     * Finalize draw
      */
     public function finalizeDraw(int $weekId): WeeklyDraw
     {
@@ -107,7 +108,7 @@ class WeeklyDrawService
     }
 
     /**
-     * Select winners with DYNAMIC 1:400 RATIO CALCULATION
+     * ENHANCED: Select winners with 6-month exclusion
      */
     public function selectWinners(int $weekId): array
     {
@@ -118,7 +119,7 @@ class WeeklyDrawService
                 throw new Exception('Winners already selected for this draw');
             }
 
-            // Get total pool and participants
+            // Calculate totals
             $totalPool = Donation::where('week_id', $weekId)
                 ->where('stripe_payment_status', 'completed')
                 ->sum('amount');
@@ -128,102 +129,94 @@ class WeeklyDrawService
                 ->distinct('user_id')
                 ->count('user_id');
 
-            // DYNAMIC MINIMUM CHECK
+            // Check minimum participants
             if ($totalParticipants < self::MINIMUM_PARTICIPANTS) {
-                Log::warning('Insufficient participants for draw', [
+                Log::warning('Insufficient participants', [
                     'week_id' => $weekId,
                     'participants' => $totalParticipants,
-                    'minimum_required' => self::MINIMUM_PARTICIPANTS,
+                    'minimum' => self::MINIMUM_PARTICIPANTS,
                 ]);
 
                 throw new Exception(
-                    "Insufficient participants for draw. Minimum {self::MINIMUM_PARTICIPANTS} required, found {$totalParticipants}"
+                    "Insufficient participants. Need " . self::MINIMUM_PARTICIPANTS . ", found {$totalParticipants}"
                 );
             }
 
-            // CALCULATE WINNERS DYNAMICALLY (1:400 ratio, ALWAYS ROUND UP)
-            // Examples:
-            // 350 participants ÷ 400 = 0.875 → ceil() = 1 winner
-            // 600 participants ÷ 400 = 1.5 → ceil() = 2 winners
-            // 1300 participants ÷ 400 = 3.25 → ceil() = 4 winners
-            // 10500 participants ÷ 400 = 26.25 → ceil() = 27 winners
+            // Calculate winners dynamically
             $numberOfWinners = (int) ceil($totalParticipants / self::ODDS_RATIO);
 
-            // CALCULATE ADMIN COMMISSION (7.5% of total pool)
+            // Calculate distribution
             $adminCommission = $totalPool * self::ADMIN_FEE_PERCENTAGE;
             $distributionPool = $totalPool - $adminCommission;
-
-            // CALCULATE AMOUNT PER WINNER (Equal distribution)
             $amountPerWinner = $distributionPool / $numberOfWinners;
 
-            // Log detailed calculation
-            Log::info('Dynamic Draw Calculation', [
+            // CRITICAL: Get excluded users (won in last 6 months)
+            $excludedUserIds = $this->getExcludedUserIds();
+
+            Log::info('Winner Selection Process', [
                 'week_id' => $weekId,
                 'participants' => $totalParticipants,
-                'odds_ratio' => self::ODDS_RATIO . ':1',
-                'calculated_winners' => $totalParticipants / self::ODDS_RATIO,
-                'final_winners' => $numberOfWinners . ' (rounded up)',
-                'total_pool' => '$' . number_format($totalPool, 2),
-                'admin_commission_rate' => (self::ADMIN_FEE_PERCENTAGE * 100) . '%',
-                'admin_commission' => '$' . number_format($adminCommission, 2),
-                'distribution_pool' => '$' . number_format($distributionPool, 2),
-                'per_winner' => '$' . number_format($amountPerWinner, 2),
+                'calculated_winners' => $numberOfWinners,
+                'total_pool' => number_format($totalPool, 2),
+                'excluded_users' => count($excludedUserIds),
             ]);
 
-            // VERIFY: Distribution pool should be positive
-            if ($distributionPool <= 0) {
-                throw new Exception('Invalid distribution pool calculated');
-            }
-
-            // VERIFY: Amount per winner should be reasonable
-            if ($amountPerWinner < 1) {
-                throw new Exception('Amount per winner too low. Pool insufficient.');
-            }
-
-            // Get eligible donations with 6-month exclusion
-            $sixMonthsAgo = Carbon::now()->subMonths(6);
-            $recentWinnerUserIds = DrawWinner::where('created_at', '>=', $sixMonthsAgo)
-                ->pluck('user_id')
-                ->toArray();
-
-            Log::info('6-Month Exclusion Check', [
-                'excluded_users_count' => count($recentWinnerUserIds),
-                'lookback_date' => $sixMonthsAgo->toDateString(),
-            ]);
-
-            // Get eligible donations
+            // Get eligible donations (excluding recent winners)
             $eligibleDonations = Donation::where('week_id', $weekId)
                 ->where('stripe_payment_status', 'completed')
                 ->where('is_eligible_for_draw', true)
-                ->whereNotIn('user_id', $recentWinnerUserIds)
+                ->whereNotIn('user_id', $excludedUserIds)
                 ->inRandomOrder()
-                ->limit($numberOfWinners)
+                ->limit($numberOfWinners * 2) // Get extra for safety
                 ->get();
 
-            // CHECK: Enough eligible participants
-            if ($eligibleDonations->count() < $numberOfWinners) {
-                Log::warning('Not enough eligible participants after exclusion', [
+            $eligibleCount = $eligibleDonations->unique('user_id')->count();
+
+            // Check if we have enough eligible participants
+            if ($eligibleCount < $numberOfWinners) {
+                Log::error('Not enough eligible participants after exclusion', [
                     'needed' => $numberOfWinners,
-                    'available' => $eligibleDonations->count(),
-                    'excluded' => count($recentWinnerUserIds),
+                    'available' => $eligibleCount,
+                    'excluded' => count($excludedUserIds),
                 ]);
 
                 throw new Exception(
-                    "Not enough eligible participants. Need {$numberOfWinners}, found {$eligibleDonations->count()} (after 6-month exclusion)"
+                    "Not enough eligible participants. Need {$numberOfWinners}, found {$eligibleCount} (after 6-month exclusion)"
                 );
             }
 
-            // Create winners
+            // Select unique winners
+            $selectedUserIds = [];
             $winners = [];
+
             foreach ($eligibleDonations as $donation) {
+                if (count($selectedUserIds) >= $numberOfWinners) {
+                    break;
+                }
+
+                // Ensure one entry per user
+                if (in_array($donation->user_id, $selectedUserIds)) {
+                    continue;
+                }
+
+                $selectedUserIds[] = $donation->user_id;
+
+                // Create winner record
                 $winner = DrawWinner::create([
                     'weekly_draw_id' => $draw->id,
                     'user_id' => $donation->user_id,
                     'donation_id' => $donation->id,
-                    'amount_won' => round($amountPerWinner, 2), // Round to 2 decimals
+                    'amount_won' => round($amountPerWinner, 2),
                     'claimed' => false,
                     'payout_status' => 'pending',
                 ]);
+
+                // Create 6-month exclusion
+                $this->createWinnerExclusion($winner);
+
+                // Update user stats
+                $this->updateUserWinStats($donation->user_id, $amountPerWinner);
+
                 $winners[] = $winner;
             }
 
@@ -231,59 +224,165 @@ class WeeklyDrawService
             $draw->update([
                 'total_pool' => $totalPool,
                 'total_participants' => $totalParticipants,
-                'total_recipients' => $numberOfWinners,
+                'eligible_participants' => $eligibleCount,
+                'excluded_winners_count' => count($excludedUserIds),
+                'total_recipients' => count($winners),
                 'admin_commission' => round($adminCommission, 2),
                 'winners_selected' => true,
                 'status' => 'completed',
+                'last_stats_update' => now(),
             ]);
+
+            // Clear cache
+            Cache::forget('excluded_user_ids');
 
             Log::info('Winners selected successfully', [
                 'week_id' => $weekId,
-                'week_number' => $draw->week_number,
                 'winners_count' => count($winners),
-                'total_distributed' => '$' . number_format($distributionPool, 2),
-                'per_winner' => '$' . number_format($amountPerWinner, 2),
+                'total_distributed' => number_format($distributionPool, 2),
+                'per_winner' => number_format($amountPerWinner, 2),
             ]);
 
             return [
                 'winners' => $winners,
                 'total_distributed' => round($distributionPool, 2),
                 'admin_commission' => round($adminCommission, 2),
-                'recipients' => $numberOfWinners,
+                'recipients' => count($winners),
                 'per_winner' => round($amountPerWinner, 2),
+                'excluded_count' => count($excludedUserIds),
             ];
         });
     }
 
     /**
-     * Get draw statistics
+     * CRITICAL: Get users excluded from winning (won in last 6 months)
+     * Uses caching for performance
+     */
+    protected function getExcludedUserIds(): array
+    {
+        return Cache::remember('excluded_user_ids', now()->addMinutes(10), function () {
+            $sixMonthsAgo = Carbon::now()->subMonths(self::WINNER_EXCLUSION_MONTHS);
+
+            return WinnerExclusion::where('is_active', true)
+                ->where('exclusion_ends_at', '>', now())
+                ->pluck('user_id')
+                ->unique()
+                ->toArray();
+        });
+    }
+
+    /**
+     * Create winner exclusion record (6 months from win date)
+     */
+    protected function createWinnerExclusion(DrawWinner $winner): void
+    {
+        $wonAt = now();
+        $exclusionEndsAt = $wonAt->copy()->addMonths(self::WINNER_EXCLUSION_MONTHS);
+
+        WinnerExclusion::create([
+            'user_id' => $winner->user_id,
+            'winner_record_id' => $winner->id,
+            'won_at' => $wonAt,
+            'exclusion_ends_at' => $exclusionEndsAt,
+            'is_active' => true,
+        ]);
+
+        Log::info('Winner exclusion created', [
+            'user_id' => $winner->user_id,
+            'winner_id' => $winner->id,
+            'exclusion_ends' => $exclusionEndsAt->toDateString(),
+        ]);
+    }
+
+    /**
+     * Update user win statistics
+     */
+    protected function updateUserWinStats(int $userId, float $amountWon): void
+    {
+        DB::table('users')
+            ->where('id', $userId)
+            ->update([
+                'times_won' => DB::raw('times_won + 1'),
+                'last_won_at' => now(),
+            ]);
+    }
+
+    /**
+     * Cleanup expired exclusions (run daily or before new draw)
+     */
+    public function cleanupExpiredExclusions(): int
+    {
+        $cleaned = WinnerExclusion::where('is_active', true)
+            ->where('exclusion_ends_at', '<=', now())
+            ->update(['is_active' => false]);
+
+        if ($cleaned > 0) {
+            Cache::forget('excluded_user_ids');
+            Log::info("Cleaned up {$cleaned} expired exclusions");
+        }
+
+        return $cleaned;
+    }
+
+    /**
+     * Get draw statistics with exclusion info
      */
     public function getDrawStats(int $weekId): array
     {
         $draw = WeeklyDraw::findOrFail($weekId);
 
-        // Calculate expected winners based on current participants
         $expectedWinners = $draw->total_participants > 0
             ? (int) ceil($draw->total_participants / self::ODDS_RATIO)
             : 0;
+
+        $excludedCount = count($this->getExcludedUserIds());
 
         return [
             'week_number' => $draw->week_number,
             'status' => $draw->status,
             'total_pool' => $draw->total_pool,
             'total_participants' => $draw->total_participants,
-            'expected_winners' => $expectedWinners, // Dynamic calculation
+            'eligible_participants' => $draw->eligible_participants,
+            'excluded_winners' => $excludedCount,
+            'expected_winners' => $expectedWinners,
             'actual_recipients' => $draw->total_recipients,
             'admin_commission' => $draw->admin_commission,
             'countdown_ends_at' => $draw->countdown_ends_at,
             'claim_deadline' => $draw->claim_deadline,
             'odds' => '1:' . self::ODDS_RATIO,
             'minimum_participants' => self::MINIMUM_PARTICIPANTS,
+            'exclusion_period_months' => self::WINNER_EXCLUSION_MONTHS,
         ];
     }
 
     /**
-     * Get all draws (Admin)
+     * Check if user is currently excluded from winning
+     */
+    public function isUserExcluded(int $userId): array
+    {
+        $exclusion = WinnerExclusion::where('user_id', $userId)
+            ->where('is_active', true)
+            ->where('exclusion_ends_at', '>', now())
+            ->orderBy('exclusion_ends_at', 'desc')
+            ->first();
+
+        if (!$exclusion) {
+            return [
+                'excluded' => false,
+                'message' => 'User is eligible to win',
+            ];
+        }
+
+        return [
+            'excluded' => true,
+            'exclusion_ends_at' => $exclusion->exclusion_ends_at,
+            'days_remaining' => now()->diffInDays($exclusion->exclusion_ends_at),
+            'message' => 'User won recently and is excluded until ' . $exclusion->exclusion_ends_at->format('Y-m-d'),
+        ];
+    }
+
+    /**
+     * Get all draws
      */
     public function getAllDraws(int $page = 1, int $perPage = 20)
     {
@@ -292,10 +391,12 @@ class WeeklyDrawService
     }
 
     /**
-     * Get overview statistics (Admin)
+     * Get overview statistics
      */
     public function getOverviewStats(): array
     {
+        $excludedCount = count($this->getExcludedUserIds());
+
         return [
             'total_donations' => Donation::where('stripe_payment_status', 'completed')->sum('amount'),
             'total_participants' => Donation::where('stripe_payment_status', 'completed')
@@ -304,8 +405,10 @@ class WeeklyDrawService
             'total_distributed' => DrawWinner::sum('amount_won'),
             'total_commission' => WeeklyDraw::sum('admin_commission'),
             'active_draws' => WeeklyDraw::where('status', 'active')->count(),
+            'currently_excluded_users' => $excludedCount,
             'current_odds' => '1:' . self::ODDS_RATIO,
             'admin_fee_rate' => (self::ADMIN_FEE_PERCENTAGE * 100) . '%',
+            'exclusion_period' => self::WINNER_EXCLUSION_MONTHS . ' months',
         ];
     }
 }

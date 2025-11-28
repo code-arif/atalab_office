@@ -51,18 +51,16 @@ class AutomateWeeklyDraws extends Command
         // TESTING MODE (UNCOMMENT FOR TESTING)
 
         // TEST: Wednesday 6:33 PM - Create New Draw
-        if ($now->isWednesday() && $now->hour === 12 && $now->minute === 33) {
+        if ($now->isFriday() && $now->hour === 11 && $now->minute === 52) {
             Log::info('TEST: Triggering new draw creation');
             $this->createNewDraw();
         }
 
         // TEST: Tuesday 2:27 PM - Finalize & Select Winners
-        if ($now->isTuesday() && $now->hour === 14 && $now->minute === 27) {
+        if ($now->isFriday() && $now->hour === 11 && $now->minute === 57) {
             Log::info('TEST: Triggering draw finalization');
             $this->finalizeAndSelectWinners();
         }
-
-
         return 0;
     }
 
@@ -113,19 +111,19 @@ class AutomateWeeklyDraws extends Command
             $activeDraw = WeeklyDraw::where('status', 'active')->first();
 
             if (!$activeDraw) {
-                $this->error('❌ No active draw found to finalize');
+                $this->error('No active draw found to finalize');
                 Log::warning('No active draw found on Sunday 5 PM');
                 return;
             }
 
             // Step 1: Finalize Draw (Change status to 'claiming')
             $draw = $this->weeklyDrawService->finalizeDraw($activeDraw->id);
-            $this->info("✅ Draw finalized: Week #{$draw->week_number}");
+            $this->info("Draw finalized: Week #{$draw->week_number}");
 
             // Step 2: Select Winners
             $result = $this->weeklyDrawService->selectWinners($draw->id);
 
-            $this->info("✅ Winners selected successfully!");
+            $this->info("Winners selected successfully!");
             $this->info("   - Winners: {$result['recipients']}");
             $this->info("   - Total distributed: $" . number_format($result['total_distributed'], 2));
             $this->info("   - Admin commission: $" . number_format($result['admin_commission'], 2));
@@ -138,7 +136,7 @@ class AutomateWeeklyDraws extends Command
                 'timezone' => config('app.timezone'),
             ]);
         } catch (\Exception $e) {
-            $this->error('❌ Failed: ' . $e->getMessage());
+            $this->error('Failed: ' . $e->getMessage());
             Log::error('Finalization/selection failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
