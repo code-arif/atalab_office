@@ -39,9 +39,9 @@ class DonationController extends Controller
         }
 
         try {
-            $baseUrl = config('app.frontend_url', 'http://localhost:5173');
+            $baseUrl = config('app.frontend_url', 'https://thedignitydraw.org');
             $successUrl = $baseUrl . '/success?session_id={CHECKOUT_SESSION_ID}';
-            $cancelUrl = $baseUrl . '/donation/cancel';
+            $cancelUrl = $baseUrl . '/cancel';
 
             $result = $this->donationService->createStandardDonation(
                 $request->user_id,

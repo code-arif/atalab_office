@@ -27,7 +27,6 @@ Route::group(['middleware' => 'guest:api'], function () {
     // cms route gorup
     Route::group(['prefix' => 'cms'], function () {
         Route::get('/home', [CmsController::class, 'home']); // cms home page data
-        Route::get('/slider', [CmsController::class, 'getSlider']); // Slider
         Route::get('/our-story', [CmsController::class, 'ourStory']); // cms our story page data
         Route::get('/how-it-works', [CmsController::class, 'howItWorks']); // how it works page data
         Route::get('/structure', [CmsController::class, 'structure']); // structure page data
@@ -38,13 +37,6 @@ Route::group(['middleware' => 'guest:api'], function () {
         Route::get('/officer-compensation-policy', [CmsController::class, 'officerCompensationPolicy']); // officer compensation policy page data
         Route::get('/archives', [CmsController::class, 'archives']); // archives page data
         Route::get('/contact-us', [CmsController::class, 'contactUs']); // contact-us page data
-        Route::get('/partials/topbar', [CmsController::class, 'topbarData']); // partials - topbar data
-
-        // partials - footer data
-        Route::get('/partials/footer', [CmsController::class, 'footerData']);
-
-        // Get tesimonials
-        Route::get('/testimonials', [TestimonialController::class, 'index']);
     });
 
     // subscribe newsletter
