@@ -21,19 +21,46 @@ class RegistrationController extends Controller
     /**
      * Register new user (sends OTP, stores in cache)
      */
+    // public function register(Request $request): JsonResponse
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'full_name' => 'required|string|max:255',
+    //         'email' => 'required|email',
+    //         'phone' => [
+    //             'required','string'
+    //         ],
+    //         'address' => 'required|string|max:500',
+    //     ], [
+    //         'phone.regex' => 'Please enter a valid phone number (e.g., +12345678901)',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'errors' => $validator->errors()
+    //         ], 422);
+    //     }
+
+    //     try {
+    //         $result = $this->registrationService->registerUser($request->all());
+
+    //         return response()->json($result, $result['success'] ? 200 : 400);
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
     public function register(Request $request): JsonResponse
     {
+        // Basic validation only (NO unique constraint)
         $validator = Validator::make($request->all(), [
             'full_name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'phone' => [
-                'required',
-                'string',
-                'regex:/^\+1\d{10}$/',
-            ],
+            'email' => 'required|email',  // NO unique check
+            'phone' => 'required|string',  // NO unique check
             'address' => 'required|string|max:500',
-        ], [
-            'phone.regex' => 'Please enter a valid phone number (e.g., +12345678901)',
         ]);
 
         if ($validator->fails()) {
@@ -44,7 +71,8 @@ class RegistrationController extends Controller
         }
 
         try {
-            $result = $this->registrationService->registerUser($request->all());
+            // Service handles both new and existing users
+            $result = $this->registrationService->registerOrLoginUser($request->all());
 
             return response()->json($result, $result['success'] ? 200 : 400);
         } catch (Exception $e) {

@@ -27,23 +27,20 @@ class DonationService
     }
 
     /**
-     * ENHANCED: Create standard $25 donation with concurrency protection
+     * FIXED: Create standard donation with donor_id assignment BEFORE payment
      */
     public function createStandardDonation(int $userId, string $successUrl, string $cancelUrl): array
     {
-        // Use distributed lock to prevent race conditions
         $lockKey = "donation_lock:user_{$userId}";
 
         return Cache::lock($lockKey, 10)->block(5, function () use ($userId, $successUrl, $cancelUrl) {
             return DB::transaction(function () use ($userId, $successUrl, $cancelUrl) {
-                // Validate user
                 $user = User::lockForUpdate()->find($userId);
 
                 if (!$user) {
-                    throw new Exception('User not verified. Please complete registration first.');
+                    throw new Exception('User not found. Please complete registration first.');
                 }
 
-                // Get current active draw
                 $currentDraw = WeeklyDraw::where('status', 'active')
                     ->lockForUpdate()
                     ->first();
@@ -52,17 +49,28 @@ class DonationService
                     throw new Exception('No active draw available. Donations are paused.');
                 }
 
-                // Check donation time window
                 if (!$this->isDonationAllowed()) {
                     throw new Exception('Donations are currently paused. Please try again on Monday at 12:00 AM.');
                 }
 
-                // CRITICAL: Check if user can donate this week
+                // Check week eligibility
                 $eligibility = $this->registrationService->canUserDonateToWeek($userId, $currentDraw->id);
 
                 if (!$eligibility['eligible']) {
                     throw new Exception($eligibility['reason']);
                 }
+
+                // CRITICAL FIX: Assign donor_id BEFORE creating Stripe session
+                // This prevents webhook conflicts
+                $donorId = $this->registrationService->assignDonorIdIfNeeded($userId);
+
+                Log::info('Donor ID ensured before payment', [
+                    'user_id' => $userId,
+                    'donor_id' => $donorId,
+                ]);
+
+                // Reload user to get updated donor_id
+                $user = $user->fresh();
 
                 // Create Stripe checkout session
                 $session = $this->stripeService->createCheckoutSession(
@@ -95,13 +103,14 @@ class DonationService
                     ],
                     [
                         'participated_at' => now(),
-                        'has_donated' => false, // Will be true after payment completion
+                        'has_donated' => false,
                     ]
                 );
 
                 Log::info('Standard donation initiated', [
                     'donation_id' => $donation->id,
                     'user_id' => $user->id,
+                    'donor_id' => $user->donor_id,
                     'week_id' => $currentDraw->id,
                     'session_id' => $session->id,
                 ]);
@@ -111,14 +120,15 @@ class DonationService
                 return [
                     'checkout_url' => $session->url,
                     'session_id' => $session->id,
-                    'donation_id' => $donation->id
+                    'donation_id' => $donation->id,
+                    'donor_id' => $user->donor_id,
                 ];
             });
         });
     }
 
     /**
-     * ENHANCED: Create custom amount donation with concurrency protection
+     * FIXED: Create custom donation with donor_id assignment BEFORE payment
      */
     public function createCustomDonation(int $userId, float $amount, string $successUrl, string $cancelUrl): array
     {
@@ -132,8 +142,8 @@ class DonationService
 
                 $user = User::lockForUpdate()->find($userId);
 
-                if (!$user || !$user->email_verified_at || !$user->phone_verified_at) {
-                    throw new Exception('User not verified. Please complete registration first.');
+                if (!$user) {
+                    throw new Exception('User not found. Please complete registration first.');
                 }
 
                 $currentDraw = WeeklyDraw::where('status', 'active')
@@ -154,6 +164,17 @@ class DonationService
                 if (!$eligibility['eligible']) {
                     throw new Exception($eligibility['reason']);
                 }
+
+                // CRITICAL FIX: Assign donor_id BEFORE creating Stripe session
+                $donorId = $this->registrationService->assignDonorIdIfNeeded($userId);
+
+                Log::info('Donor ID ensured before payment', [
+                    'user_id' => $userId,
+                    'donor_id' => $donorId,
+                ]);
+
+                // Reload user
+                $user = $user->fresh();
 
                 $session = $this->stripeService->createCheckoutSession(
                     $amount,
@@ -176,7 +197,6 @@ class DonationService
                     'attempt_number' => 1,
                 ]);
 
-                // Track participation
                 UserWeekParticipation::updateOrCreate(
                     [
                         'user_id' => $user->id,
@@ -191,21 +211,20 @@ class DonationService
                 Log::info('Custom donation initiated', [
                     'donation_id' => $donation->id,
                     'user_id' => $user->id,
+                    'donor_id' => $user->donor_id,
                     'amount' => $amount,
                 ]);
 
                 return [
                     'checkout_url' => $session->url,
                     'session_id' => $session->id,
-                    'donation_id' => $donation->id
+                    'donation_id' => $donation->id,
+                    'donor_id' => $user->donor_id,
                 ];
             });
         });
     }
 
-    /**
-     * Check if donation is allowed based on time window
-     */
     protected function isDonationAllowed(): bool
     {
         $now = now(config('app.timezone'));
@@ -222,7 +241,7 @@ class DonationService
     }
 
     /**
-     * ENHANCED: Verify payment with atomic updates
+     * FIXED: Webhook handler - No donor_id assignment here anymore
      */
     public function verifyPayment(string $sessionId): Donation
     {
@@ -249,8 +268,8 @@ class DonationService
                     ->where('week_id', $donation->week_id)
                     ->update(['has_donated' => true]);
 
-                // Assign donor_id on first donation
-                $this->registrationService->assignDonorId($donation->user_id);
+                // ✅ REMOVED: Donor ID assignment (already done before payment)
+                // This prevents conflicts
 
                 // Update user stats
                 $this->updateUserDonationStats($donation->user_id, $donation->amount);
@@ -258,9 +277,10 @@ class DonationService
                 // Update weekly draw stats
                 $this->updateWeeklyDrawStats($donation->week_id);
 
-                Log::info('Payment verified', [
+                Log::info('Payment verified - webhook completed', [
                     'donation_id' => $donation->id,
                     'user_id' => $donation->user_id,
+                    'donor_id' => $donation->user->donor_id,
                 ]);
             }
 
@@ -268,9 +288,6 @@ class DonationService
         });
     }
 
-    /**
-     * Update user donation statistics
-     */
     protected function updateUserDonationStats(int $userId, float $amount): void
     {
         DB::table('users')
@@ -282,9 +299,6 @@ class DonationService
             ]);
     }
 
-    /**
-     * Update weekly draw statistics with atomic operations
-     */
     protected function updateWeeklyDrawStats(int $weekId): void
     {
         $draw = WeeklyDraw::lockForUpdate()->find($weekId);
@@ -304,7 +318,7 @@ class DonationService
     }
 
     /**
-     * Handle Stripe checkout completed webhook
+     * FIXED: Webhook - checkout completed
      */
     public function handleCheckoutCompleted($session): void
     {
@@ -320,29 +334,24 @@ class DonationService
                     'is_eligible_for_draw' => true,
                 ]);
 
-                // Update participation
                 UserWeekParticipation::where('user_id', $donation->user_id)
                     ->where('week_id', $donation->week_id)
                     ->update(['has_donated' => true]);
 
-                // Assign donor_id
-                $this->registrationService->assignDonorId($donation->user_id);
+                // REMOVED: Donor ID assignment
 
-                // Update stats
                 $this->updateUserDonationStats($donation->user_id, $donation->amount);
                 $this->updateWeeklyDrawStats($donation->week_id);
 
-                Log::info('Checkout completed', [
+                Log::info('Checkout completed webhook', [
                     'donation_id' => $donation->id,
-                    'user_id' => $donation->user_id
+                    'user_id' => $donation->user_id,
+                    'donor_id' => $donation->user->donor_id,
                 ]);
             }
         });
     }
 
-    /**
-     * Handle payment succeeded webhook
-     */
     public function handlePaymentSucceeded($paymentIntent): void
     {
         DB::transaction(function () use ($paymentIntent) {
@@ -361,9 +370,6 @@ class DonationService
         });
     }
 
-    /**
-     * Handle payment failed webhook
-     */
     public function handlePaymentFailed($paymentIntent): void
     {
         DB::transaction(function () use ($paymentIntent) {
@@ -380,9 +386,6 @@ class DonationService
         });
     }
 
-    /**
-     * Check payment status
-     */
     public function checkPaymentStatus(string $paymentId): array
     {
         $donation = Donation::where('stripe_payment_id', $paymentId)->first();
@@ -399,9 +402,6 @@ class DonationService
         ];
     }
 
-    /**
-     * Get all donations
-     */
     public function getAllDonations(int $page = 1, int $perPage = 50)
     {
         return Donation::with(['user', 'weeklyDraw'])
@@ -409,9 +409,6 @@ class DonationService
             ->paginate($perPage, ['*'], 'page', $page);
     }
 
-    /**
-     * Get donations by week
-     */
     public function getDonationsByWeek(int $weekId)
     {
         return Donation::with('user')

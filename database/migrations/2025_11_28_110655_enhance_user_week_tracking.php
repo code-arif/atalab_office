@@ -30,8 +30,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('winner_record_id')->constrained('draw_winners')->onDelete('cascade');
-            $table->timestamp('won_at');
-            $table->timestamp('exclusion_ends_at'); // won_at + 6 months
+            $table->datetime('won_at');
+            $table->datetime('exclusion_ends_at');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
