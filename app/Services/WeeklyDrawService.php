@@ -3,12 +3,11 @@
 namespace App\Services;
 
 use Exception;
-use Carbon\Carbon;
 use App\Models\Donation;
 use App\Models\DrawWinner;
 use App\Models\WeeklyDraw;
+use Illuminate\Support\Carbon;
 use App\Models\WinnerExclusion;
-use App\Models\UserWeekParticipation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
@@ -51,7 +50,7 @@ class WeeklyDrawService
             $lastDraw = WeeklyDraw::orderBy('week_number', 'desc')->first();
             $weekNumber = $lastDraw ? $lastDraw->week_number + 1 : 1;
 
-            $startDate = Carbon::now('Asia/Dhaka')->startOfWeek(Carbon::MONDAY)->setTime(0, 0, 0);
+            $startDate = Carbon::now(config('app.timezone'))->startOfWeek(Carbon::MONDAY)->setTime(0, 0, 0);
             $endDate = $startDate->copy()->endOfWeek(Carbon::SUNDAY)->setTime(17, 0, 0);
             $countdownEndsAt = $endDate->copy();
             $claimDeadline = $endDate->copy()->addDay()->setTime(5, 0, 0);

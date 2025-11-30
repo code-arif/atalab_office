@@ -30,6 +30,12 @@ class User extends Authenticatable implements JWTSubject
         'last_won_at'
     ];
 
+
+    protected $casts = [
+        'last_donation_at' => 'datetime',
+        'last_won_at'      => 'datetime',
+    ];
+
     public function getJWTIdentifier()
     {
         return $this->getKey();

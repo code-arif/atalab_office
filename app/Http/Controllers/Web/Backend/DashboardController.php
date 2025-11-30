@@ -29,22 +29,31 @@ class DashboardController extends Controller
         $totalWinners = DrawWinner::where('claimed', true)->count();
         $pendingPayouts = DrawWinner::where('payout_status', 'pending')->count();
 
+
         // Active Draw Statistics
         $activeDrawStats = null;
         if ($activeDraw) {
-            $endsAt = Carbon::parse($activeDraw->countdown_ends_at);
+            // Ensure countdown_ends_at is not null and is a valid date
+            $endsAt = $activeDraw->countdown_ends_at
+                ? Carbon::parse($activeDraw->countdown_ends_at)
+                : Carbon::now()->addHours(24); // fallback if null (optional)
+
             $now = Carbon::now();
 
-            // Calculate remaining seconds (0 if expired)
-            $timeRemaining = $endsAt->isFuture() ? $now->diffInSeconds($endsAt, false) : 0;
+            // Safe way: use timestamp only if valid
+            $timeRemaining = $endsAt->isFuture()
+                ? $now->diffInSeconds($endsAt, false)
+                : 0;
+
+            $hasEnded = !$endsAt->isFuture();
 
             $activeDrawStats = [
                 'week_number' => $activeDraw->week_number,
                 'total_pool' => $activeDraw->total_pool,
                 'total_participants' => $activeDraw->total_participants,
-                'countdown_ends_at' => $activeDraw->countdown_ends_at,
-                'time_remaining' => abs($timeRemaining),
-                'has_ended' => !$endsAt->isFuture(),
+                'ends_at_timestamp' => $endsAt->timestamp, // এটা ১০০% integer হবে
+                'time_remaining' => $timeRemaining,
+                'has_ended' => $hasEnded,
             ];
         }
 
@@ -77,7 +86,7 @@ class DashboardController extends Controller
                 ];
             });
 
-            // return $recentDonations;exit();
+        // return $recentDonations;exit();
 
         // Weekly Performance (Last 4 weeks)
         $weeklyPerformance = WeeklyDraw::where('status', '!=', 'active')

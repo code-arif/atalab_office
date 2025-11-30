@@ -51,13 +51,13 @@ class AutomateWeeklyDraws extends Command
         // TESTING MODE (UNCOMMENT FOR TESTING)
 
         // TEST: Wednesday 6:33 PM - Create New Draw
-        if ($now->isFriday() && $now->hour === 17 && $now->minute === 14) {
+        if ($now->isSunday() && $now->hour === 10 && $now->minute === 53) {
             Log::info('TEST: Triggering new draw creation');
             $this->createNewDraw();
         }
 
         // TEST: Tuesday 2:27 PM - Finalize & Select Winners
-        if ($now->isFriday() && $now->hour === 11 && $now->minute === 57) {
+        if ($now->isSunday() && $now->hour === 11 && $now->minute === 29) {
             Log::info('TEST: Triggering draw finalization');
             $this->finalizeAndSelectWinners();
         }
@@ -85,7 +85,7 @@ class AutomateWeeklyDraws extends Command
             // Create new draw
             $draw = $this->weeklyDrawService->createNewDraw();
 
-            $this->info("✅ New draw created: Week #{$draw->week_number}");
+            $this->info("New draw created: Week #{$draw->week_number}");
             Log::info('Weekly draw created successfully', [
                 'week_number' => $draw->week_number,
                 'draw_id' => $draw->id,
@@ -94,7 +94,7 @@ class AutomateWeeklyDraws extends Command
                 'timezone' => config('app.timezone'),
             ]);
         } catch (\Exception $e) {
-            $this->error('❌ Failed to create draw: ' . $e->getMessage());
+            $this->error('Failed to create draw: ' . $e->getMessage());
             Log::error('Draw creation failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()

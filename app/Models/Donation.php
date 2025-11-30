@@ -28,6 +28,8 @@ class Donation extends Model
         'amount' => 'decimal:2',
         'is_eligible_for_draw' => 'boolean',
         'donated_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
 

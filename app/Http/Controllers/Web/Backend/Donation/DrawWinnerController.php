@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Web\Backend\Donation;
 use Carbon\Carbon;
 use App\Models\DrawWinner;
 use Illuminate\Http\Request;
-
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -56,6 +55,12 @@ class DrawWinnerController extends Controller
                 $query->where('amount_won', '<=', $request->max_amount);
             }
 
+            // Calculate pending payouts based on current filters
+            $pendingPayoutsQuery = clone $query;
+            $pendingPayouts = $pendingPayoutsQuery
+                ->where('claimed', true)
+                ->where('payout_status', 'pending')
+                ->sum('amount_won');
 
             return DataTables::eloquent($query)
                 ->addIndexColumn()
@@ -96,28 +101,27 @@ class DrawWinnerController extends Controller
 
                     // View Details
                     $actions .= '<button type="button" class="btn btn-sm btn-info viewWinner"
-                    data-id="' . $row->id . '"
-                    title="View Details">
-                     View Details
-                    </button>';
+                data-id="' . $row->id . '"
+                title="View Details">
+                 View Details
+                </button>';
 
                     // Verify Winner - Main Action Button
                     if (!$row->claimed) {
                         $actions .= '<a href="' . route('draw-winners.verify', $row->id) . '"
-                        class="btn btn-sm btn-primary" title="Verify Winner"> Verify
-                        </a>';
+                    class="btn btn-sm btn-primary" title="Verify Winner"> Verify
+                    </a>';
                     }
 
                     // Process Payout - If already verified and approved
                     if ($row->claimed && $row->payout_status === 'pending') {
-                        // Check if verification is approved
                         $isApproved = $row->verification && $row->verification->verification_status === 'approved';
 
                         if ($isApproved) {
                             $actions .= '<button type="button" class="btn btn-sm btn-success processPayout"
-                            data-id="' . $row->id . '" title="Process Payout">
-                            Process Payout
-                        </button>';
+                        data-id="' . $row->id . '" title="Process Payout">
+                        Process Payout
+                    </button>';
                         }
                     }
 
@@ -143,6 +147,9 @@ class DrawWinnerController extends Controller
                     return $actions;
                 })
                 ->rawColumns(['week', 'amount', 'claim_status', 'claimed_date', 'payout_status', 'stripe_info', 'action'])
+                ->with([
+                    'pending_payouts' => number_format($pendingPayouts, 2)
+                ])
                 ->make(true);
         }
 
@@ -166,7 +173,6 @@ class DrawWinnerController extends Controller
         return view('backend.layouts.donation_&_draw.winners_index', compact('stats', 'weeks'));
     }
 
-
     /**
      * Show specific winner details
      */
@@ -174,7 +180,7 @@ class DrawWinnerController extends Controller
     {
         try {
             $winner = DrawWinner::with([
-                'user:id,name,email,phone',
+                'user',
                 'weeklyDraw:id,week_number,start_date,end_date,total_pool',
                 'donation:id,amount,stripe_payment_id,donated_at',
                 'verification' => function ($query) {
@@ -182,7 +188,7 @@ class DrawWinnerController extends Controller
                 }
             ])->findOrFail($id);
 
-            // Add verification progress
+            // Calculate verification progress
             $verificationProgress = 0;
             if ($winner->verification) {
                 if ($winner->verification->identity_verified) $verificationProgress += 25;
@@ -195,7 +201,19 @@ class DrawWinnerController extends Controller
                 'success' => true,
                 'data' => [
                     'id' => $winner->id,
-                    'user' => $winner->user,
+                    'user' => [
+                        'name' => $winner->user->name,
+                        'email' => $winner->user->email,
+                        'phone' => $winner->user->phone,
+                        'address' => $winner->user->address ?? 'N/A',
+                        'donor_id' => $winner->user->donor_id ?? 'N/A',
+                        'lifetime_donation_amount' => $winner->user->lifetime_donation_amount ?? 0,
+                        'times_won' => $winner->user->times_won ?? 0,
+                        'last_donation_at' => $winner->user->last_donation_at,
+                        'last_won_at' => $winner->user->last_won_at,
+                        'email_verified_at' => $winner->user->email_verified_at,
+                        'phone_verified_at' => $winner->user->phone_verified_at,
+                    ],
                     'weekly_draw' => $winner->weeklyDraw,
                     'donation' => $winner->donation,
                     'amount_won' => $winner->amount_won,
@@ -204,14 +222,30 @@ class DrawWinnerController extends Controller
                     'claim_status' => $this->getClaimStatus($winner),
                     'payout_status' => $winner->payout_status,
                     'payout_stripe_id' => $winner->payout_stripe_id,
-                    'verification' => $winner->verification,
+                    'verification' => $winner->verification ? [
+                        'verified_by' => $winner->verification->verifiedBy->name ?? 'N/A',
+                        'admin_notes' => $winner->verification->admin_notes,
+                        'approved_at' => $winner->verification->approved_at,
+                        'rejected_at' => $winner->verification->rejected_at,
+                        'license_number' => $winner->verification->drivers_license,
+                        'license_state' => $winner->verification->license_state,
+                        'license_expiry' => $winner->verification->license_expiry,
+                        'bank_name' => $winner->verification->bank_name,
+                        'bank_acc_last4' => $winner->verification->account_number_last4,
+                        'bank_routing' => $winner->verification->routing_number,
+                        'bank_verified_at' => $winner->verification->bank_verified_at,
+                        'identity_verified' => $winner->verification->identity_verified,
+                        'email_verified' => $winner->verification->email_verified,
+                        'phone_verified' => $winner->verification->phone_verified,
+                        'bank_verified' => $winner->verification->bank_verified,
+                    ] : null,
                     'verification_progress' => $verificationProgress
                 ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Winner not found: ' . $e->getMessage()
+                'message' => 'Winner not found'
             ], 404);
         }
     }
@@ -229,6 +263,7 @@ class DrawWinnerController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
+                'message' => 'Validation failed',
                 'errors' => $validator->errors()
             ], 422);
         }
@@ -252,7 +287,6 @@ class DrawWinnerController extends Controller
                 'payout_status' => 'pending',
             ]);
 
-            // Optional: Store admin notes in a separate table if needed
             if ($request->admin_notes) {
                 DB::table('winner_notes')->insert([
                     'draw_winner_id' => $winner->id,
@@ -273,7 +307,7 @@ class DrawWinnerController extends Controller
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Failed to mark as claimed: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -302,12 +336,11 @@ class DrawWinnerController extends Controller
                 ], 400);
             }
 
-            // Update payout status to processing
             $winner->update([
                 'payout_status' => 'processing',
             ]);
 
-            // After successful payout
+            // Simulate payout processing (replace with actual Stripe integration)
             $winner->update([
                 'payout_status' => 'completed',
             ]);
@@ -321,7 +354,6 @@ class DrawWinnerController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            // Mark as failed
             DrawWinner::where('id', $id)->update(['payout_status' => 'failed']);
 
             return response()->json([
@@ -344,6 +376,7 @@ class DrawWinnerController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
+                'message' => 'Validation failed',
                 'errors' => $validator->errors()
             ], 422);
         }
@@ -372,7 +405,7 @@ class DrawWinnerController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Failed to update status: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -384,7 +417,6 @@ class DrawWinnerController extends Controller
     {
         $query = DrawWinner::with(['user', 'weeklyDraw']);
 
-        // Apply same filters as index
         if ($request->has('claim_status') && $request->claim_status !== '') {
             if ($request->claim_status === 'claimed') {
                 $query->where('claimed', true);
@@ -425,8 +457,6 @@ class DrawWinnerController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
-
-
 
     /**
      * Helper method to determine claim status

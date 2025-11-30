@@ -178,7 +178,7 @@
                         $('#donation_attempt').text(d.user.total_donations_count);
                         $('#lifetime_donate_amount').text(d.user.lifetime_donation_amount);
                         $('#times_won').text(d.user.times_won);
-                        $('#last_donate_at').text(d.user.last_donation_at ?
+                        $('#last_donation_at').text(d.user.last_donation_at ?
                             new Date(d.user.last_donation_at).toLocaleString() : 'Never');
 
                         $('#last_won_at').text(d.user.last_won_at ?

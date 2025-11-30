@@ -226,13 +226,13 @@ class RegistrationService
                         ->first();
 
                     if (!$lastUser || !$lastUser->donor_id) {
-                        $nextNumber = 100001;
+                        $nextNumber = 1; // Start from DN0000000001
                     } else {
                         $lastNumber = (int) substr($lastUser->donor_id, 2);
                         $nextNumber = $lastNumber + 1;
                     }
 
-                    $donorId = 'DN' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+                    $donorId = 'DN' . str_pad($nextNumber, 10, '0', STR_PAD_LEFT);
 
                     // Verify uniqueness
                     $exists = User::where('donor_id', $donorId)->exists();

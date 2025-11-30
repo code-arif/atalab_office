@@ -190,8 +190,8 @@
                                 <h3 class="card-title mb-0">All Draw Winners</h3>
                                 <div>
                                     <span class="badge bg-info me-2">Total: <span id="totalCount">0</span></span>
-                                    <span class="badge bg-primary">Pending Payouts: $<span
-                                            id="pendingAmount">{{ number_format($stats['pending_payouts'], 2) }}</span></span>
+                                    {{-- <span class="badge bg-primary">Pending Payouts: $<span
+                                            id="pendingAmount">{{ number_format($stats['pending_payouts'], 2) }}</span></span> --}}
                                 </div>
                             </div>
                             <div class="card-body">
@@ -223,148 +223,7 @@
         </div>
     </div>
 
-    <!-- View Winner Modal -->
-    <div class="modal fade" id="viewWinnerModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title"><i class="fe fe-eye me-2"></i>Winner Details</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card border mb-3">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="fe fe-user me-2"></i>Winner Information</h6>
-                                </div>
-                                <div class="card-body">
-                                    <table class="table table-borderless table-sm mb-0">
-                                        <tr>
-                                            <td class="fw-bold" width="40%">Name:</td>
-                                            <td id="view_name">---</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Email:</td>
-                                            <td id="view_email">---</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Phone:</td>
-                                            <td id="view_phone">---</td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div class="card border">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="fe fe-calendar me-2"></i>Draw Information</h6>
-                                </div>
-                                <div class="card-body">
-                                    <table class="table table-borderless table-sm mb-0">
-                                        <tr>
-                                            <td class="fw-bold" width="40%">Week:</td>
-                                            <td id="view_week">---</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Draw Period:</td>
-                                            <td id="view_draw_period">---</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Total Pool:</td>
-                                            <td id="view_pool">---</td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="card border mb-3">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="fe fe-dollar-sign me-2"></i>Claim Information</h6>
-                                </div>
-                                <div class="card-body">
-                                    <table class="table table-borderless table-sm mb-0">
-                                        <tr>
-                                            <td class="fw-bold" width="40%">Amount Won:</td>
-                                            <td id="view_amount" class="text-success fw-bold">---</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Claimed:</td>
-                                            <td id="view_claimed">---</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Claimed At:</td>
-                                            <td id="view_claimed_at">---</td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div class="card border">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="fe fe-credit-card me-2"></i>Payout Information</h6>
-                                </div>
-                                <div class="card-body">
-                                    <table class="table table-borderless table-sm mb-0">
-                                        <tr>
-                                            <td class="fw-bold" width="40%">Status:</td>
-                                            <td id="view_payout_status">---</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Stripe ID:</td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <code id="view_stripe_id"
-                                                        class="text-break text-monospace small me-2">---</code>
-                                                    <button class="btn btn-sm btn-outline-secondary copy-btn"
-                                                        data-clipboard-target="#view_stripe_id" title="Copy">
-                                                        <i class="fe fe-copy"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td class="fw-bold">Donation ID:</td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <code id="view_donation_id"
-                                                        class="text-break text-monospace small me-2">---</code>
-                                                    <button class="btn btn-sm btn-outline-secondary copy-btn"
-                                                        data-clipboard-target="#view_donation_id" title="Copy">
-                                                        <i class="fe fe-copy"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="card border mb-3" id="identityInfoCard" style="display: none;">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="fe fe-file-text me-2"></i>Identity Information</h6>
-                                </div>
-                                <div class="card-body">
-                                    <p><strong>Driver's License:</strong> <span id="view_license">---</span></p>
-                                    <p><strong>State:</strong> <span id="view_license_state">---</span></p>
-                                    <p><strong>Expiry:</strong> <span id="view_license_expiry">---</span></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    @include('backend.layouts.donation_&_draw.partials.winner_view_modal')
 @endsection
 
 @push('styles')
@@ -399,7 +258,7 @@
                 }
             });
 
-            // Initialize DataTable with server-side processing for better performance
+            // Initialize DataTable with server-side processing
             let dTable = $('#winnersTable').DataTable({
                 order: [
                     [0, 'desc']
@@ -431,7 +290,6 @@
                         console.log('Response:', xhr.responseText);
                         console.log('Error:', error);
                         console.log('Code:', code);
-
                         toastr.error('Failed to load data. Check console for details.');
                     }
                 },
@@ -471,7 +329,13 @@
                     }
                 ],
                 drawCallback: function(settings) {
+                    // Update total count
                     $('#totalCount').text(settings.json.recordsFiltered);
+
+                    // Update pending payouts from AJAX response
+                    if (settings.json.pending_payouts !== undefined) {
+                        $('#pendingAmount').text(settings.json.pending_payouts);
+                    }
                 }
             });
 
@@ -494,15 +358,33 @@
                 }
             });
 
-            // View Winner
+            // View Winner Modal - Fixed Version
             $(document).on('click', '.viewWinner', function() {
                 let id = $(this).data('id');
+
                 $.get("{{ route('draw-winners.show', '') }}/" + id, function(res) {
                     if (res.success) {
                         let d = res.data;
-                        $('#view_name').text(d.user.name);
-                        $('#view_email').text(d.user.email);
-                        $('#view_phone').text(d.user.phone || 'N/A');
+                        let u = d.user;
+                        let v = d.verification;
+
+                        // User Information
+                        $('#view_name').text(u.name || 'N/A');
+                        $('#view_email').text(u.email || 'N/A');
+                        $('#view_phone').text(u.phone || 'N/A');
+                        $('#address').text(u.address || 'N/A');
+                        $('#donor_id').text(u.donor_id || 'N/A');
+                        $('#lifetime_donation_amount').text(u.lifetime_donation_amount ? '$' +
+                            parseFloat(u.lifetime_donation_amount).toFixed(2) : 'N/A');
+                        $('#times_won').text(u.times_won || '0');
+
+                        // Format dates safely
+                        $('#last_donation_at').text(u.last_donation_at ? new Date(u
+                            .last_donation_at).toLocaleDateString() : 'N/A');
+                        $('#last_won_at').text(u.last_won_at ? new Date(u.last_won_at)
+                            .toLocaleDateString() : 'N/A');
+
+                        // Draw Information
                         $('#view_week').html('<span class="badge bg-primary">Week #' + d.weekly_draw
                             .week_number + '</span>');
                         $('#view_draw_period').text(
@@ -510,6 +392,8 @@
                             new Date(d.weekly_draw.end_date).toLocaleDateString()
                         );
                         $('#view_pool').text('$' + parseFloat(d.weekly_draw.total_pool).toFixed(2));
+
+                        // Claim Information
                         $('#view_amount').text('$' + parseFloat(d.amount_won).toFixed(2));
                         $('#view_claimed').html(d.claimed ?
                             '<span class="badge bg-success">Yes</span>' :
@@ -519,29 +403,120 @@
                             new Date(d.claimed_at).toLocaleString() :
                             'Not claimed yet'
                         );
+
+                        // Payout Information
+                        let payoutColors = {
+                            'completed': 'success',
+                            'processing': 'info',
+                            'failed': 'danger',
+                            'pending': 'secondary'
+                        };
                         $('#view_payout_status').html(
-                            '<span class="badge bg-' +
-                            (d.payout_status === 'completed' ? 'success' :
-                                d.payout_status === 'processing' ? 'info' :
-                                d.payout_status === 'failed' ? 'danger' : 'secondary') +
-                            '">' + d.payout_status + '</span>'
+                            '<span class="badge bg-' + (payoutColors[d.payout_status] ||
+                                'secondary') + '">' +
+                            d.payout_status.toUpperCase() + '</span>'
                         );
                         $('#view_stripe_id').text(d.payout_stripe_id || 'N/A');
-                        $('#view_donation_id').text(d.donation.stripe_payment_id);
+                        $('#view_donation_id').text(d.donation?.stripe_payment_id || 'N/A');
+
+                        // =============================
+                        // VERIFICATION INFORMATION
+                        // =============================
+                        if (v) {
+                            // Verified By
+                            $('#verified_by').text(v.verified_by || 'N/A');
+
+                            // Admin Notes
+                            $('#admin_notes').text(v.admin_notes || 'N/A');
+
+                            // Approved Date
+                            $('#approved_date').text(v.approved_at ?
+                                new Date(v.approved_at).toLocaleString() : 'N/A');
+
+                            // Rejected Date
+                            $('#rejected_date').text(v.rejected_at ?
+                                new Date(v.rejected_at).toLocaleString() : 'N/A');
+
+                            // Email Verified
+                            $('#view_email_verified').html(
+                                u.email_verified_at ?
+                                '<span class="badge bg-success"><i class="fe fe-check me-1"></i>Verified</span>' :
+                                '<span class="badge bg-danger"><i class="fe fe-x me-1"></i>Not Verified</span>'
+                            );
+
+                            // Phone Verified
+                            $('#view_phone_verified').html(
+                                u.phone_verified_at ?
+                                '<span class="badge bg-success"><i class="fe fe-check me-1"></i>Verified</span>' :
+                                '<span class="badge bg-danger"><i class="fe fe-x me-1"></i>Not Verified</span>'
+                            );
+
+                            // =============================
+                            // DRIVER LICENSE INFORMATION
+                            // =============================
+                            $('#view_license').text(v.license_number || 'N/A');
+                            $('#view_license_state').text(v.license_state || 'N/A');
+                            $('#view_license_expiry').text(
+                                v.license_expiry ? new Date(v.license_expiry)
+                                .toLocaleDateString() : 'N/A'
+                            );
+
+                            // Show/Hide identity card
+                            if (v.license_number) {
+                                $('#identityInfoCard').show();
+                            } else {
+                                $('#identityInfoCard').hide();
+                            }
+
+                            // =============================
+                            // BANK INFORMATION
+                            // =============================
+                            $('#bank_name').text(v.bank_name || 'N/A');
+                            $('#bank_acc_last4').text(v.bank_acc_last4 ? '****' + v.bank_acc_last4 :
+                                'N/A');
+                            $('#bank_routing_number').text(v.bank_routing || 'N/A');
+                            $('#bank_verified_at').text(
+                                v.bank_verified_at ? new Date(v.bank_verified_at)
+                                .toLocaleString() : 'N/A'
+                            );
+                        } else {
+                            // No verification data
+                            $('#verified_by').text('N/A');
+                            $('#admin_notes').text('N/A');
+                            $('#approved_date').text('N/A');
+                            $('#rejected_date').text('N/A');
+                            $('#view_email_verified').html(
+                                '<span class="badge bg-secondary">N/A</span>');
+                            $('#view_phone_verified').html(
+                                '<span class="badge bg-secondary">N/A</span>');
+                            $('#view_license').text('N/A');
+                            $('#view_license_state').text('N/A');
+                            $('#view_license_expiry').text('N/A');
+                            $('#bank_name').text('N/A');
+                            $('#bank_acc_last4').text('N/A');
+                            $('#bank_routing_number').text('N/A');
+                            $('#bank_verified_at').text('N/A');
+                            $('#identityInfoCard').hide();
+                        }
+
+                        // Verification Progress
+                        $('#verification_progress').text(d.verification_progress + '%');
 
                         $('#viewWinnerModal').modal('show');
                     }
+                }).fail(function(xhr) {
+                    toastr.error(xhr.responseJSON?.message || 'Failed to load winner details');
                 });
             });
 
-            // Mark as Claimed
+            // Mark as Claimed - Fixed
             $(document).on('click', '.markClaimed', function() {
                 let id = $(this).data('id');
                 $('#claim_winner_id').val(id);
                 $('#markClaimedModal').modal('show');
             });
 
-            // Submit Claim Form
+            // Submit Claim Form - Fixed Error Handling
             $('#claimForm').on('submit', function(e) {
                 e.preventDefault();
 
@@ -561,22 +536,31 @@
                             $('#markClaimedModal').modal('hide');
                             $('#claimForm')[0].reset();
                             dTable.ajax.reload();
+                        } else {
+                            toastr.error(res.message || 'Failed to mark as claimed');
                         }
                     },
                     error: function(xhr) {
                         if (xhr.status === 422) {
                             let errors = xhr.responseJSON.errors;
-                            Object.keys(errors).forEach(function(key) {
-                                toastr.error(errors[key][0]);
-                            });
+                            if (errors) {
+                                Object.keys(errors).forEach(function(key) {
+                                    toastr.error(errors[key][0]);
+                                });
+                            } else {
+                                toastr.error(xhr.responseJSON?.message || 'Validation failed');
+                            }
+                        } else if (xhr.status === 400) {
+                            toastr.warning(xhr.responseJSON?.message || 'Bad request');
                         } else {
-                            toastr.error('Failed to mark as claimed');
+                            toastr.error(xhr.responseJSON?.message ||
+                                'Failed to mark as claimed');
                         }
                     }
                 });
             });
 
-            // Process Payout
+            // Process Payout - Fixed Error Handling
             $(document).on('click', '.processPayout', function() {
                 let id = $(this).data('id');
 
@@ -596,11 +580,23 @@
                                 if (res.success) {
                                     Swal.fire('Success!', res.message, 'success');
                                     dTable.ajax.reload();
+                                } else {
+                                    Swal.fire('Error!', res.message ||
+                                        'Payout processing failed', 'error');
                                 }
                             },
                             error: function(xhr) {
-                                Swal.fire('Error!', xhr.responseJSON.message ||
-                                    'Payout processing failed', 'error');
+                                let errorMsg = 'Payout processing failed';
+                                if (xhr.status === 400) {
+                                    errorMsg = xhr.responseJSON?.message ||
+                                        'Invalid request';
+                                } else if (xhr.status === 500) {
+                                    errorMsg = xhr.responseJSON?.message ||
+                                        'Server error occurred';
+                                } else {
+                                    errorMsg = xhr.responseJSON?.message || errorMsg;
+                                }
+                                Swal.fire('Error!', errorMsg, 'error');
                             }
                         });
                     }

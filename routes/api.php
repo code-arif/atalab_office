@@ -1,11 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\VerifyCsrfToken;
 use App\Http\Controllers\Api\CMS\CmsController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\NewsletterController;
-use App\Http\Controllers\Api\TestimonialController;
 use App\Http\Controllers\Api\Chat\ChatApiController;
 use App\Http\Controllers\Api\DrawSettingsController;
 use App\Http\Controllers\Api\Auth\RegistrationController;

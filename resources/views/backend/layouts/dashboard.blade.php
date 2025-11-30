@@ -99,7 +99,7 @@
                         @if ($activeDraw && $activeDrawStats)
                             <div class="card">
                                 <div class="card-header">
-                                    <h4 class="card-title mb-0">🎯 Active Draw - Week #{{ $activeDrawStats['week_number'] }}
+                                    <h4 class="card-title mb-0">Active Draw - Week #{{ $activeDrawStats['week_number'] }}
                                     </h4>
                                 </div>
                                 <div class="card-body">
@@ -122,7 +122,7 @@
                                         </div>
                                         <div class="col-md-4">
                                             <div class="active-draw-stat">
-                                                <h2 class="mb-0 fw-bold text-danger" id="countdown">
+                                                <h2 class="mb-0 fw-bold" id="countdown" style="font-family: 'Courier New', monospace; letter-spacing: 2px;">
                                                     --:--:--
                                                 </h2>
                                                 <p class="text-muted mb-0">Time Remaining</p>
@@ -136,7 +136,7 @@
                         <!-- DONATION TREND CHART -->
                         <div class="card">
                             <div class="card-header">
-                                <h4 class="card-title mb-0">📈 7-Day Donation Trend</h4>
+                                <h4 class="card-title mb-0">7-Day Donation Trend</h4>
                             </div>
                             <div class="card-body">
                                 <canvas id="donationChart" height="100"></canvas>
@@ -146,7 +146,7 @@
                         <!-- WEEKLY PERFORMANCE TABLE -->
                         <div class="card">
                             <div class="card-header">
-                                <h4 class="card-title mb-0">📊 Weekly Performance</h4>
+                                <h4 class="card-title mb-0">Weekly Performance</h4>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -187,7 +187,7 @@
                         <!-- RECENT DONATIONS FEED -->
                         <div class="card sticky-card">
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <h4 class="card-title mb-0">🔥 Live Donations</h4>
+                                <h4 class="card-title mb-0">Live Donations</h4>
                                 <span class="badge bg-success pulse-badge">Live</span>
                             </div>
                             <div class="card-body p-0">
@@ -221,7 +221,7 @@
                         @if (count($topDonors) > 0)
                             <div class="card">
                                 <div class="card-header">
-                                    <h4 class="card-title mb-0">🏆 Top Donors</h4>
+                                    <h4 class="card-title mb-0">Top Donors</h4>
                                 </div>
                                 <div class="card-body p-2">
                                     @foreach ($topDonors as $index => $donor)
@@ -507,42 +507,48 @@
         });
 
         // Countdown Timer
-        @if ($activeDraw && $activeDrawStats)
-            let timeRemaining = {{ $activeDrawStats['time_remaining'] }};
-            let hasEnded = {{ $activeDrawStats['has_ended'] ? 'true' : 'false' }};
+        @if ($activeDraw && $activeDraw->countdown_ends_at)
+            const drawEndTime = {{ \Carbon\Carbon::parse($activeDraw->countdown_ends_at)->timestamp }};
 
             function updateCountdown() {
-                if (hasEnded || timeRemaining <= 0) {
-                    document.getElementById('countdown').innerHTML = '<span class="text-danger">ENDED</span>';
-                    hasEnded = true;
+                const now = Math.floor(Date.now() / 1000);
+                let diff = drawEndTime - now;
+
+                if (diff <= 0) {
+                    document.getElementById('countdown').innerHTML = '<span class="text-danger fw-bold">DRAW ENDED</span>';
                     return;
                 }
 
-                const days = Math.floor(timeRemaining / (24 * 3600));
-                const hours = Math.floor((timeRemaining % (24 * 3600)) / 3600);
-                const minutes = Math.floor((timeRemaining % 3600) / 60);
-                const seconds = timeRemaining % 60;
+                const days = Math.floor(diff / 86400);
+                const hours = Math.floor((diff % 86400) / 3600);
+                const minutes = Math.floor((diff % 3600) / 60);
+                const seconds = diff % 60;
 
-                let timeString = '';
+                let timeStr = '';
                 if (days > 0) {
-                    timeString = `${days}d ${hours}h ${minutes}m`;
+                    timeStr = `${days}d ${hours}h ${minutes}m`;
                 } else if (hours > 0) {
-                    timeString = `${hours}h ${minutes}m ${seconds}s`;
+                    timeStr = `${hours}h ${minutes}m ${seconds}s`;
+                } else if (minutes > 0) {
+                    timeStr = `${minutes}m ${seconds}s`;
                 } else {
-                    timeString = `${minutes}m ${seconds}s`;
+                    timeStr = `${seconds}s`;
                 }
 
-                document.getElementById('countdown').textContent = timeString;
-                timeRemaining--;
+                // Last 10 seconds = red + big
+                if (diff <= 10) {
+                    document.getElementById('countdown').innerHTML =
+                        `<span class="text-danger fw-bold fs-2">${timeStr}</span>`;
+                } else {
+                    document.getElementById('countdown').textContent = timeStr;
+                }
             }
 
+            // Start countdown
             updateCountdown();
-            const countdownInterval = setInterval(() => {
-                updateCountdown();
-                if (hasEnded || timeRemaining <= 0) {
-                    clearInterval(countdownInterval);
-                }
-            }, 1000);
+            setInterval(updateCountdown, 1000);
+        @else
+            document.getElementById('countdown').innerHTML = '<span class="text-muted">No Active Draw</span>';
         @endif
 
         // Real-time Updates (every 30 seconds)

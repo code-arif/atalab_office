@@ -6,6 +6,7 @@ use App\Models\WinnerExclusion;
 use Illuminate\Support\Facades\DB;
 use App\Services\WeeklyDrawService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
@@ -45,12 +46,12 @@ Schedule::command('draw:automate')
  */
 
 // Clean up expired winner exclusions - Daily at 1:00 AM
-    Schedule::call(function () {
-        $service = app(WeeklyDrawService::class);
-        $cleaned = $service->cleanupExpiredExclusions();
+Schedule::call(function () {
+    $service = app(WeeklyDrawService::class);
+    $cleaned = $service->cleanupExpiredExclusions();
 
-        Log::info('Winner exclusions cleaned', ['count' => $cleaned]);
-    })
+    Log::info('Winner exclusions cleaned', ['count' => $cleaned]);
+})
     ->dailyAt('01:00')
     ->timezone(config('app.timezone'))
     ->name('cleanup-winner-exclusions');
@@ -64,49 +65,19 @@ Schedule::command('draw:automate')
  */
 
 // Clean up expired pending donations - Every 6 hours
-    Schedule::call(function () {
-        $deleted = Donation::where('stripe_payment_status', 'pending')
-            ->where('created_at', '<', now(config('app.timezone'))->subHours(24))
-            ->delete();
+Schedule::call(function () {
+    $deleted = Donation::where('stripe_payment_status', 'pending')
+        ->where('created_at', '<', now(config('app.timezone'))->subHours(24))
+        ->delete();
 
-        if ($deleted > 0) {
-            Log::info("🧹 Cleaned {$deleted} expired pending donations");
-        }
-    })
+    if ($deleted > 0) {
+        Log::info("Cleaned {$deleted} expired pending donations");
+    }
+})
     ->everySixHours()
     ->timezone(config('app.timezone'))
     ->name('cleanup-pending-donations');
 
-
-
-// Clean up expired OTP codes - Every 30 minutes
-Schedule::call(function () {
-    $expired = OtpLog::where('status', 'sent')
-        ->where('expires_at', '<', now(config('app.timezone')))
-        ->update(['status' => 'expired']);
-
-    if ($expired > 0) {
-        Log::info("🧹 Expired {$expired} OTP codes");
-    }
-})
-    ->everyThirtyMinutes()
-    ->timezone(config('app.timezone'))
-    ->name('cleanup-expired-otps');
-
-    
-
-// Delete old OTP logs (30+ days) - Daily at 3:00 AM
-Schedule::call(function () {
-    $deleted = OtpLog::where('created_at', '<', now(config('app.timezone'))->subDays(30))
-        ->delete();
-
-    if ($deleted > 0) {
-        Log::info("🗑️ Deleted {$deleted} old OTP logs");
-    }
-})
-    ->dailyAt('03:00')
-    ->timezone(config('app.timezone'))
-    ->name('cleanup-old-otp-logs');
 
 /**
  * ==================================================
@@ -118,7 +89,7 @@ Schedule::call(function () {
 Schedule::call(function () {
     try {
         DB::statement('OPTIMIZE TABLE users, donations, weekly_draws, draw_winners, winner_exclusions, user_week_participations');
-        Log::info('✨ Database tables optimized');
+        Log::info('Database tables optimized');
     } catch (\Exception $e) {
         Log::error('Database optimization failed: ' . $e->getMessage());
     }
@@ -131,7 +102,7 @@ Schedule::call(function () {
 Schedule::call(function () {
     try {
         \Illuminate\Support\Facades\Cache::forget('excluded_user_ids');
-        Log::info('🧹 Critical cache cleared');
+        Log::info('Critical cache cleared');
     } catch (\Exception $e) {
         Log::error('Cache clear failed: ' . $e->getMessage());
     }
@@ -168,7 +139,7 @@ Schedule::call(function () {
             ->count(),
     ];
 
-    Log::info('📊 Daily Statistics', $stats);
+    Log::info('Daily Statistics', $stats);
 
     // Optional: Store in database or send email report
     // Mail::to(config('admin.email'))->send(new DailyStatsReport($stats));
@@ -195,7 +166,7 @@ Schedule::call(function () {
         $activeDraw = \App\Models\WeeklyDraw::where('status', 'active')->first();
 
         if (!$activeDraw) {
-            Log::critical('⚠️ NO ACTIVE DRAW during business hours', [
+            Log::critical('NO ACTIVE DRAW during business hours', [
                 'day' => $now->format('l'),
                 'time' => $now->format('H:i:s')
             ]);
@@ -208,7 +179,7 @@ Schedule::call(function () {
     try {
         DB::connection()->getPdo();
     } catch (\Exception $e) {
-        Log::critical('⚠️ DATABASE CONNECTION FAILED', [
+        Log::critical('DATABASE CONNECTION FAILED', [
             'error' => $e->getMessage()
         ]);
         // Send critical alert
@@ -220,14 +191,14 @@ Schedule::call(function () {
         ->count();
 
     if ($stalePending > 10) {
-        Log::warning("⚠️ {$stalePending} stale pending donations");
+        Log::warning("{$stalePending} stale pending donations");
     }
 
     // Check 4: Redis connection (if using Redis)
     try {
-        \Illuminate\Support\Facades\Cache::store('redis')->get('health_check');
+        Cache::store('redis')->get('health_check');
     } catch (\Exception $e) {
-        Log::error('⚠️ REDIS CONNECTION FAILED', [
+        Log::error('REDIS CONNECTION FAILED', [
             'error' => $e->getMessage()
         ]);
     }
