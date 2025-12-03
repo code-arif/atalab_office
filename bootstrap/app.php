@@ -47,7 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/*'
         ]);
         // Rate limiting for donation endpoints
-        $middleware->throttleApi('10,1'); // 10 requests per minute
+        $middleware->throttleApi('5000,1'); // 5000 requests per minute
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Exception handling

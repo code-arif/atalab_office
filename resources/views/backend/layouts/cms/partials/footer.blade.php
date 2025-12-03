@@ -297,3 +297,100 @@
         });
     </script>
 @endpush
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#summernote').summernote({
+                placeholder: 'Enter section description...',
+                tabsize: 2,
+                height: 300,
+                disableDragAndDrop: false,
+
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['fontname', ['fontname']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ],
+
+                callbacks: {
+                    onInit: function() {
+                        $('.note-editable').css('color', '#e0e0e0');
+                    },
+                    onChange: function(contents, $editable) {
+                        $('.note-editable').css('color', '#e0e0e0');
+                    }
+                }
+            });
+
+            $('#summernote').on('summernote.change', function() {
+                $('.note-editable').css('color', '#e0e0e0');
+            });
+        });
+    </script>
+@endpush
+
+
+@push('styles')
+    <!-- Summernote Lite CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+
+    <!-- Dark Mode Custom CSS -->
+    <style>
+        /* Summernote Dark Theme */
+        .note-editor.note-frame {
+            border: 1px solid #444;
+            border-radius: 8px;
+            background-color: #1e1e1e !important;
+        }
+
+        .note-editor .note-toolbar {
+            background-color: #2d2d2d !important;
+            border-bottom: 1px solid #444;
+            color: #fff;
+        }
+
+        .note-editor .note-editing-area .note-editable {
+            background-color: #1e1e1e !important;
+            color: #e0e0e0 !important;
+            caret-color: #fff;
+        }
+
+        .note-editor .note-statusbar {
+            background-color: #2d2d2d !important;
+            color: #aaa;
+        }
+
+        /* Toolbar buttons color fix */
+        .note-editor .note-btn {
+            background-color: #333 !important;
+            color: #ddd !important;
+            border: none !important;
+        }
+
+        .note-editor .note-btn:hover {
+            background-color: #444 !important;
+        }
+
+        /* Dropdown menu dark */
+        .note-editor .dropdown-menu {
+            background-color: #2d2d2d !important;
+            border: 1px solid #555;
+        }
+
+        .note-editor .dropdown-item {
+            color: #ddd !important;
+        }
+
+        .note-editor .dropdown-item:hover {
+            background-color: #444 !important;
+        }
+    </style>
+@endpush

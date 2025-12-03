@@ -2,13 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
-use App\Http\Controllers\GoogleCalendarController;
 use App\Http\Controllers\Api\Donation\DonationController;
 use App\Http\Controllers\Api\Auth\AuthenticationController;
-use App\Http\Controllers\Calendar\EventManageGoogleController;
-use App\Http\Controllers\Calendar\GetEventFromGoogleController;
-use App\Http\Controllers\Calendar\SyncEventFromGoogleController;
-
 
 Route::get('/', function () {
     return view('welcome');

@@ -51,13 +51,13 @@ class AutomateWeeklyDraws extends Command
         // TESTING MODE (UNCOMMENT FOR TESTING)
 
         // TEST: Wednesday 6:33 PM - Create New Draw
-        if ($now->isSunday() && $now->hour === 10 && $now->minute === 53) {
+        if ($now->isTuesday() && $now->hour === 15 && $now->minute === 55) {
             Log::info('TEST: Triggering new draw creation');
             $this->createNewDraw();
         }
 
         // TEST: Tuesday 2:27 PM - Finalize & Select Winners
-        if ($now->isSunday() && $now->hour === 11 && $now->minute === 29) {
+        if ($now->isTuesday() && $now->hour === 14 && $now->minute === 43) {
             Log::info('TEST: Triggering draw finalization');
             $this->finalizeAndSelectWinners();
         }
@@ -75,10 +75,6 @@ class AutomateWeeklyDraws extends Command
 
             if ($existingDraw) {
                 $this->error('Active draw already exists. Skipping creation.');
-                Log::warning('Active draw already exists', [
-                    'existing_draw_id' => $existingDraw->id,
-                    'week_number' => $existingDraw->week_number
-                ]);
                 return;
             }
 
@@ -86,19 +82,8 @@ class AutomateWeeklyDraws extends Command
             $draw = $this->weeklyDrawService->createNewDraw();
 
             $this->info("New draw created: Week #{$draw->week_number}");
-            Log::info('Weekly draw created successfully', [
-                'week_number' => $draw->week_number,
-                'draw_id' => $draw->id,
-                'start' => $draw->start_date,
-                'end' => $draw->end_date,
-                'timezone' => config('app.timezone'),
-            ]);
         } catch (\Exception $e) {
             $this->error('Failed to create draw: ' . $e->getMessage());
-            Log::error('Draw creation failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
         }
     }
 

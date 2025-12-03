@@ -13,6 +13,8 @@ use App\Models\UserWeekParticipation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DonationConfirmation;
 
 class DonationService
 {
@@ -268,14 +270,14 @@ class DonationService
                     ->where('week_id', $donation->week_id)
                     ->update(['has_donated' => true]);
 
-                // ✅ REMOVED: Donor ID assignment (already done before payment)
-                // This prevents conflicts
-
                 // Update user stats
                 $this->updateUserDonationStats($donation->user_id, $donation->amount);
 
                 // Update weekly draw stats
                 $this->updateWeeklyDrawStats($donation->week_id);
+
+                // SEND CONFIRMATION EMAIL
+                $this->sendDonationConfirmationEmail($donation);
 
                 Log::info('Payment verified - webhook completed', [
                     'donation_id' => $donation->id,
@@ -318,6 +320,34 @@ class DonationService
     }
 
     /**
+     * Send donation confirmation email
+     */
+    protected function sendDonationConfirmationEmail(Donation $donation): void
+    {
+        try {
+            // Load necessary relationships
+            $donation->load(['user', 'weeklyDraw']);
+
+            // Send email
+            Mail::to($donation->user->email)
+                ->queue(new DonationConfirmation($donation));
+
+            Log::info('Donation confirmation email sent', [
+                'donation_id' => $donation->id,
+                'user_id' => $donation->user_id,
+                'name'=> $donation->user->name,
+                'email' => $donation->user->email,
+            ]);
+        } catch (Exception $e) {
+            // Log error but don't fail the webhook
+            Log::error('Failed to send donation confirmation email', [
+                'donation_id' => $donation->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * FIXED: Webhook - checkout completed
      */
     public function handleCheckoutCompleted($session): void
@@ -338,10 +368,11 @@ class DonationService
                     ->where('week_id', $donation->week_id)
                     ->update(['has_donated' => true]);
 
-                // REMOVED: Donor ID assignment
-
                 $this->updateUserDonationStats($donation->user_id, $donation->amount);
                 $this->updateWeeklyDrawStats($donation->week_id);
+
+                // SEND CONFIRMATION EMAIL
+                $this->sendDonationConfirmationEmail($donation);
 
                 Log::info('Checkout completed webhook', [
                     'donation_id' => $donation->id,
@@ -366,6 +397,11 @@ class DonationService
                 ]);
 
                 $this->updateWeeklyDrawStats($donation->week_id);
+
+                // SEND CONFIRMATION EMAIL (if not already sent)
+                if ($donation->wasChanged('stripe_payment_status')) {
+                    $this->sendDonationConfirmationEmail($donation);
+                }
             }
         });
     }

@@ -37,7 +37,7 @@ class WeeklyDrawService
     }
 
     /**
-     * Create new weekly draw
+     * UPDATED: Create new weekly draw with ISO week number (resets every year)
      */
     public function createNewDraw(): WeeklyDraw
     {
@@ -47,16 +47,28 @@ class WeeklyDrawService
                 throw new Exception('Active draw already exists');
             }
 
-            $lastDraw = WeeklyDraw::orderBy('week_number', 'desc')->first();
-            $weekNumber = $lastDraw ? $lastDraw->week_number + 1 : 1;
-
-            $startDate = Carbon::now(config('app.timezone'))->startOfWeek(Carbon::MONDAY)->setTime(0, 0, 0);
+            $now = Carbon::now(config('app.timezone'));
+            $startDate = $now->copy()->startOfWeek(Carbon::MONDAY)->setTime(0, 0, 0);
             $endDate = $startDate->copy()->endOfWeek(Carbon::SUNDAY)->setTime(17, 0, 0);
             $countdownEndsAt = $endDate->copy();
             $claimDeadline = $endDate->copy()->addDay()->setTime(5, 0, 0);
 
+            // Get ISO week number (1-52/53) - resets every year
+            $weekNumber = (int) $startDate->isoWeek();
+            $year = (int) $startDate->isoWeekYear(); // Use ISO year (handles edge cases)
+
+            // Check if this week already has a draw for this year
+            $existingDraw = WeeklyDraw::where('week_number', $weekNumber)
+                ->where('year', $year)
+                ->first();
+
+            if ($existingDraw) {
+                throw new Exception("Draw for Week #{$weekNumber} of year {$year} already exists");
+            }
+
             $draw = WeeklyDraw::create([
                 'week_number' => $weekNumber,
+                'year' => $year, // Store year separately
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'countdown_ends_at' => $countdownEndsAt,
@@ -73,11 +85,13 @@ class WeeklyDrawService
             // Cleanup expired exclusions
             $this->cleanupExpiredExclusions();
 
-            Log::info('New weekly draw created', [
-                'week_number' => $weekNumber,
-                'start' => $startDate->toDateTimeString(),
-                'end' => $endDate->toDateTimeString(),
-            ]);
+            // Log::info('New weekly draw created', [
+            //     'week_number' => $weekNumber,
+            //     'year' => $year,
+            //     'iso_week' => "Week {$weekNumber} of {$year}",
+            //     'start' => $startDate->toDateTimeString(),
+            //     'end' => $endDate->toDateTimeString(),
+            // ]);
 
             return $draw;
         });
@@ -97,10 +111,11 @@ class WeeklyDrawService
 
             $draw->update(['status' => 'claiming']);
 
-            Log::info('Draw finalized', [
-                'week_id' => $weekId,
-                'week_number' => $draw->week_number
-            ]);
+            // Log::info('Draw finalized', [
+            //     'week_id' => $weekId,
+            //     'week_number' => $draw->week_number,
+            //     'year' => $draw->year
+            // ]);
 
             return $draw->fresh();
         });
@@ -130,11 +145,13 @@ class WeeklyDrawService
 
             // Check minimum participants
             if ($totalParticipants < self::MINIMUM_PARTICIPANTS) {
-                Log::warning('Insufficient participants', [
-                    'week_id' => $weekId,
-                    'participants' => $totalParticipants,
-                    'minimum' => self::MINIMUM_PARTICIPANTS,
-                ]);
+                // Log::warning('Insufficient participants', [
+                //     'week_id' => $weekId,
+                //     'week_number' => $draw->week_number,
+                //     'year' => $draw->year,
+                //     'participants' => $totalParticipants,
+                //     'minimum' => self::MINIMUM_PARTICIPANTS,
+                // ]);
 
                 throw new Exception(
                     "Insufficient participants. Need " . self::MINIMUM_PARTICIPANTS . ", found {$totalParticipants}"
@@ -154,6 +171,8 @@ class WeeklyDrawService
 
             Log::info('Winner Selection Process', [
                 'week_id' => $weekId,
+                'week_number' => $draw->week_number,
+                'year' => $draw->year,
                 'participants' => $totalParticipants,
                 'calculated_winners' => $numberOfWinners,
                 'total_pool' => number_format($totalPool, 2),
@@ -173,11 +192,11 @@ class WeeklyDrawService
 
             // Check if we have enough eligible participants
             if ($eligibleCount < $numberOfWinners) {
-                Log::error('Not enough eligible participants after exclusion', [
-                    'needed' => $numberOfWinners,
-                    'available' => $eligibleCount,
-                    'excluded' => count($excludedUserIds),
-                ]);
+                // Log::error('Not enough eligible participants after exclusion', [
+                //     'needed' => $numberOfWinners,
+                //     'available' => $eligibleCount,
+                //     'excluded' => count($excludedUserIds),
+                // ]);
 
                 throw new Exception(
                     "Not enough eligible participants. Need {$numberOfWinners}, found {$eligibleCount} (after 6-month exclusion)"
@@ -235,12 +254,14 @@ class WeeklyDrawService
             // Clear cache
             Cache::forget('excluded_user_ids');
 
-            Log::info('Winners selected successfully', [
-                'week_id' => $weekId,
-                'winners_count' => count($winners),
-                'total_distributed' => number_format($distributionPool, 2),
-                'per_winner' => number_format($amountPerWinner, 2),
-            ]);
+            // Log::info('Winners selected successfully', [
+            //     'week_id' => $weekId,
+            //     'week_number' => $draw->week_number,
+            //     'year' => $draw->year,
+            //     'winners_count' => count($winners),
+            //     'total_distributed' => number_format($distributionPool, 2),
+            //     'per_winner' => number_format($amountPerWinner, 2),
+            // ]);
 
             return [
                 'winners' => $winners,
@@ -338,6 +359,8 @@ class WeeklyDrawService
 
         return [
             'week_number' => $draw->week_number,
+            'year' => $draw->year,
+            'week_display' => "Week {$draw->week_number} of {$draw->year}",
             'status' => $draw->status,
             'total_pool' => $draw->total_pool,
             'total_participants' => $draw->total_participants,
@@ -381,11 +404,12 @@ class WeeklyDrawService
     }
 
     /**
-     * Get all draws
+     * UPDATED: Get all draws ordered by year and week
      */
     public function getAllDraws(int $page = 1, int $perPage = 20)
     {
-        return WeeklyDraw::orderBy('week_number', 'desc')
+        return WeeklyDraw::orderBy('year', 'desc')
+            ->orderBy('week_number', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
     }
 

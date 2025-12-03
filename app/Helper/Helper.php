@@ -18,7 +18,7 @@ class Helper
             return null;
         }
 
-        $imageName = time() . '-' . Str::random(5) . '.' . $file->extension(); // Unique name
+        $imageName = time() . '-' . Str::random(5) . '.' . $file->getClientOriginalExtension(); // Unique name
         $path = public_path('uploads/' . $folder);
 
         if (!file_exists($path)) {
@@ -50,7 +50,7 @@ class Helper
             return null;
         }
 
-        $imageName = Str::slug($name) . '.' . $file->extension();
+        $imageName = Str::slug($name) . '.' . $file->getClientOriginalExtension();
         $path      = public_path('uploads/' . $folder);
         if (!file_exists($path)) {
             mkdir($path, 0777, true);

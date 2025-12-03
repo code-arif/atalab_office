@@ -1,99 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to The Dignity Draw Newsletter</title>
+    <title>Welcome to The Dignity Draw</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f9f9fb;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
 </head>
 
-<body style="margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f4f6f9;">
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
-        style="background:#f4f6f9;padding:40px 20px;">
+<body style="margin:0;padding:40px 20px;background:#f9f9fb;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
         <tr>
             <td align="center">
 
-                <!-- MAIN CONTAINER -->
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0"
-                    style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08);overflow:hidden;">
+                <!-- Main Card -->
+                <table role="presentation" width="100%"
+                    style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
 
-                    <!-- HEADER – Gradient -->
+                    <!-- Header -->
                     <tr>
-                        <td
-                            style="background:linear-gradient(135deg,#521aac 0%,#521aac 100%);padding:40px 30px;text-align:center;">
-                            <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;letter-spacing:-0.5px;">
-                                Welcome Aboard!
+                        <td style="background:#6b46c1;padding:40px 30px;text-align:center;">
+                            <h1 style="margin:0;color:#ffffff;font-size:32px;font-weight:700;letter-spacing:-0.5px;">
+                                Welcome to The Dignity Draw
                             </h1>
-                            <p style="margin:10px 0 0;color:#e6f0ff;font-size:16px;">
-                                The Dignity Draw, Inc. Newsletter
-                            </p>
                         </td>
                     </tr>
 
-                    <!-- MAIN CONTENT -->
+                    <!-- Body -->
                     <tr>
-                        <td style="padding:40px 30px;">
+                        <td style="padding:40px 40px 50px;">
 
-                            <h2 style="margin:0 0 20px;color:#521aac;font-size:24px;font-weight:700;">
-                                Thank You for Joining Our Mission!
-                            </h2>
-
-                            <!-- EMAIL INFO BOX -->
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
-                                style="background:#f8fafc;border-left:4px solid #521aac;border-radius:6px;margin:25px 0;">
-                                <tr>
-                                    <td style="padding:20px;">
-                                        <p
-                                            style="margin:0;color:#666;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.:0.5px;">
-                                            Subscribed Email
-                                        </p>
-                                        <p style="margin:8px 0 0;color:#521aac;font-size:16px;font-weight:700;">
-                                            {{ $email }}
-                                        </p>
-                                    </td>
-                                </tr>
-                            </table>
-
-                            <!-- DONATION CTA -->
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
-                                style="margin:35px 0;">
-                                <tr>
-                                    <td align="center">
-                                        <a href="https://thedignitydraw.org/donate"
-                                            style="display:inline-block;background:linear-gradient(135deg,#521aac 0%,#521aac 100%);color:#ffffff;padding:16px 40px;text-decoration:none;border-radius:8px;font-weight:700;font-size:16px;box-shadow:0 4px 12px rgba(30,83,164,.3);transition:all .3s;">
-                                            Make a Donation Now
-                                        </a>
-                                    </td>
-                                </tr>
-                            </table>
-
-                            <p style="margin:25px 0 0;color:#666;font-size:15px;line-height:1.6;">
-                                Every contribution helps us **collect donations** and **distribute aid** to those who
-                                need it most.
-                                You’ll receive updates on impact stories, upcoming draws, and ways you can get involved.
+                            <p style="margin:0 0 20px;color:#333333;font-size:18px;line-height:1.6;">
+                                Dear Subscriber,
                             </p>
 
-                            <p style="margin:20px 0 0;color:#666;font-size:15px;line-height:1.6;">
-                                Questions? <a href="mailto:support@thedignitydraw.org" style="color:#521aac;">Contact
-                                    our team</a>.
+                            <p style="margin:0 0 25px;color:#444444;font-size:16px;line-height:1.7;">
+                                Thank you for joining <strong>The Dignity Draw, Inc.</strong> as a free subscriber. Your
+                                subscription affirms our shared mission of verified dignity through name-based
+                                redistribution.
                             </p>
+
+                            <!-- Section: What Your Free Subscription Includes -->
+                            <h3 style="margin:30px 0 15px;color:#333333;font-size:20px;font-weight:600;">
+                                What Your Free Subscription Includes
+                            </h3>
+                            <ul style="margin:0 0 30px;padding-left:22px;color:#444444;font-size:16px;line-height:1.8;">
+                                <li>Access to updates on upcoming draws and redistribution cycles</li>
+                                <li>Transparency reports showing how dignity is stewarded and shared</li>
+                                <li>Ceremonial dashboards where you can follow timelines and outcomes</li>
+                            </ul>
+
+                            <!-- Section: Important Notes -->
+                            <h3 style="margin:35px 0 15px;color:#333333;font-size:20px;font-weight:600;">
+                                Important Notes
+                            </h3>
+                            <ul style="margin:0 0 35px;padding-left:22px;color:#444444;font-size:16px;line-height:1.8;">
+                                <li>Free subscribers are <strong>not entered into draws</strong>.</li>
+                                <li>You will receive notifications about opportunities to participate, donate, or engage
+                                    further.</li>
+                                <li>Your subscription ensures you remain connected to our mission and informed about
+                                    every step.</li>
+                            </ul>
+
+                            <p style="margin:35px 0 0;color:#444444;font-size:16px;line-height:1.7;">
+                                We are honored to have you as part of this community. Together, we are building a legacy
+                                archive of dignity, transparency, and trust.
+                            </p>
+
+                            <p style="margin:40px 0 10px;color:#333333;font-size:16px;">
+                                With gratitude,<br>
+                                <strong>Ali Bozorgi Talab</strong><br>
+                                Founder / President / CEO<br>
+                                <span style="color:#666666;font-size:14px;">The Dignity Draw, Inc.</span>
+                            </p>
+
                         </td>
                     </tr>
 
-                    <!-- FOOTER -->
+                    <!-- Footer -->
                     <tr>
-                        <td style="background:#f8fafc;padding:30px;border-top:1px solid #e5e7eb;">
-                            <p style="margin:0 0 15px;color:#999;font-size:13px;line-height:1.6;text-align:center;">
-                                You are receiving this email because you subscribed to the newsletter of
-                                <strong>The Dignity Draw, Inc.</strong>
-                            </p>
-
-                            <p style="margin:0;color:#999;font-size:12px;text-align:center;">
+                        <td style="background:#f8f9fa;padding:30px;text-align:center;border-top:1px solid #e5e7eb;">
+                            <p style="margin:0;color:#888888;font-size:13px;line-height:1.6;">
                                 © {{ date('Y') }} The Dignity Draw, Inc. All rights reserved.
                             </p>
                         </td>
                     </tr>
                 </table>
+
             </td>
         </tr>
     </table>

@@ -6,12 +6,14 @@ use App\Models\CMS;
 use App\Models\Footer;
 use App\Models\Review;
 use App\Models\Slider;
+use App\Models\DrawSetting;
 use App\Traits\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\FooterResource;
 use App\Http\Resources\ReviewResource;
 use App\Http\Resources\SliderResource;
 use App\Http\Resources\CMS\CMSResource;
+use App\Http\Resources\DrawSettingResource;
 
 class CmsController extends Controller
 {
@@ -37,12 +39,16 @@ class CmsController extends Controller
         //testimonials
         $reviews = Review::latest()->get();
 
+        // table data
+        $settings = DrawSetting::latest()->get();
+
         return $this->success([
             'cms' => CMSResource::collection($cmsData),
             'sliders' => SliderResource::collection($sliderData),
             'topbar' => $topbar,
             'footer' => new FooterResource($footer),
-            'tistimonials'=> ReviewResource::collection($reviews)
+            'tistimonials' => ReviewResource::collection($reviews),
+            'distribution' =>  DrawSettingResource::collection($settings)
         ], 'Home data retrieved successfully');
     }
 
@@ -52,6 +58,7 @@ class CmsController extends Controller
     public function ourStory()
     {
         $data = CMS::where('page', 'our-story')->get();
+        // return $this->success($data, 'Our story data retrieved successfully');
 
         return $this->success(CMSResource::collection($data), 'Our story data retrieved successfully');
     }

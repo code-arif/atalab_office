@@ -117,13 +117,13 @@
     };
 </script>
 
-<script>
+{{-- <script>
     $('.summernote').summernote({
         placeholder: 'Your Content Here...',
         tabsize: 2,
         height: 100
     });
-</script>
+</script> --}}
 
 @include('backend.partials.toster')
 

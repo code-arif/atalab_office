@@ -30,6 +30,7 @@ class WeeklyDrawController extends Controller
             return DataTables::of($draws)
                 ->addIndexColumn()
                 ->addColumn('week_number', fn($row) => 'Week #' . $row->week_number)
+                ->addColumn('year', fn($row) => 'Year - ' . $row->year)
                 ->addColumn('status', function ($row) {
                     $badges = [
                         'active' => '<span class="badge badge-status status-active p-2 py-3">Active</span>',

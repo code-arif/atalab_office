@@ -23,6 +23,7 @@ class WeeklyDraw extends Model
         'total_recipients',
         'admin_commission',
         'winners_selected',
+        'year'
     ];
 
     protected $casts = [

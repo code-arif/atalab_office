@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('weekly_draws', function (Blueprint $table) {
             $table->id();
-            $table->integer('week_number')->unique();
+            $table->integer('week_number');
 
             $table->timestamp('start_date')->nullable();
             $table->timestamp('end_date')->nullable();

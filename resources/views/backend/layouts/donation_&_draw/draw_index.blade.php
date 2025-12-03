@@ -122,6 +122,7 @@
                                             <tr>
                                                 <th>#</th>
                                                 <th>Week Number</th>
+                                                <th>Year</th>
                                                 <th>Status</th>
                                                 <th>Start Date</th>
                                                 <th>End Date</th>
@@ -166,6 +167,10 @@
                                         <tr>
                                             <td class="fw-bold" width="40%">Week Number:</td>
                                             <td id="view_week_number">---</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold" width="40%">Year:</td>
+                                            <td id="view_year">---</td>
                                         </tr>
                                         <tr>
                                             <td class="fw-bold">Status:</td>
@@ -315,7 +320,7 @@
                     [20, 50, 100]
                 ],
                 processing: true,
-                responsive: true,
+                responsive: false,
                 serverSide: true,
                 ajax: "{{ route('weekly-draws.index') }}",
                 columns: [{
@@ -325,6 +330,9 @@
                     },
                     {
                         data: 'week_number'
+                    },
+                    {
+                        data: 'year'
                     },
                     {
                         data: 'status'
@@ -369,6 +377,7 @@
                         let d = res.data;
                         // alert(d);
                         $('#view_week_number').text('Week #' + d.week_number);
+                        $('#view_year').text(d.year);
                         $('#view_status').html(
                             `<span class="badge status-${d.status}">${d.status}</span>`);
                         $('#view_winners_selected').html(d.winners_selected ?
