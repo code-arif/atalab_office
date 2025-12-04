@@ -330,7 +330,7 @@ class DonationService
 
             // Send email
             Mail::to($donation->user->email)
-                ->queue(new DonationConfirmation($donation));
+                ->send(new DonationConfirmation($donation));
 
             Log::info('Donation confirmation email sent', [
                 'donation_id' => $donation->id,

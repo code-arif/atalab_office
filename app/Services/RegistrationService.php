@@ -63,7 +63,7 @@ class RegistrationService
         if (!$eligibility['eligible']) {
             return [
                 'success' => false,
-                'status' => 'already_donated_this_week',
+                'status' => $eligibility['status'],
                 'message' => $eligibility['reason'],
                 'data' => [
                     'user_id' => $user->id,
@@ -179,6 +179,7 @@ class RegistrationService
         if ($completedDonation) {
             return [
                 'eligible' => false,
+                'status' => 'already_donated',
                 'reason' => 'You have already donated to this week\'s draw. You can donate again next week!',
                 'donation_id' => $completedDonation->id,
                 'donated_at' => $completedDonation->donated_at,
@@ -195,6 +196,7 @@ class RegistrationService
         if ($pendingDonation) {
             return [
                 'eligible' => false,
+                'status' => 'pending_donation',
                 'reason' => 'You have a pending donation for this week. Please complete it or wait for it to expire.',
                 'pending_donation_id' => $pendingDonation->id,
                 'expires_at' => $pendingDonation->created_at->addHours(2),

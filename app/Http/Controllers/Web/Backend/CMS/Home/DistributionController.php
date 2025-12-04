@@ -20,7 +20,7 @@ class DistributionController extends Controller
         $data = CMS::where('page', 'home')->where('section', 'redistribution-table')->where('name', 'item')->first();
 
         // Get all draw settings
-        $drawSettings = DrawSetting::latest()->get();
+        $drawSettings = DrawSetting::get();
 
         return view("backend.layouts.cms.home.distribution", compact(["data", "drawSettings"]));
     }

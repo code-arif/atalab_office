@@ -25,9 +25,7 @@ class CmsController extends Controller
     {
         $cmsData = CMS::where('page', 'home')->get();
         // Slider Data
-        $sliderData = Slider::where('status', true)
-            ->orderBy('order', 'asc')
-            ->get();
+        $sliderData = Slider::where('status', true)->get();
 
         $topbar = CMS::where('page', 'partials')->where('section', 'topbar')->get();
 
@@ -40,7 +38,7 @@ class CmsController extends Controller
         $reviews = Review::latest()->get();
 
         // table data
-        $settings = DrawSetting::latest()->get();
+        $settings = DrawSetting::get();
 
         return $this->success([
             'cms' => CMSResource::collection($cmsData),

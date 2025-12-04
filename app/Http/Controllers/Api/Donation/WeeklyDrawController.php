@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api\Donation;
 
-use App\Http\Controllers\Controller;
-use App\Services\WeeklyDrawService;
+use App\Models\DrawWinner;
+use App\Models\WeeklyDraw;
 use App\Traits\ApiResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Services\WeeklyDrawService;
+use App\Http\Controllers\Controller;
 
 class WeeklyDrawController extends Controller
 {
@@ -15,6 +18,60 @@ class WeeklyDrawController extends Controller
     public function __construct(WeeklyDrawService $weeklyDrawService)
     {
         $this->weeklyDrawService = $weeklyDrawService;
+    }
+
+    /**
+     * Get winners for all weeks with pagination
+     */
+    public function getWinners(Request $request)
+    {
+        // How many weeks per page (default 5)
+        $perPage = $request->input('per_page', 5);
+
+        // Step 1: Get unique weekly_draw_ids paginated
+        $weeklyGroups = WeeklyDraw::orderBy('week_number', 'desc')
+            ->paginate($perPage);
+
+        // Step 2: Extract IDs for eager loading winners
+        $weeklyDrawIds = $weeklyGroups->pluck('id');
+
+        // Step 3: Load winners for these weeks
+        $winners = DrawWinner::with(['user', 'donation'])
+            ->whereIn('weekly_draw_id', $weeklyDrawIds)
+            ->orderBy('id', 'desc')
+            ->get()
+            ->groupBy('weekly_draw_id');
+
+        // Step 4: Format the response for frontend
+        $formatted = $weeklyGroups->map(function ($week) use ($winners) {
+            return [
+                'week_number' => $week->week_number,
+                'year' => $week->year,
+                'winners' => isset($winners[$week->id]) ?
+                    $winners[$week->id]->map(function ($item) {
+                        return [
+                            'name' => $item->user->name,
+                            'city' => $item->user->city,
+                            'state' => $item->user->state,
+                            'image' => $item->user->profile_image_url,
+                            'amount_won' => $item->amount_won,
+                        ];
+                    }) : []
+            ];
+        });
+
+        // Step 5: Final API response with pagination structure
+        return response()->json([
+            'status' => true,
+            'message' => 'Weekly winners fetched successfully',
+            'data' => $formatted,
+            'pagination' => [
+                'total' => $weeklyGroups->total(),
+                'per_page' => $weeklyGroups->perPage(),
+                'current_page' => $weeklyGroups->currentPage(),
+                'last_page' => $weeklyGroups->lastPage(),
+            ]
+        ]);
     }
 
     /**

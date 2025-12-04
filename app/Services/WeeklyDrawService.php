@@ -6,6 +6,7 @@ use Exception;
 use App\Models\Donation;
 use App\Models\DrawWinner;
 use App\Models\WeeklyDraw;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Models\WinnerExclusion;
 use Illuminate\Support\Facades\DB;
@@ -85,13 +86,13 @@ class WeeklyDrawService
             // Cleanup expired exclusions
             $this->cleanupExpiredExclusions();
 
-            // Log::info('New weekly draw created', [
-            //     'week_number' => $weekNumber,
-            //     'year' => $year,
-            //     'iso_week' => "Week {$weekNumber} of {$year}",
-            //     'start' => $startDate->toDateTimeString(),
-            //     'end' => $endDate->toDateTimeString(),
-            // ]);
+            Log::info('New weekly draw created', [
+                'week_number' => $weekNumber,
+                'year' => $year,
+                'iso_week' => "Week {$weekNumber} of {$year}",
+                'start' => $startDate->toDateTimeString(),
+                'end' => $endDate->toDateTimeString(),
+            ]);
 
             return $draw;
         });
@@ -434,4 +435,5 @@ class WeeklyDrawService
             'exclusion_period' => self::WINNER_EXCLUSION_MONTHS . ' months',
         ];
     }
+
 }

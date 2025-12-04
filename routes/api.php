@@ -86,7 +86,7 @@ Route::prefix('v1')->group(function () {
 
 
     // test
-    Route::get('/week/{weekId}/winners', [WeeklyDrawController::class, 'getWinners']);
+    Route::get('/week/winners', [WeeklyDrawController::class, 'getWinners']);
 });
 
 
