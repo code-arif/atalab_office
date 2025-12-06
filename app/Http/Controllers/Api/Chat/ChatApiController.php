@@ -15,6 +15,8 @@ use Illuminate\Http\JsonResponse;
 use App\Events\MessageStatusEvent;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NewChatNotificationMail;
 use Illuminate\Support\Facades\Validator;
 
 class ChatApiController extends Controller
@@ -136,6 +138,7 @@ class ChatApiController extends Controller
         if (!$guest->admin_notified) {
             try {
                 // Mail::to($admin->email)->send(new NewChatNotificationMail($guest, $chat));
+                Mail::to('rufuzxyz@gmail.com')->send(new NewChatNotificationMail($guest, $chat));
                 $guest->update([
                     'admin_notified' => true,
                     'first_message_at' => now()

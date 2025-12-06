@@ -190,14 +190,14 @@ class RegistrationService
         $pendingDonation = Donation::where('user_id', $userId)
             ->where('week_id', $weekId)
             ->whereIn('stripe_payment_status', ['pending', 'processing'])
-            ->where('created_at', '>', now()->subHours(2)) // Valid for 2 hours
+            ->where('created_at', '>', now()->subSeconds(30))
             ->first();
 
         if ($pendingDonation) {
             return [
                 'eligible' => false,
                 'status' => 'pending_donation',
-                'reason' => 'You have a pending donation for this week. Please complete it or wait for it to expire.',
+                'reason' => 'You have a pending donation for this week. Please wait for 30 seconds before trying again.',
                 'pending_donation_id' => $pendingDonation->id,
                 'expires_at' => $pendingDonation->created_at->addHours(2),
             ];

@@ -117,7 +117,7 @@ class DonationService
                     'session_id' => $session->id,
                 ]);
 
-                event(new DonationCreated($donation));
+                // event(new DonationCreated($donation));
 
                 return [
                     'checkout_url' => $session->url,
