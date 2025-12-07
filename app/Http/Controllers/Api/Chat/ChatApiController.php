@@ -138,7 +138,7 @@ class ChatApiController extends Controller
         if (!$guest->admin_notified) {
             try {
                 // Mail::to($admin->email)->send(new NewChatNotificationMail($guest, $chat));
-                Mail::to('rufuzxyz@gmail.com')->send(new NewChatNotificationMail($guest, $chat));
+                Mail::to('support@thedignitydraw.org')->send(new NewChatNotificationMail($guest, $chat));
                 $guest->update([
                     'admin_notified' => true,
                     'first_message_at' => now()
