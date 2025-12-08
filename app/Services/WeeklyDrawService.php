@@ -26,7 +26,6 @@ class WeeklyDrawService
     public function getCurrentDraw(): WeeklyDraw
     {
         $draw = WeeklyDraw::where('status', 'active')
-            ->orWhere('status', 'claiming')
             ->orderBy('week_number', 'desc')
             ->first();
 
