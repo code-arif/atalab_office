@@ -142,10 +142,12 @@
             $('#applyFilters').click(function() {
                 table.ajax.reload();
             });
+
             $('#resetFilters').click(function() {
                 $('#filterForm')[0].reset();
                 table.ajax.reload();
             });
+
             $('#exportBtn').click(function() {
                 window.location = "{{ route('donors.export') }}?" + new URLSearchParams({
                     week_id: $('#weekFilter').val(),
@@ -156,42 +158,147 @@
                 }).toString();
             });
 
-            // View Donor
+            // ===== View Donor - Complete Data Population =====
             $(document).on('click', '.viewDonor', function() {
                 let id = $(this).data('id');
+
                 $.get("{{ route('donors.show', '') }}/" + id, function(res) {
                     if (res.success) {
                         let d = res.data;
-                        $('#d_name').text(d.user.name);
-                        $('#d_email').text(d.user.email);
-                        $('#d_phone').text(d.user.phone || 'N/A');
-                        $('#d_week').html(d.weekly_draw ? '<span class="badge bg-primary">Week #' +
-                            d.weekly_draw.week_number + '</span>' : 'N/A');
-                        $('#d_amount').text('$' + parseFloat(d.amount).toFixed(2));
-                        $('#d_donated_at').text(new Date(d.donated_at).toLocaleString());
-                        $('#d_payment_id').text(d.stripe_payment_id);
-                        $('#d_status').html(d.stripe_payment_status === 'succeeded' ?
-                            '<span class="badge bg-success">Paid</span>' :
-                            '<span class="badge bg-warning">Pending</span>');
-                        $('#donor_id').text(d.user.donor_id);
-                        $('#stripe_customer_id').text(d.user.stripe_customer_id);
-                        $('#donation_attempt').text(d.user.total_donations_count);
-                        $('#lifetime_donate_amount').text(d.user.lifetime_donation_amount);
-                        $('#times_won').text(d.user.times_won);
-                        $('#last_donation_at').text(d.user.last_donation_at ?
-                            new Date(d.user.last_donation_at).toLocaleString() : 'Never');
+                        let user = d.user || {};
+                        let draw = d.weekly_draw || {};
 
-                        $('#last_won_at').text(d.user.last_won_at ?
-                            new Date(d.user.last_won_at).toLocaleString() : 'Never');
+                        // ==== DONOR INFORMATION ====
+                        $('#d_name').text(user.name || 'N/A');
+                        $('#d_email').text(user.email || 'N/A');
+                        $('#d_phone').text(user.phone || 'N/A');
+                        $('#d_address').text(user.address || 'N/A');
+                        $('#donor_id').text(user.donor_id || 'N/A');
+                        $('#d_role').text(user.role ? user.role.toUpperCase() : 'N/A');
+                        $('#d_registered_at').text(user.created_at ?
+                            new Date(user.created_at).toLocaleString() : 'N/A');
+
+                        // ==== STRIPE INFORMATION ====
+                        $('#stripe_customer_id').text(user.stripe_customer_id || 'N/A');
+                        $('#d_payment_id').text(d.stripe_payment_id || 'N/A');
+                        $('#stripe_charge_id').text(d.stripe_charge_id || 'N/A');
+
+                        // Payment Status Badge
+                        let statusBadge = '';
+                        if (d.stripe_payment_status === 'succeeded' || d.stripe_payment_status ===
+                            'completed') {
+                            statusBadge = '<span class="badge bg-success">Paid</span>';
+                        } else if (d.stripe_payment_status === 'pending') {
+                            statusBadge = '<span class="badge bg-warning">Pending</span>';
+                        } else {
+                            statusBadge = '<span class="badge bg-secondary">' +
+                                (d.stripe_payment_status || 'Unknown') + '</span>';
+                        }
+                        $('#d_status').html(statusBadge);
+
+                        // ==== DONOR STATISTICS ====
+                        $('#donation_attempt').text(user.total_donations_count || 0);
+                        $('#lifetime_donate_amount').text('$' + parseFloat(user
+                            .lifetime_donation_amount || 0).toFixed(2));
+                        $('#times_won').text(user.times_won || 0);
+                        $('#last_donation_at').text(user.last_donation_at ?
+                            new Date(user.last_donation_at).toLocaleString() : 'Never');
+                        $('#last_won_at').text(user.last_won_at ?
+                            new Date(user.last_won_at).toLocaleString() : 'Never');
+
+                        // ==== DONATION DETAILS ====
+                        $('#donation_id').text(d.id || 'N/A');
+                        $('#d_amount').text('$' + parseFloat(d.amount || 0).toFixed(2));
+                        $('#d_donated_at').text(d.donated_at ?
+                            new Date(d.donated_at).toLocaleString() : 'N/A');
+                        $('#payment_type').text(d.payment_type ? d.payment_type.toUpperCase() :
+                            'N/A');
+                        $('#attempt_number').text(d.attempt_number || 'N/A');
+
+                        // Eligible for Draw
+                        let eligibleBadge = d.is_eligible_for_draw ?
+                            '<span class="badge badge-sm bg-success"><i class="fe fe-check" style="font-size:10px"></i> Yes</span>' :
+                            '<span class="badge badge-sm bg-danger"><i class="fe fe-x" style="font-size:10px"></i> No</span>';
+                        $('#is_eligible').html(eligibleBadge);
+
+                        $('#temp_identifier').text(d.temp_identifier || 'N/A');
+                        $('#donation_created_at').text(d.created_at ?
+                            new Date(d.created_at).toLocaleString() : 'N/A');
+                        $('#donation_updated_at').text(d.updated_at ?
+                            new Date(d.updated_at).toLocaleString() : 'N/A');
+
+                        // ==== DRAW INFORMATION ====
+                        if (draw && draw.id) {
+                            $('#d_week').html('<span class="badge bg-primary fs-6">Week #' +
+                                draw.week_number + '</span>');
+                            $('#draw_year').text(draw.year || 'N/A');
+
+                            // Draw Status Badge
+                            let drawStatusBadge = '';
+                            if (draw.status === 'active') {
+                                drawStatusBadge = '<span class="badge bg-success">Active</span>';
+                            } else if (draw.status === 'claiming') {
+                                drawStatusBadge = '<span class="badge bg-warning">Claiming</span>';
+                            } else if (draw.status === 'completed') {
+                                drawStatusBadge =
+                                    '<span class="badge bg-secondary">Completed</span>';
+                            } else {
+                                drawStatusBadge = '<span class="badge bg-info">' +
+                                    (draw.status || 'Unknown') + '</span>';
+                            }
+                            $('#draw_status').html(drawStatusBadge);
+
+                            $('#draw_start_date').text(draw.start_date ?
+                                new Date(draw.start_date).toLocaleString() : 'N/A');
+                            $('#draw_end_date').text(draw.end_date ?
+                                new Date(draw.end_date).toLocaleString() : 'N/A');
+                            $('#countdown_ends_at').text(draw.countdown_ends_at ?
+                                new Date(draw.countdown_ends_at).toLocaleString() : 'N/A');
+                            $('#claim_deadline').text(draw.claim_deadline ?
+                                new Date(draw.claim_deadline).toLocaleString() : 'N/A');
+
+                            $('#total_pool').text('$' + parseFloat(draw.total_pool || 0).toFixed(
+                            2));
+                            $('#total_participants').text((draw.total_participants || 0)
+                                .toLocaleString());
+                            $('#eligible_participants').text((draw.eligible_participants || 0)
+                                .toLocaleString());
+                            $('#excluded_winners_count').text(draw.excluded_winners_count || 0);
+                            $('#total_recipients').text(draw.total_recipients || 0);
+                            $('#admin_commission').text('$' + parseFloat(draw.admin_commission || 0)
+                                .toFixed(2));
+
+                            // Winners Selected
+                            let winnersSelectedBadge = draw.winners_selected ?
+                                '<span class="badge badge-sm bg-success"><i class="fe fe-check" style="font-size:10px"></i> Yes</span>' :
+                                '<span class="badge badge-sm bg-secondary"><i class="fe fe-x" style="font-size:10px"></i> No</span>';
+                            $('#winners_selected').html(winnersSelectedBadge);
+                        } else {
+                            // No draw data available
+                            $('#d_week').html('<span class="badge bg-secondary">N/A</span>');
+                            $('#draw_year, #draw_start_date, #draw_end_date, #countdown_ends_at, #claim_deadline')
+                                .text('N/A');
+                            $('#draw_status').html('<span class="badge bg-secondary">N/A</span>');
+                            $('#total_pool, #admin_commission').text('$0.00');
+                            $('#total_participants, #eligible_participants, #excluded_winners_count, #total_recipients')
+                                .text('0');
+                            $('#winners_selected').html(
+                                '<span class="badge bg-secondary">N/A</span>');
+                        }
+
+                        // Show Modal
                         $('#viewDonorModal').modal('show');
+                    } else {
+                        toastr.error('Failed to load donor details');
                     }
+                }).fail(function() {
+                    toastr.error('Error loading donor data');
                 });
             });
         });
     </script>
 
-
-    // Copy to clipboard
+    {{-- Copy to clipboard --}}
     <script>
         new ClipboardJS('.copy-btn');
         $(document).on('click', '.copy-btn', function() {

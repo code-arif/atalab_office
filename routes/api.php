@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\NewsletterController;
 use App\Http\Controllers\Api\Chat\ChatApiController;
 use App\Http\Controllers\Api\DrawSettingsController;
+use App\Http\Controllers\Web\Backend\VisitorController;
 use App\Http\Controllers\Api\Auth\RegistrationController;
 use App\Http\Controllers\Api\Donation\DonationController;
 use App\Http\Controllers\Api\Auth\AuthenticationController;
@@ -99,4 +100,14 @@ Route::prefix('chat/guest')->name('chat.guest.')->group(function () {
     Route::post('/send', [ChatApiController::class, 'guestSendMessage'])->name('send');
     Route::get('/conversation', [ChatApiController::class, 'guestGetConversation'])->name('conversation');
     Route::post('/typing', [ChatApiController::class, 'guestTyping'])->name('typing');
+});
+
+
+// Public API - Visitor Tracking (No authentication needed)
+Route::post('/track-visitor', [VisitorController::class, 'trackVisitor'])
+    ->middleware(['throttle:60,1']); // 1 minute e 60 requests
+
+// Admin API - Visitor Stats (Authentication needed if applicable)
+Route::prefix('dashboard')->group(function () {
+    Route::get('/visitor-stats', [VisitorController::class, 'getVisitorStats']);
 });

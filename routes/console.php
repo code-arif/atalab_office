@@ -101,7 +101,7 @@ Schedule::call(function () {
 // Clear old cache entries - Daily at 2:00 AM
 Schedule::call(function () {
     try {
-        \Illuminate\Support\Facades\Cache::forget('excluded_user_ids');
+        Cache::forget('excluded_user_ids');
         Log::info('Critical cache cleared');
     } catch (\Exception $e) {
         Log::error('Cache clear failed: ' . $e->getMessage());
@@ -220,7 +220,7 @@ Schedule::command('backup:run --only-db')
     ->timezone(config('app.timezone'))
     ->name('database-backup')
     ->onFailure(function () {
-        Log::critical('❌ Database backup failed!');
+        Log::critical('Database backup failed!');
         // Send critical alert to admin
     });
 
@@ -271,24 +271,69 @@ Artisan::command('draw:cleanup {--force}', function () {
     // Cleanup expired exclusions
     $service = app(WeeklyDrawService::class);
     $cleaned = $service->cleanupExpiredExclusions();
-    $this->info("✅ Cleaned {$cleaned} expired exclusions");
+    $this->info("Cleaned {$cleaned} expired exclusions");
 
     // Cleanup pending donations
     $deleted = Donation::where('stripe_payment_status', 'pending')
         ->where('created_at', '<', now()->subHours(24))
         ->delete();
-    $this->info("✅ Cleaned {$deleted} pending donations");
+    $this->info("Cleaned {$deleted} pending donations");
 
     // Cleanup expired OTPs
     $expired = OtpLog::where('status', 'sent')
         ->where('expires_at', '<', now())
         ->update(['status' => 'expired']);
-    $this->info("✅ Expired {$expired} OTP codes");
+    $this->info("Expired {$expired} OTP codes");
 
-    $this->info('🎉 Cleanup completed!');
+    $this->info('Cleanup completed!');
 })->purpose('Manual cleanup of expired data');
 
 Artisan::command('cache:clear-draw', function () {
-    \Illuminate\Support\Facades\Cache::forget('excluded_user_ids');
-    $this->info('✅ Draw cache cleared');
+    Cache::forget('excluded_user_ids');
+    $this->info('Draw cache cleared');
 })->purpose('Clear draw-related cache');
+
+/**
+ * ==================================================
+ * VISITOR STATISTICS AGGREGATION
+ * ==================================================
+ */
+
+// Aggregate visitor stats - Every hour
+Schedule::call(function () {
+    $today = today(config('app.timezone'));
+
+    $stats = \App\Models\Visitor::whereDate('visit_date', $today)
+        ->selectRaw('COUNT(DISTINCT ip_address) as unique_visitors, SUM(visit_count) as total_visitors')
+        ->first();
+
+    \App\Models\VisitorStatistic::updateOrCreate(
+        ['date' => $today],
+        [
+            'unique_visitors' => $stats->unique_visitors ?? 0,
+            'total_visitors' => $stats->total_visitors ?? 0
+        ]
+    );
+
+    // Clear old cache
+    Cache::forget('dashboard_visitor_stats');
+
+    Log::info('Visitor stats aggregated', [
+        'date' => $today->toDateString(),
+        'unique' => $stats->unique_visitors ?? 0,
+        'total' => $stats->total_visitors ?? 0
+    ]);
+})
+    ->hourly()
+    ->timezone(config('app.timezone'))
+    ->name('aggregate-visitor-stats');
+
+// Clean old visitor logs - Weekly on Sunday 3 AM
+Schedule::call(function () {
+    $deleted = \App\Models\Visitor::where('visit_date', '<', now()->subMonths(6))->delete();
+
+    Log::info("Cleaned {$deleted} old visitor records");
+})
+    ->weeklyOn(0, '03:00')
+    ->timezone(config('app.timezone'))
+    ->name('cleanup-old-visitors');

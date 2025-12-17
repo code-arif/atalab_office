@@ -95,6 +95,99 @@
                             </div>
                         </div>
 
+                        <!-- VISITOR STATISTICS CARDS -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5 class="mb-3 fw-semibold">
+                                    <i class="fe fe-activity text-primary"></i> Website Traffic Analytics
+                                </h5>
+                            </div>
+
+                            <!-- Today's Unique Visitors -->
+                            <div class="col-lg-3 col-md-6 col-sm-12">
+                                <div class="card stats-card visitor-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <p class="text-muted mb-1 fs-13">Today's Visitors</p>
+                                                <h3 class="mb-0 fw-bold" id="todayVisitors">
+                                                    {{ number_format($visitorStats['today_unique']) }}
+                                                </h3>
+                                                <small class="text-muted">
+                                                    <span id="liveVisitors" class="text-success fw-semibold">
+                                                        {{ $visitorStats['live_now'] }}
+                                                    </span> online now
+                                                </small>
+                                            </div>
+                                            <div class="stats-icon bg-info-gradient">
+                                                <i class="fe fe-users"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Today's Page Views -->
+                            <div class="col-lg-3 col-md-6 col-sm-12">
+                                <div class="card stats-card visitor-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <p class="text-muted mb-1 fs-13">Today's Views</p>
+                                                <h3 class="mb-0 fw-bold" id="todayViews">
+                                                    {{ number_format($visitorStats['today_total']) }}
+                                                </h3>
+                                                <small class="text-muted">Page impressions</small>
+                                            </div>
+                                            <div class="stats-icon bg-teal-gradient">
+                                                <i class="fe fe-eye"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- All Time Unique Visitors -->
+                            <div class="col-lg-3 col-md-6 col-sm-12">
+                                <div class="card stats-card visitor-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <p class="text-muted mb-1 fs-13">Total Visitors</p>
+                                                <h3 class="mb-0 fw-bold">
+                                                    {{ number_format($visitorStats['all_time_unique']) }}
+                                                </h3>
+                                                <small class="text-muted">All time unique</small>
+                                            </div>
+                                            <div class="stats-icon bg-purple-gradient">
+                                                <i class="fe fe-trending-up"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Avg Daily Visitors -->
+                            <div class="col-lg-3 col-md-6 col-sm-12">
+                                <div class="card stats-card visitor-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <p class="text-muted mb-1 fs-13">Growth Rate</p>
+                                                <h3 class="mb-0 fw-bold text-success" id="growthRate">
+                                                    <i class="fe fe-arrow-up"></i> 12.5%
+                                                </h3>
+                                                <small class="text-muted">vs last week</small>
+                                            </div>
+                                            <div class="stats-icon bg-success-gradient">
+                                                <i class="fe fe-bar-chart-2"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- ACTIVE DRAW CARD -->
                         @if ($activeDraw && $activeDrawStats)
                             <div class="card">
@@ -122,7 +215,8 @@
                                         </div>
                                         <div class="col-md-4">
                                             <div class="active-draw-stat">
-                                                <h2 class="mb-0 fw-bold" id="countdown" style="font-family: 'Courier New', monospace; letter-spacing: 2px;">
+                                                <h2 class="mb-0 fw-bold" id="countdown"
+                                                    style="font-family: 'Courier New', monospace; letter-spacing: 2px;">
                                                     --:--:--
                                                 </h2>
                                                 <p class="text-muted mb-0">Time Remaining</p>
@@ -446,6 +540,49 @@
         .table tbody tr:hover {
             background: #f9fafb;
         }
+
+        /* Visitor Card Gradients */
+        .bg-info-gradient {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .bg-teal-gradient {
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+        }
+
+        .bg-purple-gradient {
+            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+        }
+
+        .visitor-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visitor-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: pulse-wave 4s infinite;
+        }
+
+        @keyframes pulse-wave {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+        }
     </style>
 @endpush
 
@@ -506,7 +643,7 @@
             }
         });
 
-        // Countdown Timer
+        // ===== Countdown Timer Function (MUST BE DEFINED BEFORE CALLING) =====
         @if ($activeDraw && $activeDraw->countdown_ends_at)
             const drawEndTime = {{ \Carbon\Carbon::parse($activeDraw->countdown_ends_at)->timestamp }};
 
@@ -514,8 +651,11 @@
                 const now = Math.floor(Date.now() / 1000);
                 let diff = drawEndTime - now;
 
+                const countdownElement = document.getElementById('countdown');
+                if (!countdownElement) return; // Guard clause
+
                 if (diff <= 0) {
-                    document.getElementById('countdown').innerHTML = '<span class="text-danger fw-bold">DRAW ENDED</span>';
+                    countdownElement.innerHTML = '<span class="text-danger fw-bold">DRAW ENDED</span>';
                     return;
                 }
 
@@ -537,35 +677,48 @@
 
                 // Last 10 seconds = red + big
                 if (diff <= 10) {
-                    document.getElementById('countdown').innerHTML =
-                        `<span class="text-danger fw-bold fs-2">${timeStr}</span>`;
+                    countdownElement.innerHTML = `<span class="text-danger fw-bold fs-2">${timeStr}</span>`;
                 } else {
-                    document.getElementById('countdown').textContent = timeStr;
+                    countdownElement.textContent = timeStr;
                 }
             }
 
-            // Start countdown
+            // Start countdown immediately
             updateCountdown();
+
+            // Update every 1 second
             setInterval(updateCountdown, 1000);
         @else
-            document.getElementById('countdown').innerHTML = '<span class="text-muted">No Active Draw</span>';
+            // No active draw
+            const countdownElement = document.getElementById('countdown');
+            if (countdownElement) {
+                countdownElement.innerHTML = '<span class="text-muted">No Active Draw</span>';
+            }
         @endif
 
-        // Real-time Updates (every 30 seconds)
+        // Real-time Updates (every 30 seconds) - UPDATED WITH VISITOR STATS
         setInterval(async () => {
             try {
-                // Update Stats
+                // Update Donation Stats
                 const statsResponse = await fetch('/api/dashboard/live-stats');
                 const statsData = await statsResponse.json();
 
                 if (statsData.success) {
-                    document.getElementById('activePool').textContent =
-                        '$' + statsData.data.total_pool.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        });
-                    document.getElementById('activeParticipants').textContent =
-                        statsData.data.total_participants.toLocaleString();
+                    const activePoolElement = document.getElementById('activePool');
+                    const activeParticipantsElement = document.getElementById('activeParticipants');
+
+                    if (activePoolElement) {
+                        activePoolElement.textContent = '$' + statsData.data.total_pool.toLocaleString(
+                            undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            });
+                    }
+
+                    if (activeParticipantsElement) {
+                        activeParticipantsElement.textContent = statsData.data.total_participants
+                            .toLocaleString();
+                    }
                 }
 
                 // Update Donation Feed
@@ -575,14 +728,33 @@
                 if (feedData.success) {
                     updateDonationFeed(feedData.data);
                 }
+
+                // ===== Update Visitor Stats =====
+                const visitorResponse = await fetch('/api/dashboard/visitor-stats');
+                const visitorData = await visitorResponse.json();
+
+                if (visitorData.success) {
+                    // Update counts with smooth animation
+                    animateCount('todayVisitors', visitorData.data.today.unique);
+                    animateCount('todayViews', visitorData.data.today.total);
+
+                    // Update live visitors count
+                    const liveElement = document.getElementById('liveVisitors');
+                    if (liveElement) {
+                        liveElement.textContent = visitorData.data.live_count;
+                    }
+                }
+
             } catch (error) {
                 console.error('Error updating dashboard:', error);
             }
-        }, 30000);
+        }, 30000); // 30 seconds
 
         // Update Donation Feed
         function updateDonationFeed(donations) {
             const feed = document.getElementById('donationFeed');
+            if (!feed) return;
+
             const currentTimestamp = Math.floor(Date.now() / 1000);
 
             // Remove donations older than 1 hour
@@ -625,23 +797,54 @@
             return div;
         }
 
+        // ===== Smooth Number Animation Function =====
+        function animateCount(elementId, targetValue) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
 
-        // Listen for donations
-        window.Echo.channel('donations')
-            .listen('DonationCreated', (e) => {
-                console.log('New donation received:', e);
-                alert('hello');
+            const currentValue = parseInt(element.textContent.replace(/,/g, '')) || 0;
 
-                // Add to feed
-                const feed = document.getElementById('donationFeed');
-                const item = createDonationItem(e);
-                feed.insertBefore(item, feed.firstChild);
+            // Only animate if value changed
+            if (currentValue === targetValue) return;
 
-                // Update counters
-                updateCounters();
+            const difference = targetValue - currentValue;
+            const duration = 1000; // 1 second
+            const steps = 20;
+            const increment = difference / steps;
+            let current = currentValue;
+            let step = 0;
 
-                // Show notification
-                showNotification(`New donation: $${e.amount} by ${e.user_name}`);
-            });
+            const timer = setInterval(() => {
+                step++;
+                current += increment;
+                element.textContent = Math.round(current).toLocaleString();
+
+                if (step >= steps) {
+                    clearInterval(timer);
+                    element.textContent = targetValue.toLocaleString();
+                }
+            }, duration / steps);
+        }
+
+        // Listen for donations (Echo/Reverb)
+        if (window.Echo) {
+            window.Echo.channel('donations')
+                .listen('DonationCreated', (e) => {
+                    console.log('New donation received:', e);
+
+                    // Add to feed
+                    const feed = document.getElementById('donationFeed');
+                    if (feed) {
+                        const item = createDonationItem(e);
+                        feed.insertBefore(item, feed.firstChild);
+                    }
+
+                    // Optional: Update counters
+                    // updateCounters();
+
+                    // Optional: Show notification
+                    // showNotification(`New donation: $${e.amount} by ${e.user_name}`);
+                });
+        }
     </script>
 @endpush

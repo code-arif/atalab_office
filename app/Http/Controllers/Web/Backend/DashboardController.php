@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\Web\Backend;
 
 
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Donation;
-use App\Models\WeeklyDraw;
 use App\Models\DrawWinner;
+use App\Models\WeeklyDraw;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -129,6 +130,21 @@ class DashboardController extends Controller
             ->get()
             ->pluck('count', 'stripe_payment_status');
 
+        // Visitor Statistics (NEW)
+        $visitorStats = Cache::remember('dashboard_visitor_stats', 300, function () {
+            $today = today(config('app.timezone'));
+            $todayStats = \App\Models\VisitorStatistic::whereDate('date', $today)->first();
+
+            return [
+                'today_unique' => $todayStats->unique_visitors ?? 0,
+                'today_total' => $todayStats->total_visitors ?? 0,
+                'all_time_unique' => \App\Models\Visitor::distinct('ip_address')->count('ip_address'),
+                'live_now' => \App\Models\Visitor::whereDate('visit_date', $today)
+                    ->whereTime('updated_at', '>=', now()->subMinutes(5))
+                    ->count()
+            ];
+        });
+
         return view('backend.layouts.dashboard', compact(
             'totalDonors',
             'totalDonations',
@@ -140,7 +156,8 @@ class DashboardController extends Controller
             'recentDonations',
             'weeklyPerformance',
             'topDonors',
-            'paymentStatusStats'
+            'paymentStatusStats',
+            'visitorStats' // NEW
         ));
     }
 
