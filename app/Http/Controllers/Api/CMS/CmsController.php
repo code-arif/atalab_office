@@ -18,7 +18,7 @@ use App\Http\Resources\DrawSettingResource;
 class CmsController extends Controller
 {
     use ApiResponse;
-    
+
     /**
      * Get all home page CMS data
      */
@@ -26,7 +26,9 @@ class CmsController extends Controller
     {
         $cmsData = CMS::where('page', 'home')->get();
         // Slider Data
-        $sliderData = Slider::where('status', true)->get();
+        $sliderData = Slider::where('status', true)
+            ->orderBy('order', 'asc')
+            ->get();
 
         $topbar = CMS::where('page', 'partials')->where('section', 'topbar')->get();
 
