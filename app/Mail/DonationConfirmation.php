@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class DonationConfirmation extends Mailable implements ShouldQueue
+class DonationConfirmation extends Mailable
 {
     use Queueable, SerializesModels;
 
