@@ -35,26 +35,6 @@
                     </a>
                 </li>
 
-                {{-- subscribe newsletter --}}
-                <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('subscribers.index') ? 'has-link' : '' }}"
-                        href="{{ route('subscribers.index') }}">
-                        <i class="fa-solid fa-bell"></i>
-                        <span class="side-menu__label mb-1">Newsletter Subscribers</span>
-                    </a>
-                </li>
-
-                {{-- contact me --}}
-                <li class="slide">
-                    <a class="side-menu__item {{ request()->routeIs('contact.me') ? 'has-link' : '' }}"
-                        href="{{ route('contact.me') }}">
-                        <i class="fa fa-envelope"></i>
-                        <span class="side-menu__label mb-1">Contact Me</span>
-                    </a>
-                </li>
-
-                <hr>
-
                 <li class="slide">
                     <a class="side-menu__item" data-bs-toggle="slide" href="#">
                         <i class="fa-solid fa-people-roof"></i>
@@ -78,7 +58,25 @@
                 </li>
 
                 <hr>
+                {{-- subscribe newsletter --}}
+                <li class="slide">
+                    <a class="side-menu__item {{ request()->routeIs('subscribers.index') ? 'has-link' : '' }}"
+                        href="{{ route('subscribers.index') }}">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="side-menu__label mb-1">Newsletter Subscribers</span>
+                    </a>
+                </li>
 
+                {{-- contact me --}}
+                <li class="slide">
+                    <a class="side-menu__item {{ request()->routeIs('contact.me') ? 'has-link' : '' }}"
+                        href="{{ route('contact.me') }}">
+                        <i class="fa fa-envelope"></i>
+                        <span class="side-menu__label mb-1">Contact Me</span>
+                    </a>
+                </li>
+
+                <hr>
                 <li>
                     <h3>CMS</h3>
                 </li>
@@ -234,7 +232,8 @@
                         </li>
                         <li><a href="{{ route('setting.stripe.index') }}" class="slide-item">Stripe Settings</a>
                         </li>
-                        <li><a href="{{ route('setting.draw-automate.index') }}" class="slide-item">Draw Automation</a>
+                        <li><a href="{{ route('setting.draw-automate.index') }}" class="slide-item">Draw
+                                Automation</a>
                         </li>
                     </ul>
                 </li>
@@ -267,14 +266,16 @@
         text-decoration: none;
         transition: all 0.2s ease;
         position: relative;
-        border: 1px solid transparent; /* Prevent layout shift */
+        border: 1px solid transparent;
+        /* Prevent layout shift */
     }
 
     /* White Background with Colored Border on Hover */
     .side-menu__item:hover {
         background-color: #ffffff;
         color: #5066e1;
-        border-color: #5066e1; /* A slightly brighter blue-purple border for interaction contrast */
+        border-color: #5066e1;
+        /* A slightly brighter blue-purple border for interaction contrast */
         transition: all 0.2s ease !important;
     }
 
@@ -282,8 +283,10 @@
     .side-menu__item.has-link,
     .side-menu__item.active,
     .slide.is-expanded .side-menu__item {
-        background-color: #f0f2fe; /* Light purple-blue */
-        color: #5066e1; /* Theme purple-blue */
+        background-color: #f0f2fe;
+        /* Light purple-blue */
+        color: #5066e1;
+        /* Theme purple-blue */
         font-weight: 600;
     }
 
@@ -355,7 +358,8 @@
         padding: 4px 0 10px 48px;
         margin: 0;
         list-style: none;
-        display: none; /* Inherit JS toggle visibility */
+        display: none;
+        /* Inherit JS toggle visibility */
     }
 
     .slide.is-expanded .slide-menu {

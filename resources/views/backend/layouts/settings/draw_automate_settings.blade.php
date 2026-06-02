@@ -137,14 +137,18 @@
                                         <div class="col-md-6">
                                             <label for="draw_start_time" class="form-label fw-semibold">Draw Start
                                                 Time</label>
-                                            <input type="time"
-                                                class="form-control @error('draw_start_time') is-invalid @enderror"
-                                                id="draw_start_time" name="draw_start_time"
-                                                value="{{ \Carbon\Carbon::parse($settings->draw_start_time ?? '00:00:00')->format('H:i') }}">
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fa-regular fa-clock"></i></span>
+                                                <input type="text"
+                                                    class="form-control time-picker @error('draw_start_time') is-invalid @enderror"
+                                                    id="draw_start_time" name="draw_start_time"
+                                                    placeholder="Select Start Time"
+                                                    value="{{ \Carbon\Carbon::parse($settings->draw_start_time ?? '00:00:00')->format('H:i') }}">
+                                            </div>
                                             @error('draw_start_time')
-                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                <div class="text-danger small mt-1">{{ $message }}</div>
                                             @enderror
-                                            <small class="text-muted">Time of day the new draw starts.</small>
+                                            <small class="text-muted d-block mt-1">Time of day the new draw starts.</small>
                                         </div>
 
                                         <div class="col-md-6">
@@ -168,14 +172,18 @@
                                         <div class="col-md-6">
                                             <label for="draw_end_time" class="form-label fw-semibold">Draw Finalize
                                                 Time</label>
-                                            <input type="time"
-                                                class="form-control @error('draw_end_time') is-invalid @enderror"
-                                                id="draw_end_time" name="draw_end_time"
-                                                value="{{ \Carbon\Carbon::parse($settings->draw_end_time ?? '17:00:00')->format('H:i') }}">
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fa-regular fa-clock"></i></span>
+                                                <input type="text"
+                                                    class="form-control time-picker @error('draw_end_time') is-invalid @enderror"
+                                                    id="draw_end_time" name="draw_end_time"
+                                                    placeholder="Select Finalize Time"
+                                                    value="{{ \Carbon\Carbon::parse($settings->draw_end_time ?? '17:00:00')->format('H:i') }}">
+                                            </div>
                                             @error('draw_end_time')
-                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                <div class="text-danger small mt-1">{{ $message }}</div>
                                             @enderror
-                                            <small class="text-muted">Time of day the draw finalizes.</small>
+                                            <small class="text-muted d-block mt-1">Time of day the draw finalizes.</small>
                                         </div>
                                     </div>
 
@@ -195,3 +203,33 @@
         </div>
     </div>
 @endsection
+
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
+    <style>
+        .flatpickr-input[readonly] {
+            cursor: pointer;
+            background-color: #fff !important;
+        }
+        .input-group .flatpickr-input {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+    </style>
+@endpush
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            flatpickr(".time-picker", {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",
+                altInput: true,
+                altFormat: "h:i K", // Displays in AM/PM 12-hour format
+            });
+        });
+    </script>
+@endpush
