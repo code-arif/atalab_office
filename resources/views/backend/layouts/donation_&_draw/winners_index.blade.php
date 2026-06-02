@@ -103,32 +103,31 @@
                 </div>
 
                 <!-- Advanced Filters -->
-                <div class="row mb-4">
+                <div class="row mb-3">
                     <div class="col-12">
-                        <div class="card">
-                            <div class="card-header bg-light">
-                                <h5 class="card-title mb-0">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0 fs-14 d-flex align-items-center">
                                     <i class="fe fe-filter me-2"></i>Advanced Filters
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="resetFilters">
-                                        <i class="fe fe-x me-1" style="font-size: 10px"></i>Reset
-                                    </button>
                                 </h5>
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 fs-12 d-flex align-items-center" id="resetFilters">
+                                    <i class="fe fe-x me-1"></i> Reset
+                                </button>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body py-2">
                                 <form id="filterForm">
-                                    <div class="row g-3">
-                                        <div class="col-md-3">
-                                            <label class="form-label">Claim Status</label>
-                                            <select class="form-select" id="claimStatusFilter">
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-xl col-lg-3 col-md-4 col-sm-6">
+                                            <label class="form-label small mb-1">Claim Status</label>
+                                            <select class="form-select form-select-sm" id="claimStatusFilter">
                                                 <option value="">All</option>
                                                 <option value="claimed">Claimed</option>
                                                 <option value="unclaimed">Unclaimed</option>
                                             </select>
                                         </div>
-
-                                        <div class="col-md-3">
-                                            <label class="form-label">Payout Status</label>
-                                            <select class="form-select" id="payoutStatusFilter">
+                                        <div class="col-xl col-lg-3 col-md-4 col-sm-6">
+                                            <label class="form-label small mb-1">Payout Status</label>
+                                            <select class="form-select form-select-sm" id="payoutStatusFilter">
                                                 <option value="">All</option>
                                                 <option value="pending">Pending</option>
                                                 <option value="processing">Processing</option>
@@ -136,43 +135,34 @@
                                                 <option value="failed">Failed</option>
                                             </select>
                                         </div>
-
-                                        <div class="col-md-3">
-                                            <label class="form-label">Week</label>
-                                            <select class="form-select" id="weekFilter">
+                                        <div class="col-xl col-lg-3 col-md-4 col-sm-6">
+                                            <label class="form-label small mb-1">Week</label>
+                                            <select class="form-select form-select-sm" id="weekFilter">
                                                 <option value="">All Weeks</option>
                                                 @foreach ($weeks as $week)
-                                                    <option value="{{ $week->id }}">Week #{{ $week->week_number }}
-                                                    </option>
+                                                    <option value="{{ $week->id }}">Wk #{{ $week->week_number }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
-
-                                        <div class="col-md-3">
-                                            <label class="form-label">Date From</label>
-                                            <input type="date" class="form-control" id="dateFrom">
+                                        <div class="col-xl col-lg-3 col-md-4 col-sm-6">
+                                            <label class="form-label small mb-1">Date From</label>
+                                            <input type="date" class="form-control form-control-sm" id="dateFrom">
                                         </div>
-
-                                        <div class="col-md-3">
-                                            <label class="form-label">Date To</label>
-                                            <input type="date" class="form-control" id="dateTo">
+                                        <div class="col-xl col-lg-3 col-md-4 col-sm-6">
+                                            <label class="form-label small mb-1">Date To</label>
+                                            <input type="date" class="form-control form-control-sm" id="dateTo">
                                         </div>
-
-                                        <div class="col-md-3">
-                                            <label class="form-label">Min Amount ($)</label>
-                                            <input type="number" class="form-control" id="minAmount" placeholder="0.00"
-                                                step="0.01">
+                                        <div class="col-xl col-lg-2 col-md-4 col-sm-6">
+                                            <label class="form-label small mb-1">Min ($)</label>
+                                            <input type="number" class="form-control form-control-sm" id="minAmount" placeholder="0.00" step="0.01">
                                         </div>
-
-                                        <div class="col-md-3">
-                                            <label class="form-label">Max Amount ($)</label>
-                                            <input type="number" class="form-control" id="maxAmount"
-                                                placeholder="1000.00" step="0.01">
+                                        <div class="col-xl col-lg-2 col-md-4 col-sm-6">
+                                            <label class="form-label small mb-1">Max ($)</label>
+                                            <input type="number" class="form-control form-control-sm" id="maxAmount" placeholder="1000" step="0.01">
                                         </div>
-
-                                        <div class="col-md-3 d-flex align-items-end">
-                                            <button type="button" class="btn btn-primary w-100" id="applyFilters">
-                                                <i class="fe fe-search me-2"></i>Apply Filters
+                                        <div class="col-xl-auto col-lg-12 col-md-4 col-sm-12 ms-auto mt-2 mt-xl-0">
+                                            <button type="button" class="btn btn-primary btn-sm w-100 px-3 d-flex justify-content-center align-items-center" id="applyFilters">
+                                                <i class="fe fe-search me-1"></i> Apply
                                             </button>
                                         </div>
                                     </div>

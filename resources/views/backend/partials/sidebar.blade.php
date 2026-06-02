@@ -58,7 +58,7 @@
                 <li class="slide">
                     <a class="side-menu__item" data-bs-toggle="slide" href="#">
                         <i class="fa-solid fa-people-roof"></i>
-                        <span class="mb-1">Donor & Draw Manage</span>
+                        <span class="mb-1">Donors & Draws</span>
                         <i class="angle fa fa-angle-right ms-auto"></i>
                     </a>
                     <ul class="slide-menu">
@@ -256,56 +256,171 @@
     .side-menu__item {
         display: flex;
         align-items: center;
-        padding: 10px 15px;
-        color: #333;
+        padding: 9px 14px;
+        margin: 4px 12px;
+        border-radius: 6px;
+        color: #4b5563;
         font-weight: 500;
+        font-size: 0.9rem;
         text-decoration: none;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
+        position: relative;
+        border: 1px solid transparent; /* Prevent layout shift */
     }
 
+    /* White Background with Colored Border on Hover */
     .side-menu__item:hover {
-        background-color: #f3f6f9;
-        color: #38a3a5;
+        background-color: #ffffff;
+        color: #5066e1;
+        border-color: #5066e1; /* A slightly brighter blue-purple border for interaction contrast */
+        transition: all 0.2s ease !important;
     }
 
-    /* Icon alignment fix */
+    /* Active State - matched to standard purple-blue theme */
+    .side-menu__item.has-link,
+    .side-menu__item.active,
+    .slide.is-expanded .side-menu__item {
+        background-color: #f0f2fe; /* Light purple-blue */
+        color: #5066e1; /* Theme purple-blue */
+        font-weight: 600;
+    }
+
+    /* Active Left Border - subtle rounded pill */
+    .side-menu__item.has-link::after,
+    .side-menu__item.active::after {
+        content: '';
+        position: absolute;
+        left: -12px;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 18px;
+        width: 4px;
+        background-color: #5066e1;
+        border-radius: 4px;
+    }
+
+    /* Icon styling alignment fix */
     .side-menu__item i,
-    .side-menu__item svg {
-        width: 20px;
-        height: 20px;
+    .side-menu__item svg,
+    .side-menu__item [class^="fa-"] {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        font-size: 16px;
         flex-shrink: 0;
-        display: inline-block;
-        text-align: center;
-        margin-right: 10px;
-        /* consistent spacing */
+        margin-right: 12px;
         color: inherit;
+        opacity: 0.8;
+        transition: opacity 0.2s ease, color 0.2s ease;
     }
 
-    /* Label */
-    .side-menu__label {
+    .side-menu__item:hover i,
+    .side-menu__item.has-link i,
+    .side-menu__item.active i,
+    .slide.is-expanded .side-menu__item i {
+        opacity: 1;
+    }
+
+    /* Label perfectly aligned */
+    .side-menu__item .side-menu__label,
+    .side-menu__item .mb-1 {
         flex: 1;
-        display: inline-block;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        margin-bottom: 0 !important;
+        margin-top: 1px;
+    }
+
+    /* Dropdown Arrow Indicator */
+    .side-menu__item .angle {
+        width: auto;
+        margin-right: 0;
+        font-size: 11px;
+        opacity: 0.5;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .slide.is-expanded .side-menu__item .angle {
+        transform: rotate(90deg);
+        opacity: 1;
+    }
+
+    /* Submenu Wrapper */
+    .slide-menu {
+        padding: 4px 0 10px 48px;
+        margin: 0;
+        list-style: none;
+        display: none; /* Inherit JS toggle visibility */
+    }
+
+    .slide.is-expanded .slide-menu {
+        display: block;
     }
 
     /* Submenu items */
     .slide-menu .slide-item {
         display: block;
-        color: #555;
-        font-size: 14px;
+        padding: 7px 12px 7px 28px !important;
+        color: #6b7280;
+        font-size: 0.875rem;
+        font-weight: 500;
         text-decoration: none;
-        transition: color 0.3s ease;
+        border-radius: 6px;
+        margin-bottom: 2px;
+        margin-right: 15px;
+        transition: all 0.25s ease;
+        position: relative;
     }
 
-    .slide-menu .slide-item:hover {
-        color: #38a3a5;
+    /* Remove base theme default icons cleanly */
+    .slide-menu .slide-item::after {
+        display: none !important;
     }
 
-    /* Optional: heading styling */
+    /* Restore Custom Animated Dot Icon */
+    .slide-menu .slide-item::before {
+        content: '' !important;
+        display: block !important;
+        position: absolute !important;
+        left: 10px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: 6px !important;
+        height: 6px !important;
+        border-radius: 50% !important;
+        background-color: #cbd3da !important;
+        transition: all 0.3s ease !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Clean hover interaction */
+    .slide-menu .slide-item:hover,
+    .slide-menu .slide-item.active,
+    .slide-menu .slide-item.has-link {
+        color: #5066e1 !important;
+        background-color: #f0f2fe !important;
+        transform: translateX(4px);
+    }
+
+    /* Animated Dot Hover */
+    .slide-menu .slide-item:hover::before,
+    .slide-menu .slide-item.active::before,
+    .slide-menu .slide-item.has-link::before {
+        background-color: #5066e1 !important;
+        box-shadow: 0 0 0 3px rgba(80, 102, 225, 0.2) !important;
+    }
+
+    /* Menu headings */
     .side-menu h3 {
-        font-size: 13px;
+        font-size: 0.75rem;
         text-transform: uppercase;
-        margin: 20px 15px 10px;
-        color: #777;
-        letter-spacing: 0.5px;
+        font-weight: 700;
+        margin: 24px 20px 10px;
+        color: #9ca3af;
+        letter-spacing: 0.05em;
     }
 </style>
