@@ -147,65 +147,30 @@
         </div>
     </div>
 
-    <style>
-        #viewDrawModal .info-label {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #7b8190;
-            font-weight: 600;
-            margin-bottom: 2px;
-            display: block;
-        }
-        #viewDrawModal .info-value {
-            font-size: 14px;
-            color: #333;
-            font-weight: 500;
-            word-break: break-all;
-        }
-        #viewDrawModal .card-title-pro {
-            font-size: 15px;
-            font-weight: 700;
-            color: #2c323f;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #f0f0f5;
-            padding-bottom: 10px;
-            display: flex;
-            align-items: center;
-        }
-        #viewDrawModal .card-title-pro i {
-            margin-right: 8px;
-            color: #5066e1;
-        }
-        #viewDrawModal .pro-card {
-            border-radius: 12px;
-            border: 1px solid #e9edf4;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-            background-color: #ffffff;
-        }
-        #viewDrawModal .fs-13 { font-size: 13px !important; }
-        #viewDrawModal .fs-12 { font-size: 12px !important; }
-    </style>
+
     <!-- View Draw Modal -->
     <div class="modal fade" id="viewDrawModal" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content border-0 rounded-4 shadow-lg">
                 <div class="modal-header border-bottom-0 pb-0 pt-4 px-4 bg-white rounded-top-4">
                     <div class="d-flex align-items-center w-100">
-                        <div class="bg-primary-transparent p-3 rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <div class="bg-primary-transparent p-3 rounded-circle me-3 d-flex align-items-center justify-content-center"
+                            style="width: 50px; height: 50px;">
                             <i class="fe fe-calendar text-primary fs-3"></i>
                         </div>
                         <div>
                             <h4 class="mb-1 fw-bolder text-dark">Weekly Draw Details</h4>
                             <div class="d-flex align-items-center text-muted fs-13">
-                                <i class="fe fe-hash me-1 text-primary"></i> <span id="view_week_number" class="me-3 fw-medium">---</span>
-                                <i class="fe fe-clock me-1 text-primary"></i> <span id="view_year" class="fw-medium">---</span>
+                                <i class="fe fe-hash me-1 text-primary"></i> <span id="view_week_number"
+                                    class="me-3 fw-medium">---</span>
+                                <i class="fe fe-clock me-1 text-primary"></i> <span id="view_year"
+                                    class="fw-medium">---</span>
                             </div>
                         </div>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal">&times;</button>
                 </div>
-                
+
                 <div class="modal-body p-4" style="background-color: #f9fafb;">
                     <div class="row g-4">
                         <!-- LEFT COLUMN -->
@@ -246,7 +211,8 @@
                                         </div>
                                         <div class="col-6">
                                             <span class="info-label text-danger">Claim Deadline</span>
-                                            <span class="info-value text-danger fs-13 fw-bold" id="view_claim_deadline">---</span>
+                                            <span class="info-value text-danger fs-13 fw-bold"
+                                                id="view_claim_deadline">---</span>
                                         </div>
                                     </div>
                                 </div>
@@ -259,38 +225,44 @@
                             <div class="card pro-card mb-4 h-auto" style="border-top: 4px solid #19b159;">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-3">
-                                        <h5 class="card-title-pro border-0 p-0 m-0"><i class="fe fe-dollar-sign text-success"></i>Total Pool Size</h5>
+                                        <h5 class="card-title-pro border-0 p-0 m-0"><i
+                                                class="fe fe-dollar-sign text-success"></i>Total Pool Size</h5>
                                         <h2 class="mb-0 text-success fw-bolder" id="view_total_pool">---</h2>
                                     </div>
                                     <div class="row g-3">
                                         <div class="col-6">
                                             <span class="info-label">Distribution Pool</span>
-                                            <span class="info-value text-primary fw-bold fs-5" id="view_distribution_pool">---</span>
+                                            <span class="info-value text-primary fw-bold fs-5"
+                                                id="view_distribution_pool">---</span>
                                         </div>
                                         <div class="col-6">
                                             <span class="info-label">Admin Commission</span>
-                                            <span class="info-value text-info fw-bold fs-5" id="view_commission">---</span>
+                                            <span class="info-value text-info fw-bold fs-5"
+                                                id="view_commission">---</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Statistics -->
-                             <div class="card pro-card m-0">
+                            <div class="card pro-card m-0">
                                 <div class="card-body">
                                     <h5 class="card-title-pro"><i class="fe fe-users"></i>Participation Stats</h5>
                                     <div class="row g-3">
                                         <div class="col-6 border-end border-bottom pb-3">
                                             <span class="info-label">Total Participants</span>
-                                            <span class="info-value fw-bolder text-warning fs-5" id="view_participants">---</span>
+                                            <span class="info-value fw-bolder text-warning fs-5"
+                                                id="view_participants">---</span>
                                         </div>
                                         <div class="col-6 border-bottom pb-3">
                                             <span class="info-label">Expected Winners</span>
-                                            <span class="info-value fw-bolder text-info fs-5" id="view_expected_winners">---</span>
+                                            <span class="info-value fw-bolder text-info fs-5"
+                                                id="view_expected_winners">---</span>
                                         </div>
                                         <div class="col-6 pt-2">
                                             <span class="info-label">Actual Recipients</span>
-                                            <span class="info-value fw-bolder text-success fs-5" id="view_recipients">---</span>
+                                            <span class="info-value fw-bolder text-success fs-5"
+                                                id="view_recipients">---</span>
                                         </div>
                                         <div class="col-6 pt-2">
                                             <span class="info-label">Global Odds</span>
@@ -302,8 +274,9 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="modal-footer border-top-0 pt-3 pb-4 px-4 bg-white rounded-bottom-4 d-flex justify-content-end shadow-sm">
+
+                <div
+                    class="modal-footer border-top-0 pt-3 pb-4 px-4 bg-white rounded-bottom-4 d-flex justify-content-end shadow-sm">
                     <button type="button" class="btn btn-dark px-4 py-2 fw-semibold shadow-sm" data-bs-dismiss="modal">
                         Close Details
                     </button>
@@ -323,12 +296,17 @@
                 <div class="modal-body">
                     <p class="mb-3 fw-bold text-danger">Are you sure you want to pause this draw?</p>
                     <ul class="list-group list-group-flush mb-3">
-                        <li class="list-group-item"><i class="fe fe-info text-info me-2"></i> Donors will no longer be able to donate to this draw.</li>
-                        <li class="list-group-item"><i class="fe fe-info text-info me-2"></i> The donation button will become inactive on the public page.</li>
-                        <li class="list-group-item"><i class="fe fe-info text-info me-2"></i> If paused, you must resume it before the Draw End Date to allow proper finalization.</li>
-                        <li class="list-group-item"><i class="fe fe-info text-info me-2"></i> Current participants and pool size will be frozen until resumed.</li>
+                        <li class="list-group-item"><i class="fe fe-info text-info me-2"></i> Donors will no longer be
+                            able to donate to this draw.</li>
+                        <li class="list-group-item"><i class="fe fe-info text-info me-2"></i> The donation button will
+                            become inactive on the public page.</li>
+                        <li class="list-group-item"><i class="fe fe-info text-info me-2"></i> If paused, you must resume
+                            it before the Draw End Date to allow proper finalization.</li>
+                        <li class="list-group-item"><i class="fe fe-info text-info me-2"></i> Current participants and
+                            pool size will be frozen until resumed.</li>
                     </ul>
-                    <p class="text-muted small">You can restart the draw later by clicking "Make Active" in the actions menu.</p>
+                    <p class="text-muted small">You can restart the draw later by clicking "Make Active" in the actions
+                        menu.</p>
                     <input type="hidden" id="pause_draw_id">
                 </div>
                 <div class="modal-footer d-flex justify-content-between">
@@ -368,6 +346,56 @@
         .btn-action-group {
             display: flex;
             gap: 5px;
+        }
+    </style>
+
+    <style>
+        #viewDrawModal .info-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #7b8190;
+            font-weight: 600;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        #viewDrawModal .info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        #viewDrawModal .card-title-pro {
+            font-size: 15px;
+            font-weight: 700;
+            color: #2c323f;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f0f0f5;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        #viewDrawModal .card-title-pro i {
+            margin-right: 8px;
+            color: #5066e1;
+        }
+
+        #viewDrawModal .pro-card {
+            border-radius: 12px;
+            border: 1px solid #e9edf4;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            background-color: #ffffff;
+        }
+
+        #viewDrawModal .fs-13 {
+            font-size: 13px !important;
+        }
+
+        #viewDrawModal .fs-12 {
+            font-size: 12px !important;
         }
     </style>
 @endpush
@@ -456,7 +484,7 @@
                         $('#view_start_date').text(new Date(d.start_date).toLocaleString());
                         $('#view_end_date').text(new Date(d.end_date).toLocaleString());
                         $('#view_countdown_ends').text(new Date(d.countdown_ends_at)
-                        .toLocaleString());
+                            .toLocaleString());
                         $('#view_claim_deadline').text(new Date(d.claim_deadline).toLocaleString());
                         $('#view_total_pool').text('$' + parseFloat(d.total_pool).toFixed(2));
                         $('#view_commission').text('$' + parseFloat(d.admin_commission).toFixed(2));
@@ -464,6 +492,7 @@
                         $('#view_participants').text(d.total_participants);
                         $('#view_expected_winners').text(d.expected_winners);
                         $('#view_recipients').text(d.total_recipients || 'Pending');
+                        $('#view_odds').text('1: ' + d.settings.odds_ratio);
                         $('#viewDrawModal').modal('show');
                     }
                 });
@@ -486,7 +515,9 @@
                 $.ajax({
                     url: "{{ url('admin/weekly-draws') }}/" + id + "/toggle-pause",
                     type: 'POST',
-                    data: { pause: isPausing },
+                    data: {
+                        pause: isPausing
+                    },
                     success: function(res) {
                         if (res.success) {
                             toastr.success(res.message);

@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Web\Backend\Donation;
 
 use App\Http\Controllers\Controller;
-use App\Services\WeeklyDrawService;
+use App\Models\DrawAutomateSetting;
 use App\Models\WeeklyDraw;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Yajra\DataTables\Facades\DataTables;
+use App\Services\WeeklyDrawService;
 use Carbon\Carbon;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class WeeklyDrawController extends Controller
 {
@@ -168,16 +170,17 @@ class WeeklyDrawController extends Controller
     {
         try {
             $draw = WeeklyDraw::withTrashed()->findOrFail($id);
-            $expectedWinners = $draw->total_participants > 0 ? (int) ceil($draw->total_participants / 400) : 0;
-
+            $settings = DrawAutomateSetting::first();
+            $expectedWinners = $draw->total_participants > 0 ? (int) ceil($draw->total_participants / $settings->odds_ratio) : 0;
             return response()->json([
                 'success' => true,
                 'data' => array_merge($draw->toArray(), [
                     'expected_winners' => $expectedWinners,
                     'distribution_pool' => $draw->total_pool - $draw->admin_commission,
+                    'settings' => $settings
                 ])
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Draw not found'
