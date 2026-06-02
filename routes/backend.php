@@ -1,43 +1,44 @@
 <?php
 
 use App\Http\Controllers\Web\Backend\Chat\ChatWebController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Web\Backend\ReviewController;
+use App\Http\Controllers\Web\Backend\CMS\ArchivePageController;
+use App\Http\Controllers\Web\Backend\CMS\ContactUsPageController;
+use App\Http\Controllers\Web\Backend\CMS\DrawSettingController;
+use App\Http\Controllers\Web\Backend\CMS\EligibilityPageController;
+use App\Http\Controllers\Web\Backend\CMS\EthicalPageController;
+use App\Http\Controllers\Web\Backend\CMS\FooterManageController;
+use App\Http\Controllers\Web\Backend\CMS\Home\DisclaimerController;
+use App\Http\Controllers\Web\Backend\CMS\Home\DistributionController;
+use App\Http\Controllers\Web\Backend\CMS\Home\FounderStatementController;
+use App\Http\Controllers\Web\Backend\CMS\Home\GalleryController;
+use App\Http\Controllers\Web\Backend\CMS\Home\HeroController;
+use App\Http\Controllers\Web\Backend\CMS\Home\NameSelectedController;
+use App\Http\Controllers\Web\Backend\CMS\Home\OurStoryController;
+use App\Http\Controllers\Web\Backend\CMS\Home\PercentageController;
+use App\Http\Controllers\Web\Backend\CMS\Home\QuoteController;
+use App\Http\Controllers\Web\Backend\CMS\Home\SliderController;
+use App\Http\Controllers\Web\Backend\CMS\Home\TestimonialController;
+use App\Http\Controllers\Web\Backend\CMS\Home\VideoController;
+use App\Http\Controllers\Web\Backend\CMS\Home\WeBelieveController;
+use App\Http\Controllers\Web\Backend\CMS\HowItWorks\HowItWorksPageController;
+use App\Http\Controllers\Web\Backend\CMS\HowItWorks\StructurePageController;
+use App\Http\Controllers\Web\Backend\CMS\OfficersCompPageController;
+use App\Http\Controllers\Web\Backend\CMS\OurStory\OurStoryPageController;
+use App\Http\Controllers\Web\Backend\CMS\PaymentPageController;
+use App\Http\Controllers\Web\Backend\CMS\TaxPolicyPageController;
+use App\Http\Controllers\Web\Backend\CMS\TopBarManageController;
 use App\Http\Controllers\Web\Backend\ContactUsController;
 use App\Http\Controllers\Web\Backend\DashboardController;
-use App\Http\Controllers\Web\Backend\SubscriberController;
-use App\Http\Controllers\Web\Backend\CMS\Home\HeroController;
-use App\Http\Controllers\Web\Backend\CMS\Home\QuoteController;
-use App\Http\Controllers\Web\Backend\CMS\ArchivePageController;
-use App\Http\Controllers\Web\Backend\CMS\DrawSettingController;
-use App\Http\Controllers\Web\Backend\CMS\EthicalPageController;
-use App\Http\Controllers\Web\Backend\CMS\Home\SliderController;
-use App\Http\Controllers\Web\Backend\CMS\PaymentPageController;
-use App\Http\Controllers\Web\Backend\CMS\FooterManageController;
-use App\Http\Controllers\Web\Backend\CMS\Home\GalleryController;
-use App\Http\Controllers\Web\Backend\CMS\TopBarManageController;
-use App\Http\Controllers\Web\Backend\Settings\ProfileController;
-use App\Http\Controllers\Web\Backend\Settings\SettingController;
-use App\Http\Controllers\Web\Backend\CMS\ContactUsPageController;
-use App\Http\Controllers\Web\Backend\CMS\Home\OurStoryController;
-use App\Http\Controllers\Web\Backend\CMS\TaxPolicyPageController;
 use App\Http\Controllers\Web\Backend\Donation\DonationController;
-use App\Http\Controllers\Web\Backend\CMS\Home\WeBelieveController;
-use App\Http\Controllers\Web\Backend\CMS\EligibilityPageController;
-use App\Http\Controllers\Web\Backend\CMS\Home\DisclaimerController;
-use App\Http\Controllers\Web\Backend\CMS\Home\PercentageController;
 use App\Http\Controllers\Web\Backend\Donation\DrawWinnerController;
 use App\Http\Controllers\Web\Backend\Donation\WeeklyDrawController;
-use App\Http\Controllers\Web\Backend\CMS\Home\TestimonialController;
-use App\Http\Controllers\Web\Backend\CMS\OfficersCompPageController;
-use App\Http\Controllers\Web\Backend\CMS\Home\DistributionController;
-use App\Http\Controllers\Web\Backend\CMS\Home\NameSelectedController;
-use App\Http\Controllers\Web\Backend\CMS\Home\FounderStatementController;
-use App\Http\Controllers\Web\Backend\CMS\Home\VideoController;
-use App\Http\Controllers\Web\Backend\CMS\OurStory\OurStoryPageController;
-use App\Http\Controllers\Web\Backend\CMS\HowItWorks\StructurePageController;
-use App\Http\Controllers\Web\Backend\CMS\HowItWorks\HowItWorksPageController;
 use App\Http\Controllers\Web\Backend\Donation\WinnerVerificationController;
+use App\Http\Controllers\Web\Backend\ReviewController;
+use App\Http\Controllers\Web\Backend\Settings\ProfileController;
+use App\Http\Controllers\Web\Backend\Settings\SettingController;
+use App\Http\Controllers\Web\Backend\Settings\StripeSettingsController;
+use App\Http\Controllers\Web\Backend\SubscriberController;
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'admin'])->group(function () {
 
@@ -277,6 +278,26 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/seen/all/{receiver_id}', [ChatWebController::class, 'seenAll'])->name('seen.all');
         Route::get('/seen/single/{chat_id}', [ChatWebController::class, 'seenSingle'])->name('seen.single');
     });
+
+    // ------------------------------------------------------------------
+    // General Application Settings
+    // Manages global application configuration such as Stripe keys
+    // and other system-level settings.
+    // ------------------------------------------------------------------
+    Route::controller(SettingController::class)->group(function () {
+        Route::get('setting/general', 'index')->name('setting.general.index');
+        Route::patch('setting/general', 'update')->name('setting.general.update');
+    });
+
+
+    // ------------------------------------------------------------------
+    // Stirpe settings
+    // ------------------------------------------------------------------
+    Route::group(['middleware' => 'admin'], function () {
+        Route::get('setting/stripe', [StripeSettingsController::class, 'index'])->name('setting.stripe.index');
+        Route::patch('setting/stripe', [StripeSettingsController::class, 'update'])->name('setting.stripe.update');
+        Route::patch('setting/stripe/percentage', [StripeSettingsController::class, 'updatePercentage'])->name('stripe.update-percentage');
+    });
 });
 
 
@@ -290,15 +311,4 @@ Route::controller(ProfileController::class)->group(function () {
     Route::put('setting/profile/update', 'UpdateProfile')->name('setting.profile.update');
     Route::put('setting/profile/update/Password', 'UpdatePassword')->name('setting.profile.update.Password');
     Route::post('setting/profile/update/Picture', 'UpdateProfilePicture')->name('update.profile.picture');
-});
-
-
-// ------------------------------------------------------------------
-// General Application Settings
-// Manages global application configuration such as Stripe keys
-// and other system-level settings.
-// ------------------------------------------------------------------
-Route::controller(SettingController::class)->group(function () {
-    Route::get('setting/general', 'index')->name('setting.general.index');
-    Route::patch('setting/general', 'update')->name('setting.general.update');
 });

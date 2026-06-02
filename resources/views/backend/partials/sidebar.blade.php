@@ -232,6 +232,8 @@
                         </li>
                         <li><a href="{{ route('setting.profile.index') }}" class="slide-item">Profile Settings</a>
                         </li>
+                        <li><a href="{{ route('setting.stripe.index') }}" class="slide-item">Stripe Settings</a>
+                        </li>
                     </ul>
                 </li>
             </ul>

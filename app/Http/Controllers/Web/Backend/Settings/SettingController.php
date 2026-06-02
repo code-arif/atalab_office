@@ -3,21 +3,20 @@
 namespace App\Http\Controllers\Web\Backend\Settings;
 
 
-use Exception;
 use App\Helper\Helper;
-use App\Models\Setting;
-use Illuminate\View\View;
-use Illuminate\Http\Request;
-
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
+use Exception;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
+use Illuminate\View\View;
 
 class SettingController extends Controller
 {
     /**
      * Display the system settings page.
-     *
-     * @return View
      */
     public function index(): View
     {
@@ -27,9 +26,6 @@ class SettingController extends Controller
 
     /**
      * Update the system settings.
-     *
-     * @param Request $request
-     * @return RedirectResponse
      */
     public function update(Request $request): RedirectResponse
     {
@@ -73,6 +69,42 @@ class SettingController extends Controller
             return back()->with('t-success', 'Updated successfully');
         } catch (Exception $e) {
             return back()->with('t-error', 'Failed to update' . $e->getMessage());
+        }
+    }
+
+    public function updateAdminPercentage(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'admin_percentage'    => 'nullable|string|regex:/^\S+$/',
+        ]);
+
+        try {
+            $envPath = base_path('.env');
+            $envContent = File::exists($envPath) ? File::get($envPath) : '';
+
+            $keys = [
+                'CAMP_EXTRA_PRICE'    => $request->admin_percentage,
+            ];
+
+            foreach ($keys as $key => $value) {
+                $value = trim($value); // remove extra spaces
+                if (preg_match("/^{$key}=.*$/m", $envContent)) {
+                    $envContent = preg_replace("/^{$key}=.*$/m", "{$key}={$value}", $envContent);
+                } else {
+                    $envContent .= "\n{$key}={$value}";
+                }
+            }
+
+            File::put($envPath, $envContent);
+
+            // Clear caches
+            Artisan::call('config:clear');
+            Artisan::call('cache:clear');
+            Artisan::call('route:clear');
+
+            return back()->with('t-success', 'Updated Admin & Seller Profit');
+        } catch (Exception $e) {
+            return back()->with('t-error', 'Failed to update: ' . $e->getMessage());
         }
     }
 }
