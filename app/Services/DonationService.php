@@ -2,19 +2,20 @@
 
 namespace App\Services;
 
-use Exception;
-use Stripe\Stripe;
-use App\Models\User;
-use App\Models\Donation;
-use App\Models\WeeklyDraw;
-use Stripe\Checkout\Session;
 use App\Events\DonationCreated;
+use App\Mail\DonationConfirmation;
+use App\Models\Donation;
+use App\Models\StripeSetting;
+use App\Models\User;
 use App\Models\UserWeekParticipation;
+use App\Models\WeeklyDraw;
+use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\DonationConfirmation;
+use Stripe\Checkout\Session;
+use Stripe\Stripe;
 
 class DonationService
 {
@@ -78,7 +79,7 @@ class DonationService
                 $user = $user->fresh();
 
                 // Dynamic amount from DB
-                $setting = \App\Models\StripeSetting::query()->first();
+                $setting = StripeSetting::query()->first();
                 $paymentAmount = $setting ? floatval($setting->donation_amount) : 25.00;
 
                 if ($paymentAmount <= 0) {
