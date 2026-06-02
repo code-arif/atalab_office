@@ -235,15 +235,16 @@
 
                             // Draw Status Badge
                             let drawStatusBadge = '';
-                            if (draw.status === 'active') {
-                                drawStatusBadge = '<span class="badge bg-success">Active</span>';
+                            if (draw.is_paused) {
+                                drawStatusBadge = '<span class="badge bg-danger-transparent text-danger d-inline-flex align-items-center px-2 py-1"><i class="fe fe-pause-circle me-1"></i>Paused</span>';
+                            } else if (draw.status === 'active') {
+                                drawStatusBadge = '<span class="badge bg-success p-2">Active</span>';
                             } else if (draw.status === 'claiming') {
-                                drawStatusBadge = '<span class="badge bg-warning">Claiming</span>';
+                                drawStatusBadge = '<span class="badge bg-warning p-2">Claiming</span>';
                             } else if (draw.status === 'completed') {
-                                drawStatusBadge =
-                                    '<span class="badge bg-secondary">Completed</span>';
+                                drawStatusBadge = '<span class="badge bg-secondary p-2">Completed</span>';
                             } else {
-                                drawStatusBadge = '<span class="badge bg-info">' +
+                                drawStatusBadge = '<span class="badge bg-info p-2">' +
                                     (draw.status || 'Unknown') + '</span>';
                             }
                             $('#draw_status').html(drawStatusBadge);
@@ -258,7 +259,7 @@
                                 new Date(draw.claim_deadline).toLocaleString() : 'N/A');
 
                             $('#total_pool').text('$' + parseFloat(draw.total_pool || 0).toFixed(
-                            2));
+                                2));
                             $('#total_participants').text((draw.total_participants || 0)
                                 .toLocaleString());
                             $('#eligible_participants').text((draw.eligible_participants || 0)
