@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Web\Backend\CMS;
 
-use Exception;
-use App\Models\CMS;
-use Illuminate\Http\Request;
-use App\Http\Requests\CmsRequest;
+use App\Helper\Helper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CmsRequest;
+use App\Models\CMS;
+use Exception;
+use Illuminate\Http\Request;
 
 class ContactUsPageController extends Controller
 {
@@ -21,7 +22,7 @@ class ContactUsPageController extends Controller
         return view("backend.layouts.cms.contact_us.index", compact("data"));
     }
 
-        /**
+    /**
      * update hero section
      **/
     public function update(CmsRequest $request)
@@ -59,35 +60,33 @@ class ContactUsPageController extends Controller
             return back()->with('t-error', 'Failed to update: ' . $e->getMessage());
         }
     }
-}
-
 
     /**
      * update contact us page hero section
      **/
-    public function update(CmsRequest $request)
-    {
-        try {
-            $validated_data = $request->validated();
+    // public function update(CmsRequest $request)
+    // {
+    //     try {
+    //         $validated_data = $request->validated();
 
-            // get the existing record
-            CMS::where('page', 'contact-us')
-                ->where('section', 'hero')
-                ->where('name', 'item')
-                ->first();
+    //         // get the existing record
+    //         CMS::where('page', 'contact-us')
+    //             ->where('section', 'hero')
+    //             ->where('name', 'item')
+    //             ->first();
 
-            CMS::updateOrCreate(
-                [
-                    'page' => 'contact-us',
-                    'section' => 'hero',
-                    'name' => 'item'
-                ],
-                $validated_data
-            );
+    //         CMS::updateOrCreate(
+    //             [
+    //                 'page' => 'contact-us',
+    //                 'section' => 'hero',
+    //                 'name' => 'item'
+    //             ],
+    //             $validated_data
+    //         );
 
-            return back()->with('t-success', 'Content updated successfully!');
-        } catch (Exception $e) {
-            return back()->with('t-error', 'Failed to update: ' . $e->getMessage());
-        }
-    }
+    //         return back()->with('t-success', 'Content updated successfully!');
+    //     } catch (Exception $e) {
+    //         return back()->with('t-error', 'Failed to update: ' . $e->getMessage());
+    //     }
+    // }
 }

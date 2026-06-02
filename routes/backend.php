@@ -40,168 +40,195 @@ use App\Http\Controllers\Web\Backend\CMS\HowItWorks\HowItWorksPageController;
 use App\Http\Controllers\Web\Backend\Donation\WinnerVerificationController;
 
 Route::middleware(['auth', 'admin'])->group(function () {
-    // Dashboard API endpoints for real-time updates
+
+    // ------------------------------------------------------------------
+    // Dashboard
+    // Provides the main dashboard view and real-time data endpoints.
+    // ------------------------------------------------------------------
     Route::prefix('dashboard')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/live-stats', [DashboardController::class, 'liveStatsApi']);
         Route::get('/recent-donations', [DashboardController::class, 'recentDonationsApi']);
     });
 
-    // newsletter subscribers
+    // ------------------------------------------------------------------
+    // Newsletter Subscribers
+    // Displays the list of all newsletter subscribers.
+    // ------------------------------------------------------------------
     Route::get('/subscribers', [SubscriberController::class, 'index'])
         ->name('subscribers.index');
 
-    // rating and reviews
+    // ------------------------------------------------------------------
+    // Reviews & Ratings
+    // Manages user-submitted ratings and reviews.
+    // ------------------------------------------------------------------
     Route::post('/reviews/store', [ReviewController::class, 'store'])->name('reviews.store');
     Route::get('/reviews/edit/{id}', [ReviewController::class, 'edit'])->name('reviews.edit');
-    Route::get('/reviews/show/{id}', [ReviewController::class, 'show'])->name('reviews.show'); // NEW
+    Route::get('/reviews/show/{id}', [ReviewController::class, 'show'])->name('reviews.show');
     Route::post('/reviews/update/{id}', [ReviewController::class, 'update'])->name('reviews.update');
     Route::delete('/reviews/delete/{id}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 
 
-    // cms management
+    // ------------------------------------------------------------------
+    // CMS Management
+    // Controls all Content Management System (CMS) sections, including
+    // homepage sections, static pages, topbar, and footer.
+    // ------------------------------------------------------------------
     Route::prefix('cms')->name('cms.')->group(function () {
-        // home - hero section
+
+        // Home Page — Hero Section
         Route::get('/home/hero', [HeroController::class, 'index'])->name('home.hero.section');
         Route::post('/home/hero/update', [HeroController::class, 'update'])->name('home.hero.section.update');
 
-        // home page hero section - slider Management Routes
+        // Home Page — Slider Management
         Route::get('/slider', [SliderController::class, 'index'])->name('slider.index');
         Route::post('/slider/store', [SliderController::class, 'store'])->name('slider.store');
         Route::post('/slider/{id}/status', [SliderController::class, 'updateStatus'])->name('slider.status');
         Route::delete('/slider/{id}', [SliderController::class, 'destroy'])->name('slider.destroy');
         Route::post('/slider/update-order', [SliderController::class, 'updateOrder'])->name('slider.updateOrder');
 
-        // home distribution section
+        // Home Page — Distribution Section
         Route::get('/home/disctibution', [DistributionController::class, 'index'])->name('home.distribution.section');
         Route::post('/home/disctibution/update', [DistributionController::class, 'update'])->name('home.distribution.section.update');
         Route::post('/home/disctibution/item/store', [DistributionController::class, 'itemStore'])->name('home.distribution.item.store');
         Route::post('/home/disctibution/item/update/{id}', [DistributionController::class, 'itemUpdate'])->name('home.distribution.item.update');
         Route::delete('/home/disctibution/item/destroy/{id}', [DistributionController::class, 'itemDelete'])->name('home.distribution.item.delete');
 
-        // home sample video
+        // Home Page — Sample Video Section
         Route::get('/home/video', [VideoController::class, 'index'])->name('home.video.section');
         Route::post('/home/video/update', [VideoController::class, 'update'])->name('home.video.section.update');
 
-        // home page percentage section
+        // Home Page — Percentage Section
         Route::get('/home/percentage', [PercentageController::class, 'index'])->name('home.percentage.section');
         Route::post('/home/percentage/update', [PercentageController::class, 'update'])->name('home.percentage.section.update');
 
-        // home page selected name
+        // Home Page — Selected Name Section
         Route::get('/home/selected-name', [NameSelectedController::class, 'index'])->name('home.selected_name.section');
         Route::post('/home/selected-name/update', [NameSelectedController::class, 'update'])->name('home.selected_name.section.update');
 
-        // home page qutoe name
+        // Home Page — Quote Section
         Route::get('/home/quote', [QuoteController::class, 'index'])->name('home.quote.section');
         Route::post('/home/quote/update', [QuoteController::class, 'update'])->name('home.quote.section.update');
 
-        // home page our story section
+        // Home Page — Our Story Section
         Route::get('/home/our-story', [OurStoryController::class, 'index'])->name('home.our_story.section');
         Route::post('/home/our-story/update', [OurStoryController::class, 'update'])->name('home.our_story.section.update');
 
-        // home page testimonial section
+        // Home Page — Testimonial Section
         Route::get('/home/testimonial', [TestimonialController::class, 'index'])->name('home.testimonial.section');
         Route::post('/home/testimonial/update', [TestimonialController::class, 'update'])->name('home.testimonial.section.update');
 
-        // home page gallery section
+        // Home Page — Gallery Section
         Route::get('/home/gallery', [GalleryController::class, 'index'])->name('home.gallery.section');
         Route::post('/home/gallery/update', [GalleryController::class, 'update'])->name('home.gallery.section.update');
 
-        // home page disclaimer section
+        // Home Page — Disclaimer Section
         Route::get('/home/disclaimer', [DisclaimerController::class, 'index'])->name('home.disclaimer.section');
         Route::post('/home/disclaimer/update', [DisclaimerController::class, 'update'])->name('home.disclaimer.section.update');
 
-        // home page we believe section
+        // Home Page — We Believe Section
         Route::get('/home/we-believe', [WeBelieveController::class, 'index'])->name('home.we_believe.section');
         Route::post('/home/we-believe/update', [WeBelieveController::class, 'update'])->name('home.we_believe.section.update');
 
-        // home page founder statement section
+        // Home Page — Founder Statement Section
         Route::get('/home/founder-statement', [FounderStatementController::class, 'index'])->name('home.founder_statement.section');
         Route::post('/home/founder-statement/update', [FounderStatementController::class, 'update'])->name('home.founder_statement.section.update');
 
-        // our story page hero section
+        // Our Story Page — Hero Section
         Route::get('/our-story/hero', [OurStoryPageController::class, 'index'])->name('our_story.hero.section');
         Route::post('/our-story/hero/update', [OurStoryPageController::class, 'update'])->name('our_story.hero.section.update');
 
-        // how it works page hero section
+        // How It Works Page — Hero Section
         Route::get('/how-it-works/hero', [HowItWorksPageController::class, 'index'])->name('how_it_works.hero.section');
         Route::post('/how-it-works/hero/update', [HowItWorksPageController::class, 'update'])->name('how_it_works.hero.section.update');
 
-        // structure page hero section
+        // Structure Page — Hero Section
         Route::get('/structure/hero', [StructurePageController::class, 'index'])->name('structure.hero.section');
         Route::post('/structure/hero/update', [StructurePageController::class, 'update'])->name('structure.hero.section.update');
 
-        // eligibility page hero section
+        // Eligibility Page — Hero Section
         Route::get('/eligibility/hero', [EligibilityPageController::class, 'index'])->name('eligibility.hero.section');
         Route::post('/eligibility/hero/update', [EligibilityPageController::class, 'update'])->name('eligibility.hero.section.update');
 
-        // payment policy page hero section
+        // Payment Policy Page — Hero Section
         Route::get('/payment-policy/hero', [PaymentPageController::class, 'index'])->name('payment_policy.hero.section');
         Route::post('/payment-policy/hero/update', [PaymentPageController::class, 'update'])->name('payment_policy.hero.section.update');
 
-        // tax policy page hero section
+        // Tax Policy Page — Hero Section
         Route::get('/tax-policy/hero', [TaxPolicyPageController::class, 'index'])->name('tax_policy.hero.section');
         Route::post('/tax-policy/hero/update', [TaxPolicyPageController::class, 'update'])->name('tax_policy.hero.section.update');
 
-        // ethical page hero section
+        // Ethical Boundaries Page — Hero Section
         Route::get('/ethical/hero', [EthicalPageController::class, 'index'])->name('ethical_boundaries.hero.section');
         Route::post('/ethical/hero/update', [EthicalPageController::class, 'update'])->name('ethical_boundaries.hero.section.update');
 
-        // officer compensation page hero section
+        // Officer Compensation Page — Hero Section
         Route::get('/officer-compensation/hero', [OfficersCompPageController::class, 'index'])->name('officer_compensation.hero.section');
         Route::post('/officer-compensation/hero/update', [OfficersCompPageController::class, 'update'])->name('officer_compensation.hero.section.update');
 
-        // archive page hero section
+        // Archive Page — Hero Section
         Route::get('/archive/hero', [ArchivePageController::class, 'index'])->name('archive.hero.section');
         Route::post('/archive/hero/update', [ArchivePageController::class, 'update'])->name('archive.hero.section.update');
 
-        // contact us page hero section
+        // Contact Us Page — Hero Section
         Route::get('/contact-us/hero', [ContactUsPageController::class, 'index'])->name('contact_us.hero.section');
         Route::post('/contact-us/hero/update', [ContactUsPageController::class, 'update'])->name('contact_us.hero.section.update');
 
-        // topbar section
+        // Global — Top Bar Section
         Route::get('/topbar', [TopBarManageController::class, 'index'])->name('topbar.section');
         Route::post('/topbar/update', [TopBarManageController::class, 'update'])->name('topbar.section.update');
 
-        // footer section
+        // Global — Footer Section
         Route::get('/footer', [FooterManageController::class, 'index'])->name('footer.section');
         Route::post('/footer/update', [FooterManageController::class, 'update'])->name('footer.section.update');
     });
 
-    // contact us
+    // ------------------------------------------------------------------
+    // Contact Us Submissions
+    // Manages inbound contact form messages from website visitors.
+    // ------------------------------------------------------------------
     Route::get('/person/contact-me', [ContactUsController::class, 'index'])->name('contact.me');
     Route::get('/person/contact-me/{id}', [ContactUsController::class, 'show'])->name('contact.me.show');
     Route::delete('/person/contact-me/delete/{id}', [ContactUsController::class, 'destroy'])->name('contact.me.delete');
 
 
+    // ------------------------------------------------------------------
     // Weekly Draw Management
+    // Handles creation, viewing, soft-deletion, restoration, and
+    // permanent deletion of weekly draw records.
+    // ------------------------------------------------------------------
     Route::prefix('weekly-draws')->name('weekly-draws.')->group(function () {
-        Route::get('/', [WeeklyDrawController::class, 'index'])->name('index'); // working
-        Route::get('/{id}', [WeeklyDrawController::class, 'show'])->name('show'); // working
-        Route::get('/deleted/trashed', [WeeklyDrawController::class, 'trashed'])->name('trashed'); // working
-        Route::delete('/{id}', [WeeklyDrawController::class, 'destroy'])->name('destroy'); // working
-
-        Route::post('/restore/{id}', [WeeklyDrawController::class, 'restore'])->name('restore'); // working
-        Route::delete('/force-delete/{id}', [WeeklyDrawController::class, 'forceDelete'])->name('force-delete'); // working
+        Route::get('/', [WeeklyDrawController::class, 'index'])->name('index');
+        Route::get('/{id}', [WeeklyDrawController::class, 'show'])->name('show');
+        Route::get('/deleted/trashed', [WeeklyDrawController::class, 'trashed'])->name('trashed');
+        Route::delete('/{id}', [WeeklyDrawController::class, 'destroy'])->name('destroy');
+        Route::post('/restore/{id}', [WeeklyDrawController::class, 'restore'])->name('restore');
+        Route::delete('/force-delete/{id}', [WeeklyDrawController::class, 'forceDelete'])->name('force-delete');
     });
 
 
-    // winner management [draw-winners]
+    // ------------------------------------------------------------------
+    // Draw Winner Management
+    // Manages draw winners including claim processing, payout handling,
+    // multi-step identity verification, and data export.
+    // ------------------------------------------------------------------
     Route::prefix('draw-winners')->name('draw-winners.')->group(function () {
+
+        // Listing & Detail Views
         Route::get('/', [DrawWinnerController::class, 'index'])->name('index');
         Route::get('/show/{id}', [DrawWinnerController::class, 'show'])->name('show');
-        
+
         // Claim Management
-        Route::post('/mark-claimed/{id}', [DrawWinnerController::class, 'markClaimed'])->name('mark-claimed'); // working
+        Route::post('/mark-claimed/{id}', [DrawWinnerController::class, 'markClaimed'])->name('mark-claimed');
 
         // Payout Management
-        Route::post('/process-payout/{id}', [DrawWinnerController::class, 'processPayout'])->name('process-payout'); // working
-        Route::post('/update-payout-status/{id}', [DrawWinnerController::class, 'updatePayoutStatus'])->name('update-payout-status'); // working
+        Route::post('/process-payout/{id}', [DrawWinnerController::class, 'processPayout'])->name('process-payout');
+        Route::post('/update-payout-status/{id}', [DrawWinnerController::class, 'updatePayoutStatus'])->name('update-payout-status');
 
-        // Export
-        Route::get('/export', [DrawWinnerController::class, 'export'])->name('export'); // working
+        // Data Export
+        Route::get('/export', [DrawWinnerController::class, 'export'])->name('export');
 
-        // Verification Routes - Using winner ID
+        // Winner Verification — Multi-step verification workflow
         Route::get('/{winner}/verify', [WinnerVerificationController::class, 'showVerificationPage'])->name('verify');
         Route::post('/{winner}/initiate-verification', [WinnerVerificationController::class, 'initiateVerification'])->name('initiate-verification');
         Route::post('/{winner}/verify-identity', [WinnerVerificationController::class, 'verifyIdentity'])->name('verify-identity');
@@ -212,32 +239,40 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/{winner}/verification-status', [WinnerVerificationController::class, 'getVerificationStatus'])->name('verification-status');
     });
 
-    // donor manage
+    // ------------------------------------------------------------------
+    // Donor Management
+    // Provides admin access to view and export donor records.
+    // ------------------------------------------------------------------
     Route::prefix('donors')->name('donors.')->group(function () {
-        Route::get('/', [DonationController::class, 'index'])->name('index'); // working
-        Route::get('/show/{id}', [DonationController::class, 'show'])->name('show'); // working
-        Route::get('/export', [DonationController::class, 'export'])->name('export'); // working
+        Route::get('/', [DonationController::class, 'index'])->name('index');
+        Route::get('/show/{id}', [DonationController::class, 'show'])->name('show');
+        Route::get('/export', [DonationController::class, 'export'])->name('export');
     });
 
 
-
-    // ============================================
-    // WEB CHAT ROUTES (For Admin Dashboard)
-    // ============================================
+    // ------------------------------------------------------------------
+    // Admin Chat (Web Interface)
+    // Real-time messaging routes for the admin dashboard, including
+    // conversation management, message actions, and typing indicators.
+    // ------------------------------------------------------------------
     Route::prefix('chat')->name('chat.')->group(function () {
+
+        // Chat Overview & Search
         Route::get('/', [ChatWebController::class, 'index'])->name('index');
         Route::get('/list', [ChatWebController::class, 'list'])->name('list');
         Route::get('/search', [ChatWebController::class, 'search'])->name('search');
+
+        // Conversation Actions
         Route::get('/conversation/{receiver_id}', [ChatWebController::class, 'conversation'])->name('conversation');
         Route::post('/send/{receiver_id}', [ChatWebController::class, 'send'])->name('send');
         Route::get('/room/{receiver_id}', [ChatWebController::class, 'getRoom'])->name('room');
 
-        // Admin specific routes
+        // Message Management (Admin Only)
         Route::put('/message/{message_id}/edit', [ChatWebController::class, 'editMessage'])->name('message.edit');
         Route::delete('/message/{message_id}', [ChatWebController::class, 'deleteMessage'])->name('message.delete');
         Route::delete('/conversation/{receiver_id}', [ChatWebController::class, 'deleteChat'])->name('conversation.delete');
 
-        // Status routes
+        // Presence & Read Status
         Route::post('/typing', [ChatWebController::class, 'typing'])->name('typing');
         Route::get('/seen/all/{receiver_id}', [ChatWebController::class, 'seenAll'])->name('seen.all');
         Route::get('/seen/single/{chat_id}', [ChatWebController::class, 'seenSingle'])->name('seen.single');
@@ -245,8 +280,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
 });
 
 
-
-//! Route for Profile Settings
+// ------------------------------------------------------------------
+// Profile Settings
+// Allows authenticated admins to manage their profile details,
+// password, and profile picture.
+// ------------------------------------------------------------------
 Route::controller(ProfileController::class)->group(function () {
     Route::get('setting/profile', 'index')->name('setting.profile.index');
     Route::put('setting/profile/update', 'UpdateProfile')->name('setting.profile.update');
@@ -255,8 +293,11 @@ Route::controller(ProfileController::class)->group(function () {
 });
 
 
-
-//! Route for Stripe Settings
+// ------------------------------------------------------------------
+// General Application Settings
+// Manages global application configuration such as Stripe keys
+// and other system-level settings.
+// ------------------------------------------------------------------
 Route::controller(SettingController::class)->group(function () {
     Route::get('setting/general', 'index')->name('setting.general.index');
     Route::patch('setting/general', 'update')->name('setting.general.update');
