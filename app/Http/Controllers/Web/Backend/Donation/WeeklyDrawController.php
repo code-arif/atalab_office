@@ -32,6 +32,12 @@ class WeeklyDrawController extends Controller
                 ->addColumn('week_number', fn($row) => 'Week #' . $row->week_number)
                 ->addColumn('year', fn($row) => 'Year - ' . $row->year)
                 ->addColumn('status', function ($row) {
+                    if ($row->is_paused) {
+                        return '<span class="badge bg-danger-transparent text-danger d-inline-flex align-items-center px-2 py-1">
+                                    <i class="fe fe-pause-circle me-1"></i>
+                                    Paused
+                                </span>';
+                    }
                     $badges = [
                         'active' => '<span class="badge badge-status status-active p-2 py-3">Active</span>',
                         'claiming' => '<span class="badge badge-status status-claiming p-2 py-3">Claiming</span>',
@@ -65,6 +71,19 @@ class WeeklyDrawController extends Controller
                     $actions .= '<button type="button" class="btn btn-info btn-sm viewDraw" data-id="' . $row->id . '" title="View Details">
                         <i class="fe fe-eye"></i>
                     </button>';
+
+                    // Pause/Active Button for active draws
+                    if ($row->status === 'active') {
+                        if ($row->is_paused) {
+                            $actions .= '<button type="button" onclick="togglePauseDraw(' . $row->id . ', false)" class="btn btn-success btn-sm" title="Make Active">
+                                <i class="fe fe-play"></i>
+                            </button>';
+                        } else {
+                            $actions .= '<button type="button" onclick="confirmPauseDraw(' . $row->id . ')" class="btn btn-warning btn-sm" title="Pause Draw">
+                                <i class="fe fe-pause"></i>
+                            </button>';
+                        }
+                    }
 
                     // Soft Delete Button
                     $actions .= '<button type="button" onclick="softDeleteDraw(' . $row->id . ')" class="btn btn-danger btn-sm" title="Delete Draw">
@@ -236,6 +255,36 @@ class WeeklyDrawController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    /**
+     * Terminate / Pause a Draw
+     */
+    public function togglePause(int $id, Request $request): JsonResponse
+    {
+        try {
+            $draw = WeeklyDraw::findOrFail($id);
+            $action = $request->boolean('pause'); // true for pause, false for active
+
+            if ($draw->status !== 'active') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only active draws can be paused or resumed'
+                ], 400);
+            }
+
+            $draw->is_paused = $action;
+            $draw->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => $action ? 'Draw paused successfully. Donations stopped.' : 'Draw is now active.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
             ], 500);
         }
     }

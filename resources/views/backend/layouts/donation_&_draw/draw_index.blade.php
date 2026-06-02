@@ -269,6 +269,33 @@
         </div>
     </div>
 
+    <!-- Pause Draw Modal -->
+    <div class="modal fade" id="pauseDrawModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="fe fe-alert-triangle me-2"></i>Pause Active Draw</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3 fw-bold text-danger">Are you sure you want to pause this draw?</p>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item"><i class="fe fe-info text-info me-2"></i> Donors will no longer be able to donate to this draw.</li>
+                        <li class="list-group-item"><i class="fe fe-info text-info me-2"></i> The donation button will become inactive on the public page.</li>
+                        <li class="list-group-item"><i class="fe fe-info text-info me-2"></i> If paused, you must resume it before the Draw End Date to allow proper finalization.</li>
+                        <li class="list-group-item"><i class="fe fe-info text-info me-2"></i> Current participants and pool size will be frozen until resumed.</li>
+                    </ul>
+                    <p class="text-muted small">You can restart the draw later by clicking "Make Active" in the actions menu.</p>
+                    <input type="hidden" id="pause_draw_id">
+                </div>
+                <div class="modal-footer d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" onclick="executePauseDraw()">Yes, Pause Draw</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('styles')
@@ -398,6 +425,38 @@
                     }
                 });
             });
+
+            // Pause Draw Handling
+            window.confirmPauseDraw = function(id) {
+                $('#pause_draw_id').val(id);
+                $('#pauseDrawModal').modal('show');
+            };
+
+            window.executePauseDraw = function() {
+                let id = $('#pause_draw_id').val();
+                togglePauseDraw(id, true);
+                $('#pauseDrawModal').modal('hide');
+            };
+
+            window.togglePauseDraw = function(id, isPausing) {
+                let actionText = isPausing ? 'pausing...' : 'activating...';
+                $.ajax({
+                    url: "{{ url('admin/weekly-draws') }}/" + id + "/toggle-pause",
+                    type: 'POST',
+                    data: { pause: isPausing },
+                    success: function(res) {
+                        if (res.success) {
+                            toastr.success(res.message);
+                            dTable.ajax.reload(null, false);
+                        } else {
+                            toastr.error(res.message);
+                        }
+                    },
+                    error: function(err) {
+                        toastr.error('An error occurred while toggling draw status.');
+                    }
+                });
+            };
 
             // Soft Delete
             window.softDeleteDraw = function(id) {

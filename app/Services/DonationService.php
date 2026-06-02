@@ -49,6 +49,7 @@ class DonationService
                 }
 
                 $currentDraw = WeeklyDraw::where('status', 'active')
+                    ->where('is_paused', false)
                     ->lockForUpdate()
                     ->first();
 
@@ -79,7 +80,7 @@ class DonationService
                 // Dynamic amount from DB
                 $setting = \App\Models\StripeSetting::query()->first();
                 $paymentAmount = $setting ? floatval($setting->donation_amount) : 25.00;
-                
+
                 if ($paymentAmount <= 0) {
                     $paymentAmount = 25.00; // fallback if missing
                 }
@@ -214,7 +215,7 @@ class DonationService
                 // Get setting
                 $setting = \App\Models\StripeSetting::query()->first();
                 $paymentAmount = $amount;
-                
+
                 // Calculate processing fee
                 $processingFee = 0.00;
                 if ($paymentMethodType === 'us_bank_account') {

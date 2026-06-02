@@ -23,7 +23,8 @@ class WeeklyDraw extends Model
         'total_recipients',
         'admin_commission',
         'winners_selected',
-        'year'
+        'year',
+        'is_paused'
     ];
 
     protected $casts = [
@@ -34,6 +35,7 @@ class WeeklyDraw extends Model
         'total_pool' => 'decimal:2',
         'admin_commission' => 'decimal:2',
         'winners_selected' => 'boolean',
+        'is_paused' => 'boolean',
     ];
 
     /**
@@ -60,7 +62,7 @@ class WeeklyDraw extends Model
 
     public function isActive(): bool
     {
-        return $this->status === 'active' && now()->lt($this->countdown_ends_at);
+        return $this->status === 'active' && !$this->is_paused && now()->lt($this->countdown_ends_at);
     }
 
     public function isClaiming(): bool

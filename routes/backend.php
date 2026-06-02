@@ -204,6 +204,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/{id}', [WeeklyDrawController::class, 'show'])->name('show');
         Route::get('/deleted/trashed', [WeeklyDrawController::class, 'trashed'])->name('trashed');
         Route::delete('/{id}', [WeeklyDrawController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/toggle-pause', [WeeklyDrawController::class, 'togglePause'])->name('toggle-pause');
         Route::post('/restore/{id}', [WeeklyDrawController::class, 'restore'])->name('restore');
         Route::delete('/force-delete/{id}', [WeeklyDrawController::class, 'forceDelete'])->name('force-delete');
     });
