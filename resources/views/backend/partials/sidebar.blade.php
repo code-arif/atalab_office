@@ -234,6 +234,8 @@
                         </li>
                         <li><a href="{{ route('setting.stripe.index') }}" class="slide-item">Stripe Settings</a>
                         </li>
+                        <li><a href="{{ route('setting.draw-automate.index') }}" class="slide-item">Draw Automation</a>
+                        </li>
                     </ul>
                 </li>
             </ul>

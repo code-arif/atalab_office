@@ -37,6 +37,7 @@ use App\Http\Controllers\Web\Backend\ReviewController;
 use App\Http\Controllers\Web\Backend\Settings\ProfileController;
 use App\Http\Controllers\Web\Backend\Settings\SettingController;
 use App\Http\Controllers\Web\Backend\Settings\StripeSettingsController;
+use App\Http\Controllers\Web\Backend\Settings\DrawAutomateSettingController;
 use App\Http\Controllers\Web\Backend\SubscriberController;
 use Illuminate\Support\Facades\Route;
 
@@ -291,12 +292,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 
     // ------------------------------------------------------------------
-    // Stirpe settings
+    // Stripe & Automation settings
     // ------------------------------------------------------------------
     Route::group(['middleware' => 'admin'], function () {
         Route::get('setting/stripe', [StripeSettingsController::class, 'index'])->name('setting.stripe.index');
         Route::patch('setting/stripe', [StripeSettingsController::class, 'update'])->name('setting.stripe.update');
         Route::patch('setting/stripe/percentage', [StripeSettingsController::class, 'updatePercentage'])->name('stripe.update-percentage');
+
+        Route::get('setting/draw-automate', [DrawAutomateSettingController::class, 'index'])->name('setting.draw-automate.index');
+        Route::post('setting/draw-automate', [DrawAutomateSettingController::class, 'update'])->name('setting.draw-automate.update');
     });
 });
 

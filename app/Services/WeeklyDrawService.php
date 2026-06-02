@@ -13,12 +13,22 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 
+use App\Models\DrawAutomateSetting;
+
 class WeeklyDrawService
 {
-    private const ADMIN_FEE_PERCENTAGE = 0.075; // 7.5%
-    private const ODDS_RATIO = 400; // 1 winner per 400 participants
-    private const MINIMUM_PARTICIPANTS = 100;
-    private const WINNER_EXCLUSION_MONTHS = 6;
+    /**
+     * Get the dynamic automation settings from the database.
+     */
+    protected function getSettings(): DrawAutomateSetting
+    {
+        return DrawAutomateSetting::firstOrCreate([], [
+            'admin_fee_percentage' => 10,
+            'odds_ratio' => 250,
+            'minimum_participants' => 100,
+            'winner_exclusion_months' => 12,
+        ]);
+    }
 
     /**
      * Get current active draw
@@ -47,10 +57,22 @@ class WeeklyDrawService
                 throw new Exception('Active draw already exists');
             }
 
+            $settings = $this->getSettings();
+
             $now = Carbon::now(config('app.timezone'));
-            $startDate = $now->copy()->startOfWeek(Carbon::MONDAY)->setTime(0, 0, 0);
-            $endDate = $startDate->copy()->endOfWeek(Carbon::SUNDAY)->setTime(17, 0, 0);
+
+            // Map string days ('Monday') to Carbon constants (e.g. Carbon::MONDAY)
+            $startDayConstant = constant('\Carbon\Carbon::' . strtoupper($settings->draw_start_day));
+            $endDayConstant = constant('\Carbon\Carbon::' . strtoupper($settings->draw_end_day));
+
+            $startTime = Carbon::parse($settings->draw_start_time);
+            $endTime = Carbon::parse($settings->draw_end_time);
+
+            $startDate = $now->copy()->startOfWeek($startDayConstant)->setTime($startTime->hour, $startTime->minute, 0);
+            $endDate = $startDate->copy()->endOfWeek($endDayConstant)->setTime($endTime->hour, $endTime->minute, 0);
             $countdownEndsAt = $endDate->copy();
+
+            // Add a buffer day for claims (e.g., +1 day at 5:00 AM)
             $claimDeadline = $endDate->copy()->addDay()->setTime(5, 0, 0);
 
             // Get ISO week number (1-52/53) - resets every year
@@ -143,26 +165,28 @@ class WeeklyDrawService
                 ->distinct('user_id')
                 ->count('user_id');
 
+            $settings = $this->getSettings();
+
             // Check minimum participants
-            if ($totalParticipants < self::MINIMUM_PARTICIPANTS) {
+            if ($totalParticipants < $settings->minimum_participants) {
                 // Log::warning('Insufficient participants', [
                 //     'week_id' => $weekId,
                 //     'week_number' => $draw->week_number,
                 //     'year' => $draw->year,
                 //     'participants' => $totalParticipants,
-                //     'minimum' => self::MINIMUM_PARTICIPANTS,
+                //     'minimum' => $settings->minimum_participants,
                 // ]);
 
                 throw new Exception(
-                    "Insufficient participants. Need " . self::MINIMUM_PARTICIPANTS . ", found {$totalParticipants}"
+                    "Insufficient participants. Need " . $settings->minimum_participants . ", found {$totalParticipants}"
                 );
             }
 
             // Calculate winners dynamically
-            $numberOfWinners = (int) ceil($totalParticipants / self::ODDS_RATIO);
+            $numberOfWinners = (int) ceil($totalParticipants / $settings->odds_ratio);
 
             // Calculate distribution
-            $adminCommission = $totalPool * self::ADMIN_FEE_PERCENTAGE;
+            $adminCommission = $totalPool * ($settings->admin_fee_percentage / 100);
             $distributionPool = $totalPool - $adminCommission;
             $amountPerWinner = $distributionPool / $numberOfWinners;
 
@@ -281,7 +305,8 @@ class WeeklyDrawService
     protected function getExcludedUserIds(): array
     {
         return Cache::remember('excluded_user_ids', now()->addMinutes(10), function () {
-            $sixMonthsAgo = Carbon::now()->subMonths(self::WINNER_EXCLUSION_MONTHS);
+            $settings = $this->getSettings();
+            $sixMonthsAgo = Carbon::now()->subMonths($settings->winner_exclusion_months);
 
             return WinnerExclusion::where('is_active', true)
                 ->where('exclusion_ends_at', '>', now())
@@ -296,8 +321,9 @@ class WeeklyDrawService
      */
     protected function createWinnerExclusion(DrawWinner $winner): void
     {
+        $settings = $this->getSettings();
         $wonAt = now();
-        $exclusionEndsAt = $wonAt->copy()->addMonths(self::WINNER_EXCLUSION_MONTHS);
+        $exclusionEndsAt = $wonAt->copy()->addMonths($settings->winner_exclusion_months);
 
         WinnerExclusion::create([
             'user_id' => $winner->user_id,
@@ -349,10 +375,11 @@ class WeeklyDrawService
      */
     public function getDrawStats(int $weekId): array
     {
+        $settings = $this->getSettings();
         $draw = WeeklyDraw::findOrFail($weekId);
 
         $expectedWinners = $draw->total_participants > 0
-            ? (int) ceil($draw->total_participants / self::ODDS_RATIO)
+            ? (int) ceil($draw->total_participants / $settings->odds_ratio)
             : 0;
 
         $excludedCount = count($this->getExcludedUserIds());
@@ -371,9 +398,9 @@ class WeeklyDrawService
             'admin_commission' => $draw->admin_commission,
             'countdown_ends_at' => $draw->countdown_ends_at,
             'claim_deadline' => $draw->claim_deadline,
-            'odds' => '1:' . self::ODDS_RATIO,
-            'minimum_participants' => self::MINIMUM_PARTICIPANTS,
-            'exclusion_period_months' => self::WINNER_EXCLUSION_MONTHS,
+            'odds' => '1:' . $settings->odds_ratio,
+            'minimum_participants' => $settings->minimum_participants,
+            'exclusion_period_months' => $settings->winner_exclusion_months,
         ];
     }
 
@@ -418,6 +445,7 @@ class WeeklyDrawService
      */
     public function getOverviewStats(): array
     {
+        $settings = $this->getSettings();
         $excludedCount = count($this->getExcludedUserIds());
 
         return [
@@ -429,9 +457,9 @@ class WeeklyDrawService
             'total_commission' => WeeklyDraw::sum('admin_commission'),
             'active_draws' => WeeklyDraw::where('status', 'active')->count(),
             'currently_excluded_users' => $excludedCount,
-            'current_odds' => '1:' . self::ODDS_RATIO,
-            'admin_fee_rate' => (self::ADMIN_FEE_PERCENTAGE * 100) . '%',
-            'exclusion_period' => self::WINNER_EXCLUSION_MONTHS . ' months',
+            'current_odds' => '1:' . $settings->odds_ratio,
+            'admin_fee_rate' => rtrim(rtrim((string)$settings->admin_fee_percentage, '0'), '.') . '%',
+            'exclusion_period' => $settings->winner_exclusion_months . ' months',
         ];
     }
 

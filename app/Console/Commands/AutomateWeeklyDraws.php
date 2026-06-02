@@ -36,31 +36,29 @@ class AutomateWeeklyDraws extends Command
             'timezone' => config('app.timezone'),
         ]);
 
-        // PRODUCTION: Monday 12:00 AM - Create New Draw
-        // if ($now->isMonday() && $now->hour === 0 && $now->minute === 0) {
-        //     Log::info('Triggering new draw creation (Monday 12:00 AM)');
-        //     $this->createNewDraw();
-        // }
+        // Retrieve settings, with database fallbacks
+        $settings = \App\Models\DrawAutomateSetting::firstOrCreate([], [
+            'draw_start_day' => 'Monday',
+            'draw_start_time' => '00:00:00',
+            'draw_end_day' => 'Sunday',
+            'draw_end_time' => '17:00:00',
+        ]);
 
-        // PRODUCTION: Sunday 5:00 PM - Finalize & Select Winners
-        // if ($now->isSunday() && $now->hour === 17 && $now->minute === 0) {
-        //     Log::info('Triggering draw finalization (Sunday 5:00 PM)');
-        //     $this->finalizeAndSelectWinners();
-        // }
+        $startTime = Carbon::parse($settings->draw_start_time);
+        $endTime = Carbon::parse($settings->draw_end_time);
 
-        // TESTING MODE (UNCOMMENT FOR TESTING)
-
-        // TEST: Wednesday 6:33 PM - Create New Draw
-        if ($now->isTuesday() && $now->hour === 12 && $now->minute === 8) {
-            Log::info('TEST: Triggering new draw creation');
+        // PRODUCTION: Dynamic Create New Draw
+        if ($now->isDayOfWeek($settings->draw_start_day) && $now->hour === $startTime->hour && $now->minute === $startTime->minute) {
+            Log::info("Triggering new draw creation ({$settings->draw_start_day} {$settings->draw_start_time})");
             $this->createNewDraw();
         }
 
-        // TEST: Tuesday 2:27 PM - Finalize & Select Winners
-        if ($now->isThursday() && $now->hour === 10 && $now->minute === 41) {
-            Log::info('TEST: Triggering draw finalization');
+        // PRODUCTION: Dynamic Finalize & Select Winners
+        if ($now->isDayOfWeek($settings->draw_end_day) && $now->hour === $endTime->hour && $now->minute === $endTime->minute) {
+            Log::info("Triggering draw finalization ({$settings->draw_end_day} {$settings->draw_end_time})");
             $this->finalizeAndSelectWinners();
         }
+
         return 0;
     }
 
