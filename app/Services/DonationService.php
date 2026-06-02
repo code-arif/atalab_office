@@ -31,12 +31,17 @@ class DonationService
     /**
      * FIXED: Create standard donation with donor_id assignment BEFORE payment
      */
-    public function createStandardDonation(int $userId, string $successUrl, string $cancelUrl): array
+    public function createStandardDonation(int $userId, string $successUrl, string $cancelUrl, string $paymentMethodType = 'card'): array
     {
         $lockKey = "donation_lock:user_{$userId}";
 
-        return Cache::lock($lockKey, 10)->block(5, function () use ($userId, $successUrl, $cancelUrl) {
-            return DB::transaction(function () use ($userId, $successUrl, $cancelUrl) {
+        return Cache::lock($lockKey, 10)->block(5, function () use ($userId, $successUrl, $cancelUrl, $paymentMethodType) {
+            return DB::transaction(function () use ($userId, $successUrl, $cancelUrl, $paymentMethodType) {
+                $allowedPaymentMethods = ['card', 'us_bank_account'];
+                if (!in_array($paymentMethodType, $allowedPaymentMethods, true)) {
+                    throw new Exception('Invalid payment method type. Allowed values: card, us_bank_account.');
+                }
+
                 $user = User::lockForUpdate()->find($userId);
 
                 if (!$user) {
@@ -62,8 +67,6 @@ class DonationService
                     throw new Exception($eligibility['reason']);
                 }
 
-                // CRITICAL FIX: Assign donor_id BEFORE creating Stripe session
-                // This prevents webhook conflicts
                 $donorId = $this->registrationService->assignDonorIdIfNeeded($userId);
 
                 Log::info('Donor ID ensured before payment', [
@@ -71,24 +74,49 @@ class DonationService
                     'donor_id' => $donorId,
                 ]);
 
-                // Reload user to get updated donor_id
                 $user = $user->fresh();
+
+                // Dynamic amount from DB
+                $setting = \App\Models\StripeSetting::query()->first();
+                $paymentAmount = $setting ? floatval($setting->donation_amount) : 25.00;
+                
+                if ($paymentAmount <= 0) {
+                    $paymentAmount = 25.00; // fallback if missing
+                }
+
+                // Calculate processing fee
+                $processingFee = 0.00;
+                if ($paymentMethodType === 'us_bank_account') {
+                    $achFlatFee = floatval($setting?->ach_flat_fee ?? 0.00);
+                    $processingFee = $achFlatFee;
+                } elseif ($paymentMethodType === 'card') {
+                    $cardPct = floatval($setting?->card_fee_percentage ?? 2.9);
+                    $cardFixed = floatval($setting?->card_fixed_fee ?? 0.30);
+                    $processingFee = round(($paymentAmount * ($cardPct / 100)) + $cardFixed, 2);
+                }
+
+                $totalAmount = round($paymentAmount + $processingFee, 2);
 
                 // Create Stripe checkout session
                 $session = $this->stripeService->createCheckoutSession(
-                    25.00,
+                    $totalAmount,
                     $currentDraw,
                     'standard',
                     $successUrl,
                     $cancelUrl,
-                    $user
+                    $user,
+                    $paymentMethodType,
+                    $paymentAmount,
+                    $processingFee
                 );
 
                 // Create donation record
                 $donation = Donation::create([
                     'user_id' => $user->id,
                     'week_id' => $currentDraw->id,
-                    'amount' => 25.00,
+                    'amount' => $paymentAmount,
+                    'processing_fee' => $processingFee,
+                    'total_amount' => $totalAmount,
                     'stripe_payment_id' => $session->id,
                     'stripe_payment_status' => 'pending',
                     'is_eligible_for_draw' => false,
@@ -115,9 +143,9 @@ class DonationService
                     'donor_id' => $user->donor_id,
                     'week_id' => $currentDraw->id,
                     'session_id' => $session->id,
+                    'total_amount' => $totalAmount,
+                    'processing_fee' => $processingFee,
                 ]);
-
-                // event(new DonationCreated($donation));
 
                 return [
                     'checkout_url' => $session->url,
@@ -132,12 +160,17 @@ class DonationService
     /**
      * FIXED: Create custom donation with donor_id assignment BEFORE payment
      */
-    public function createCustomDonation(int $userId, float $amount, string $successUrl, string $cancelUrl): array
+    public function createCustomDonation(int $userId, float $amount, string $successUrl, string $cancelUrl, string $paymentMethodType = 'card'): array
     {
         $lockKey = "donation_lock:user_{$userId}";
 
-        return Cache::lock($lockKey, 10)->block(5, function () use ($userId, $amount, $successUrl, $cancelUrl) {
-            return DB::transaction(function () use ($userId, $amount, $successUrl, $cancelUrl) {
+        return Cache::lock($lockKey, 10)->block(5, function () use ($userId, $amount, $successUrl, $cancelUrl, $paymentMethodType) {
+            return DB::transaction(function () use ($userId, $amount, $successUrl, $cancelUrl, $paymentMethodType) {
+                $allowedPaymentMethods = ['card', 'us_bank_account'];
+                if (!in_array($paymentMethodType, $allowedPaymentMethods, true)) {
+                    throw new Exception('Invalid payment method type. Allowed values: card, us_bank_account.');
+                }
+
                 if ($amount < 26) {
                     throw new Exception('Custom donation must be at least $26');
                 }
@@ -167,7 +200,7 @@ class DonationService
                     throw new Exception($eligibility['reason']);
                 }
 
-                // CRITICAL FIX: Assign donor_id BEFORE creating Stripe session
+                // Assign donor_id BEFORE creating Stripe session
                 $donorId = $this->registrationService->assignDonorIdIfNeeded($userId);
 
                 Log::info('Donor ID ensured before payment', [
@@ -178,19 +211,41 @@ class DonationService
                 // Reload user
                 $user = $user->fresh();
 
+                // Get setting
+                $setting = \App\Models\StripeSetting::query()->first();
+                $paymentAmount = $amount;
+                
+                // Calculate processing fee
+                $processingFee = 0.00;
+                if ($paymentMethodType === 'us_bank_account') {
+                    $achFlatFee = floatval($setting?->ach_flat_fee ?? 0.00);
+                    $processingFee = $achFlatFee;
+                } elseif ($paymentMethodType === 'card') {
+                    $cardPct = floatval($setting?->card_fee_percentage ?? 2.9);
+                    $cardFixed = floatval($setting?->card_fixed_fee ?? 0.30);
+                    $processingFee = round(($paymentAmount * ($cardPct / 100)) + $cardFixed, 2);
+                }
+
+                $totalAmount = round($paymentAmount + $processingFee, 2);
+
                 $session = $this->stripeService->createCheckoutSession(
-                    $amount,
+                    $totalAmount,
                     $currentDraw,
                     'custom',
                     $successUrl,
                     $cancelUrl,
-                    $user
+                    $user,
+                    $paymentMethodType,
+                    $paymentAmount,
+                    $processingFee
                 );
 
                 $donation = Donation::create([
                     'user_id' => $user->id,
                     'week_id' => $currentDraw->id,
-                    'amount' => $amount,
+                    'amount' => $paymentAmount,
+                    'processing_fee' => $processingFee,
+                    'total_amount' => $totalAmount,
                     'stripe_payment_id' => $session->id,
                     'stripe_payment_status' => 'pending',
                     'is_eligible_for_draw' => false,
@@ -215,6 +270,8 @@ class DonationService
                     'user_id' => $user->id,
                     'donor_id' => $user->donor_id,
                     'amount' => $amount,
+                    'total_amount' => $totalAmount,
+                    'processing_fee' => $processingFee,
                 ]);
 
                 return [

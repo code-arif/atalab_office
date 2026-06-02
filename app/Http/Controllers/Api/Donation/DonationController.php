@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Api\Donation;
 
-use Stripe\Webhook;
-use Illuminate\Http\Request;
-use App\Services\StripeService;
-use App\Services\DonationService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Services\DonationService;
+use App\Services\StripeService;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Stripe\Webhook;
 
 class DonationController extends Controller
 {
@@ -23,12 +24,13 @@ class DonationController extends Controller
     }
 
     /**
-     * Create standard $25 donation (USER ID REQUIRED)
+     * Create standard donation (USER ID REQUIRED)
      */
     public function createStandardDonation(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'user_id' => 'required|integer|exists:users,id',
+            'payment_method_type' => 'nullable|in:card,us_bank_account',
         ]);
 
         if ($validator->fails()) {
@@ -43,18 +45,22 @@ class DonationController extends Controller
             $successUrl = $baseUrl . '/success?session_id={CHECKOUT_SESSION_ID}';
             $cancelUrl = $baseUrl . '/cancel';
 
+            $paymentMethodType = $request->input('payment_method_type', 'card');
+
             $result = $this->donationService->createStandardDonation(
                 $request->user_id,
                 $successUrl,
-                $cancelUrl
+                $cancelUrl,
+                $paymentMethodType
             );
 
             return response()->json([
                 'success' => true,
                 'checkout_url' => $result['checkout_url'],
-                'session_id' => $result['session_id']
+                'session_id' => $result['session_id'],
+                'payment_method_type' => $paymentMethodType,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -70,6 +76,7 @@ class DonationController extends Controller
         $validator = Validator::make($request->all(), [
             'user_id' => 'required|integer|exists:users,id',
             'amount' => 'required|numeric|min:26',
+            'payment_method_type' => 'nullable|in:card,us_bank_account',
         ]);
 
         if ($validator->fails()) {
@@ -84,19 +91,23 @@ class DonationController extends Controller
             $successUrl = $baseUrl . '/success?session_id={CHECKOUT_SESSION_ID}';
             $cancelUrl = $baseUrl . '/donation/cancel';
 
+            $paymentMethodType = $request->input('payment_method_type', 'card');
+
             $result = $this->donationService->createCustomDonation(
                 $request->user_id,
                 $request->amount,
                 $successUrl,
-                $cancelUrl
+                $cancelUrl,
+                $paymentMethodType
             );
 
             return response()->json([
                 'success' => true,
                 'checkout_url' => $result['checkout_url'],
-                'session_id' => $result['session_id']
+                'session_id' => $result['session_id'],
+                'payment_method_type' => $paymentMethodType,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -128,7 +139,7 @@ class DonationController extends Controller
                 'donation' => $donation,
                 'donor_id' => $donation->user->donor_id,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -148,7 +159,7 @@ class DonationController extends Controller
                 'success' => true,
                 'status' => $status
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -196,7 +207,7 @@ class DonationController extends Controller
             }
 
             return response()->json(['success' => true], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Webhook processing failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -220,7 +231,7 @@ class DonationController extends Controller
                 'success' => true,
                 'donations' => $donations
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -240,7 +251,7 @@ class DonationController extends Controller
                 'success' => true,
                 'donations' => $donations
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()

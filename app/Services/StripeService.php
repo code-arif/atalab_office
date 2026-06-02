@@ -21,12 +21,15 @@ class StripeService
      * Uses Stripe Customer object for better data persistence
      */
     public function createCheckoutSession(
-        float $amount,
+        float $totalAmount,
         WeeklyDraw $draw,
         string $type,
         string $successUrl,
         string $cancelUrl,
-        ?User $user = null
+        ?User $user = null,
+        string $paymentMethodType = 'card',
+        float $baseAmount = 0.00,
+        float $processingFee = 0.00
     ): Session {
 
         $metadata = [
@@ -34,21 +37,30 @@ class StripeService
             'week_number' => $draw->week_number,
             'payment_type' => $type,
             'user_id' => $user ? $user->id : null,
+            'payment_method_type' => $paymentMethodType,
+            'base_amount' => $baseAmount,
+            'processing_fee' => $processingFee,
+            'total_amount' => $totalAmount,
         ];
+
+        $paymentMethodTypes = ['card'];
+        if ($paymentMethodType === 'us_bank_account') {
+            $paymentMethodTypes = ['us_bank_account'];
+        }
 
         // Base session data
         $sessionData = [
-            'payment_method_types' => ['card'],
+            'payment_method_types' => $paymentMethodTypes,
             'line_items' => [[
                 'price_data' => [
                     'currency' => 'usd',
                     'product_data' => [
                         'name' => $type === 'standard'
-                            ? 'Standard Donation - $25'
-                            : "Custom Donation - $" . number_format($amount, 2),
-                        'description' => "Weekly Draw #{$draw->week_number}",
+                            ? 'Standard Donation - $' . number_format($baseAmount, 2)
+                            : "Custom Donation - $" . number_format($baseAmount, 2),
+                        'description' => "Weekly Draw #{$draw->week_number}" . ($processingFee > 0 ? " (includes $" . number_format($processingFee, 2) . " fee)" : ""),
                     ],
-                    'unit_amount' => $amount * 100, // Convert to cents
+                    'unit_amount' => (int) round($totalAmount * 100), // Convert to cents
                 ],
                 'quantity' => 1,
             ]],
@@ -93,7 +105,7 @@ class StripeService
 
             Log::info('Stripe checkout session created', [
                 'session_id' => $session->id,
-                'amount' => $amount,
+                'amount' => $totalAmount,
                 'user_id' => $user?->id,
             ]);
 

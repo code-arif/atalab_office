@@ -15,6 +15,8 @@ class Donation extends Model
         'temp_identifier',
         'week_id',
         'amount',
+        'processing_fee',
+        'total_amount',
         'stripe_payment_id',
         'stripe_payment_status',
         'stripe_charge_id',
