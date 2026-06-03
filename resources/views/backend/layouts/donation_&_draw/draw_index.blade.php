@@ -476,8 +476,15 @@
                         // alert(d);
                         $('#view_week_number').text('Week #' + d.week_number);
                         $('#view_year').text(d.year);
-                        $('#view_status').html(
-                            `<span class="badge status-${d.status}">${d.status}</span>`);
+
+                        let statusHtml = '';
+                        if (d.is_paused) {
+                            statusHtml = '<span class="badge bg-danger-transparent text-danger d-inline-flex align-items-center px-2 py-1"> <i class="fe fe-pause-circle me-1"></i> Paused </span>';
+                        } else {
+                            statusHtml = `<span class="badge status-${d.status} px-2 py-1 text-uppercase">${d.status}</span>`;
+                        }
+                        $('#view_status').html(statusHtml);
+
                         $('#view_winners_selected').html(d.winners_selected ?
                             '<span class="badge bg-success">Yes</span>' :
                             '<span class="badge bg-secondary">No</span>');
