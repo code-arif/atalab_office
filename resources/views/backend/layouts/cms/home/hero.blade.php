@@ -6,147 +6,161 @@
     <!--app-content open-->
     <div class="app-content main-content mt-0">
         <div class="side-app">
+
             <!-- CONTAINER -->
             <div class="main-container container-fluid">
 
                 {{-- PAGE-HEADER --}}
-                <div class="page-header d-flex justify-content-between align-items-center mb-5">
+                <div class="page-header">
                     <div>
-                        <h1 class="page-title fw-bold text-dark">Hero Section Management</h1>
-                        <p class="text-muted mb-0">Configure the main headline and rotating sliders on the homepage hero area</p>
+                        <h1 class="page-title">Home page - Hero section</h1>
                     </div>
                     <div class="ms-auto pageheader-btn">
-                        <ol class="breadcrumb bg-white p-2 rounded-3 shadow-sm">
-                            <li class="breadcrumb-item"><a href="javascript:void(0);" class="text-primary"><i class="fe fe-home"></i> CMS Settings</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Hero Section</li>
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="javascript:void(0);">Home page</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Hero section</li>
                         </ol>
                     </div>
                 </div>
-                {{-- PAGE-HEADER END --}}
+                {{-- PAGE-HEADER --}}
 
-                <div class="row g-4">
-                    {{-- HEADER TEXT --}}
-                    <div class="col-12">
-                        <div class="card pro-card border-top-primary">
-                            <div class="card-body p-4">
-                                <h5 class="fw-bold mb-3 d-flex align-items-center">
-                                    <div class="bg-primary-transparent p-2 rounded me-2">
-                                        <i class="fe fe-type text-primary fs-5"></i>
+
+                <div class="row">
+                    {{-- header manage --}}
+                    <div class="col-lg-12 col-xl-12 col-md-12 col-sm-12">
+                        <div class="card box-shadow-0">
+                            <div class="card-header bg-light">
+                                <h4 class="card-title">Header</h4>
                                     </div>
-                                    Main Headline
-                                </h5>
-                                <form method="post" action="{{ route('cms.home.hero.section.update') }}" enctype="multipart/form-data">
+                            <div class="card-body">
+                                <form class="form-horizontal" method="post"
+                                    action="{{ route('cms.home.hero.section.update') }}" enctype="multipart/form-data">
                                     @csrf
-                                    <div class="d-flex align-items-end gap-3">
-                                        <div class="flex-grow-1">
-                                            <input type="text" class="form-control form-control-lg bg-light border-0 fw-medium @error('title') is-invalid @enderror"
-                                                name="title" placeholder="Enter the main title text to be displayed prominently on the hero section..." id="title"
+                                    <div class="row mb-4">
+                                        {{-- section title --}}
+                                        <div class="form-group">
+                                            <label for="title" class="form-label">Title</label>
+                                            <input type="text" class="form-control @error('title') is-invalid @enderror"
+                                                name="title" placeholder="Enter title" id="title"
                                                 value="{{ $data->title ?? (old('title') ?? '') }}">
                                             @error('title')
-                                                <span class="text-danger small mt-1">{{ $message }}</span>
+                                                <span class="text-danger">{{ $message }}</span>
                                             @enderror
                                         </div>
-                                        <button class="btn btn-primary btn-lg px-5 shadow-sm" type="submit">
-                                            <i class="fe fe-save me-2"></i> Save Headline
-                                        </button>
+                                        <div class="form-group">
+                                            <button class="btn btn-primary" type="submit">Save change</button>
+                                        </div>
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
 
-                    {{-- ADD NEW SLIDER --}}
-                    <div class="col-xl-4 col-lg-5">
-                        <div class="card pro-card h-100">
-                            <div class="card-body p-4">
-                                <h5 class="fw-bold mb-4 d-flex align-items-center">
-                                    <div class="bg-success-transparent p-2 rounded me-2">
-                                        <i class="fe fe-plus-square text-success fs-5"></i>
+                    {{-- slider manage --}}
                                     </div>
-                                    Add New Slider
-                                </h5>
+
+                <div class="row">
+                    <!-- Add New Slider Card -->
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h3 class="card-title text-white">Add New Slider</h3>
+                            </div>
+                            <div class="card-body">
                                 <form id="sliderForm" enctype="multipart/form-data">
                                     @csrf
 
-                                    <div class="mb-4">
-                                        <div class="upload-zone position-relative" onclick="document.getElementById('sliderImage').click()">
-                                            <div id="uploadPlaceholder">
-                                                <div class="mb-2">
-                                                    <i class="fe fe-upload-cloud fs-1 text-muted"></i>
-                                                </div>
-                                                <h6 class="fw-semibold text-dark mb-1">Click to Upload Image</h6>
-                                                <p class="text-muted small mb-0">Recommended size: 1920x1080px (Max 2MB)</p>
+                                    <div class="mb-3">
+                                        <label class="form-label">Slider Image <span class="text-danger">*</span></label>
+                                        <input type="file" name="image" id="sliderImage" class="form-control"
+                                            accept="image/*" required onchange="previewImage(event)">
+                                        <small class="text-muted">Recommended size: 1920x1080px</small>
                                             </div>
+
                                             <!-- Image Preview -->
+                                    <div class="mb-3">
                                             <div id="imagePreview" class="d-none">
-                                                <img src="" id="previewImg" class="rounded w-100 object-fit-cover" style="height: 160px;">
-                                                <span class="badge bg-dark position-absolute top-0 end-0 m-2" style="cursor:pointer;" onclick="event.stopPropagation(); resetUpload()">Change</span>
-                                            </div>
-                                        </div>
-                                        <input type="file" name="image" id="sliderImage" class="d-none" accept="image/*" required onchange="previewImage(event)">
-                                    </div>
-
-                                    <div class="bg-light rounded p-3 mb-4 d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="mb-0 fw-semibold text-dark">Active Status</h6>
-                                            <small class="text-muted">Display immediately after adding</small>
-                                        </div>
-                                        <div class="form-check form-switch m-0 pb-1">
-                                            <input class="form-check-input custom-toggle" type="checkbox" name="status" id="status" value="1" checked>
+                                            <img src="" id="previewImg" class="img-fluid border"
+                                                style="max-height: 200px; width: 100%; object-fit: cover;">
                                         </div>
                                     </div>
 
-                                    <button type="submit" class="btn btn-dark w-100 btn-lg shadow-sm">
-                                        <span class="spinner-border spinner-border-sm d-none me-2" id="submitSpinner"></span>
-                                        <span id="submitText"><i class="fe fe-upload me-2"></i> Upload Slider</span>
+                                    <div class="mb-3" style="margin-left: 12px">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input custom-toggle" type="checkbox" name="status"
+                                                id="status" value="1" checked>
+                                            <label class="form-check-label" for="status"
+                                                style="margin-left: 22px; margin-top: 5px;">
+                                                Active Status
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <span class="spinner-border spinner-border-sm d-none" id="submitSpinner"></span>
+                                        <span id="submitText">Add Slider</span>
                                     </button>
                                 </form>
                             </div>
                         </div>
                     </div>
 
-                    {{-- SLIDERS LIST --}}
-                    <div class="col-xl-8 col-lg-7">
-                        <div class="card pro-card h-100">
-                            <div class="card-header bg-white border-bottom py-4 d-flex justify-content-between align-items-center">
-                                <h5 class="fw-bold mb-0 d-flex align-items-center">
-                                    <div class="bg-info-transparent p-2 rounded me-2">
-                                        <i class="fe fe-layers text-info fs-5"></i>
-                                    </div>
-                                    Manage Sliders <span class="badge bg-light text-dark ms-2">{{ $sliders->count() }} Total</span>
-                                </h5>
-                                <span class="text-muted small"><i class="fe fe-move me-1"></i> Drag to reorder</span>
+                    <!-- Slider List -->
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h3 class="card-title">All Sliders ({{ $sliders->count() }})</h3>
                             </div>
-                            <div class="card-body p-4 bg-light bg-opacity-50">
+                            <div class="card-body">
                                 @if ($sliders->isEmpty())
                                     <div class="text-center py-5">
-                                        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center p-4 mb-3 shadow-sm" style="width: 100px; height: 100px;">
-                                            <i class="fe fe-image text-muted" style="font-size: 40px;"></i>
-                                        </div>
-                                        <h5 class="fw-bold text-dark">No sliders found</h5>
-                                        <p class="text-muted">Add your first beautiful image slider using the form on the left.</p>
+                                        <i class="fe fe-image" style="font-size: 48px; color: #ccc;"></i>
+                                        <p class="text-muted mt-3">No sliders found. Add your first slider!</p>
                                     </div>
                                 @else
-                                    <div id="sortable-sliders" class="row g-3">
+                                    <div id="sortable-sliders" class="row">
                                         @foreach ($sliders as $slider)
-                                            <div class="col-md-6 col-xxl-4 sortable-item" data-id="{{ $slider->id }}">
-                                                <div class="card slider-item-card border-0 m-0">
-                                                    <div class="slider-img-wrapper">
-                                                        <div class="drag-handle text-muted"><i class="fe fe-move"></i></div>
-                                                        <img src="{{ asset('/' . $slider->image) }}" alt="Slider {{ $slider->id }}">
+                                            <div class="col-md-6 mb-3 sortable-item" data-id="{{ $slider->id }}">
+                                                <div class="card border">
+                                                    <div class="card-body p-2">
+                                                        <div class="d-flex align-items-center">
+                                                            <!-- Drag Handle -->
+                                                            <div class="me-2 drag-handle" style="cursor: move;">
+                                                                <i class="fe fe-menu" style="font-size: 20px;"></i>
                                                     </div>
-                                                    <div class="slider-actions">
-                                                        <div class="d-flex flex-column">
-                                                            <span class="fw-bold text-dark">#{{ $slider->id }}</span>
-                                                            <span class="text-muted small">Order: {{ $slider->order }}</span>
+
+                                                            <!-- Image Preview -->
+                                                            <div class="me-2">
+                                                                <img src="{{ asset('/' . $slider->image) }}"
+                                                                    class="img-fluid border"
+                                                                    style="width: 80px; height: 60px; object-fit: cover;">
                                                         </div>
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <div class="form-check form-switch m-0 pt-1">
-                                                                <input class="form-check-input status-toggle custom-toggle" type="checkbox" data-id="{{ $slider->id }}" {{ $slider->status ? 'checked' : '' }} value="1">
+
+                                                            <!-- Slider Info -->
+                                                            <div class="flex-grow-1">
+                                                                <p class="mb-1 fw-bold">Slider #{{ $slider->id }}</p>
+                                                                <small class="text-muted">
+                                                                    Order: {{ $slider->order }}
+                                                                </small>
                                                             </div>
-                                                            <button class="btn btn-sm btn-light text-danger delete-slider border" data-id="{{ $slider->id }}" title="Delete Slider">
+
+                                                            <!-- Actions -->
+                                                            <div class="d-flex align-items-center gap-3">
+                                                                <!-- Status Toggle -->
+                                                                <div class="form-check form-switch mb-0">
+                                                                    <input
+                                                                        class="form-check-input status-toggle custom-toggle"
+                                                                        type="checkbox" data-id="{{ $slider->id }}"
+                                                                        {{ $slider->status ? 'checked' : '' }}
+                                                                        style="cursor: pointer;" value="1">
+                                                                </div>
+
+                                                                <!-- Delete Button -->
+                                                                <button class="btn btn-sm btn-danger delete-slider"
+                                                                    data-id="{{ $slider->id }}">
                                                                 <i class="fe fe-trash-2"></i>
                                                             </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -167,89 +181,10 @@
 
 @push('styles')
     <style>
-        .pro-card {
-            border-radius: 12px;
-            border: 1px solid #e9edf4;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-            background-color: #ffffff;
-        }
-        .border-top-primary {
-            border-top: 4px solid #521aac !important;
-        }
-        
-        .upload-zone {
-            border: 2px dashed #cbd5e1;
-            border-radius: 12px;
-            padding: 30px 20px;
-            text-align: center;
-            background: #f8fafc;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .upload-zone:hover {
-            border-color: #521aac;
-            background: #f1f5f9;
-        }
-        
-        .slider-item-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-            border: 1px solid #f1f5f9;
-        }
-        .slider-item-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-            border-color: #e2e8f0;
-        }
-        .slider-img-wrapper {
-            height: 140px;
-            width: 100%;
-            overflow: hidden;
-            position: relative;
-            background: #e2e8f0;
-        }
-        .slider-img-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .slider-actions {
-            background: #fff;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .drag-handle {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255,255,255,0.9);
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            cursor: grab;
-            z-index: 10;
-            transition: all 0.2s ease;
-        }
-        .drag-handle:hover {
-            background: #521aac;
-            color: white !important;
-        }
-        .drag-handle:active {
-            cursor: grabbing;
-        }
-
         /* Custom Toggle Switch Styling */
         .custom-toggle {
-            width: 44px !important;
-            height: 22px !important;
+            width: 40px !important;
+            height: 20px !important;
             cursor: pointer;
         }
 
@@ -272,28 +207,20 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <script>
-        // Image Preview and Dropzone
+        // Image Preview
         function previewImage(event) {
             const file = event.target.files[0];
             const preview = document.getElementById('imagePreview');
             const previewImg = document.getElementById('previewImg');
-            const placeholder = document.getElementById('uploadPlaceholder');
 
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     previewImg.src = e.target.result;
-                    placeholder.classList.add('d-none');
                     preview.classList.remove('d-none');
                 }
                 reader.readAsDataURL(file);
             }
-        }
-
-        function resetUpload() {
-            document.getElementById('sliderImage').value = '';
-            document.getElementById('imagePreview').classList.add('d-none');
-            document.getElementById('uploadPlaceholder').classList.remove('d-none');
         }
 
         // Add Slider Form Submit
