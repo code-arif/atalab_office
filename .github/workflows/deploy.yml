@@ -14,7 +14,7 @@ jobs:
       - name: FTP-Deploy-Action
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
-          server: atalab.softvencefsd.xyz
+          server: atalab.thewarriors.team
           username: atalab@atalab.thewarriors.team
           password: B?Kl2Lejk=AkM*WG
 
