@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers\Api\Donation;
 
-use App\Models\DrawWinner;
-use App\Models\WeeklyDraw;
-use App\Traits\ApiResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use App\Services\WeeklyDrawService;
 use App\Http\Controllers\Controller;
+use App\Models\DrawWinner;
+use App\Models\StripeSetting;
+use App\Models\WeeklyDraw;
+use App\Services\WeeklyDrawService;
+use App\Traits\ApiResponse;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class WeeklyDrawController extends Controller
 {
@@ -87,6 +89,27 @@ class WeeklyDrawController extends Controller
                 'draw' => $draw
             ]);
         } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 404);
+        }
+    }
+
+    /**
+     * Get donation price
+     */
+    public function getPrice(): JsonResponse
+    {
+        try {
+            $price = StripeSetting::select('donation_amount')->first();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Donation price fetched successfully',
+                'price' => $price->donation_amount
+            ]);
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()

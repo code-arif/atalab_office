@@ -123,6 +123,9 @@ Route::prefix('v1')->group(function () {
         // Retrieve information about the currently active weekly draw.
         Route::get('/current', [WeeklyDrawController::class, 'getCurrentDraw']);
 
+        // Donation price
+        Route::get('/price', [WeeklyDrawController::class, 'getPrice']);
+
         // Retrieve the list of winners for the most recent weekly draw.
         Route::get('/winners', [WeeklyDrawController::class, 'getWinners']);
     });
