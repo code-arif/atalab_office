@@ -45,7 +45,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // ------------------------------------------------------------------
     // Dashboard
-    // Provides the main dashboard view and real-time data endpoints.
+    // Provides the main dashboard view and real-time data endpoints
     // ------------------------------------------------------------------
     Route::prefix('dashboard')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
