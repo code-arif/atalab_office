@@ -194,13 +194,15 @@ Schedule::call(function () {
         Log::warning("{$stalePending} stale pending donations");
     }
 
-    // Check 4: Redis connection (if using Redis)
-    try {
-        Cache::store('redis')->get('health_check');
-    } catch (\Exception $e) {
-        Log::error('REDIS CONNECTION FAILED', [
-            'error' => $e->getMessage()
-        ]);
+    // Check 4: Redis connection (only if Redis cache driver is active)
+    if (config('cache.store') === 'redis') {
+        try {
+            Cache::store('redis')->get('health_check');
+        } catch (\Exception $e) {
+            Log::error('REDIS CONNECTION FAILED', [
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 })
     ->everyFiveMinutes()

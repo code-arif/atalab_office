@@ -32,6 +32,7 @@ use App\Http\Controllers\Web\Backend\DashboardController;
 use App\Http\Controllers\Web\Backend\Donation\DonationController;
 use App\Http\Controllers\Web\Backend\Donation\DrawWinnerController;
 use App\Http\Controllers\Web\Backend\Donation\WeeklyDrawController;
+use App\Http\Controllers\Web\Backend\Donation\ManualFinalizeController;
 use App\Http\Controllers\Web\Backend\Donation\WinnerVerificationController;
 use App\Http\Controllers\Web\Backend\ReviewController;
 use App\Http\Controllers\Web\Backend\Settings\ProfileController;
@@ -201,12 +202,22 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // ------------------------------------------------------------------
     Route::prefix('weekly-draws')->name('weekly-draws.')->group(function () {
         Route::get('/', [WeeklyDrawController::class, 'index'])->name('index');
+        Route::get('/data', [WeeklyDrawController::class, 'getData'])->name('data');
         Route::get('/{id}', [WeeklyDrawController::class, 'show'])->name('show');
         Route::get('/deleted/trashed', [WeeklyDrawController::class, 'trashed'])->name('trashed');
         Route::delete('/{id}', [WeeklyDrawController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/toggle-pause', [WeeklyDrawController::class, 'togglePause'])->name('toggle-pause');
         Route::post('/restore/{id}', [WeeklyDrawController::class, 'restore'])->name('restore');
         Route::delete('/force-delete/{id}', [WeeklyDrawController::class, 'forceDelete'])->name('force-delete');
+    });
+
+    // ------------------------------------------------------------------
+    // Manual Draw Finalization
+    // Emergency/manual finalization for accidental purposes.
+    // ------------------------------------------------------------------
+    Route::prefix('manual-finalize')->name('manual-finalize.')->group(function () {
+        Route::get('/{id}', [ManualFinalizeController::class, 'show'])->name('show');
+        Route::post('/{id}/finalize', [ManualFinalizeController::class, 'finalize'])->name('finalize');
     });
 
 

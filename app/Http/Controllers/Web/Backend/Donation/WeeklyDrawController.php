@@ -22,83 +22,10 @@ class WeeklyDrawController extends Controller
     }
 
     /**
-     * Display listing with DataTables
+     * Display the draws listing page.
      */
-    public function index(Request $request)
+    public function index()
     {
-        if ($request->ajax()) {
-            $draws = WeeklyDraw::latest('week_number')->get();
-
-            return DataTables::of($draws)
-                ->addIndexColumn()
-                ->addColumn('week_number', fn($row) => 'Week #' . $row->week_number)
-                ->addColumn('year', fn($row) => 'Year - ' . $row->year)
-                ->addColumn('status', function ($row) {
-                    if ($row->is_paused) {
-                        return '<span class="badge bg-danger-transparent text-danger d-inline-flex align-items-center px-2 py-1">
-                                    <i class="fe fe-pause-circle me-1"></i>
-                                    Paused
-                                </span>';
-                    }
-                    $badges = [
-                        'active' => '<span class="badge badge-status status-active p-2 py-3">Active</span>',
-                        'claiming' => '<span class="badge badge-status status-claiming p-2 py-3">Claiming</span>',
-                        'completed' => '<span class="badge badge-status status-completed p-2 py-3">Completed</span>',
-                    ];
-                    return $badges[$row->status] ?? '<span class="badge bg-secondary">Unknown</span>';
-                })
-                ->addColumn('start_date', fn($row) => Carbon::parse($row->start_date)->format('M d, Y h:i A'))
-                ->addColumn('end_date', fn($row) => Carbon::parse($row->end_date)->format('M d, Y h:i A'))
-                ->addColumn('total_pool', fn($row) => '<span class="text-success fw-bold">$' . number_format($row->total_pool, 2) . '</span>')
-                ->addColumn('total_participants', fn($row) => '<span class="badge bg-warning text-dark">' . number_format($row->total_participants) . '</span>')
-                ->addColumn('expected_winners', function ($row) {
-                    $expected = $row->total_participants > 0 ? (int) ceil($row->total_participants / 400) : 0;
-                    return '<span class="badge bg-info">' . $expected . '</span>';
-                })
-                ->addColumn('total_recipients', function ($row) {
-                    return $row->total_recipients > 0
-                        ? '<span class="badge bg-success py-3">' . $row->total_recipients . '</span>'
-                        : '<span class="text-muted">Pending</span>';
-                })
-                ->addColumn('admin_commission', fn($row) => '<span class="text-info">$' . number_format($row->admin_commission, 2) . '</span>')
-                ->addColumn('winners_selected', function ($row) {
-                    return $row->winners_selected
-                        ? '<span class="badge bg-success py-3"> Yes</span>'
-                        : '<span class="badge bg-secondary py-3"> Pending</span>';
-                })
-                ->addColumn('action', function ($row) {
-                    $actions = '<div class="btn-action-group">';
-
-                    // View Button
-                    $actions .= '<button type="button" class="btn btn-info btn-sm viewDraw" data-id="' . $row->id . '" title="View Details">
-                        <i class="fe fe-eye"></i>
-                    </button>';
-
-                    // Pause/Active Button for active draws
-                    if ($row->status === 'active') {
-                        if ($row->is_paused) {
-                            $actions .= '<button type="button" onclick="togglePauseDraw(' . $row->id . ', false)" class="btn btn-success btn-sm" title="Make Active">
-                                <i class="fe fe-play"></i>
-                            </button>';
-                        } else {
-                            $actions .= '<button type="button" onclick="confirmPauseDraw(' . $row->id . ')" class="btn btn-warning btn-sm" title="Pause Draw">
-                                <i class="fe fe-pause"></i>
-                            </button>';
-                        }
-                    }
-
-                    // Soft Delete Button
-                    $actions .= '<button type="button" onclick="softDeleteDraw(' . $row->id . ')" class="btn btn-danger btn-sm" title="Delete Draw">
-                        <i class="fe fe-trash-2"></i>
-                    </button>';
-
-                    $actions .= '</div>';
-                    return $actions;
-                })
-                ->rawColumns(['status', 'total_pool', 'total_participants', 'expected_winners', 'total_recipients', 'admin_commission', 'winners_selected', 'action'])
-                ->make(true);
-        }
-
         // Statistics for cards
         $activeDraws = WeeklyDraw::where('status', 'active')->count();
         $currentDraw = WeeklyDraw::where('status', 'active')->first();
@@ -112,6 +39,88 @@ class WeeklyDrawController extends Controller
             'totalParticipants',
             'totalDraws'
         ));
+    }
+
+    /**
+     * DataTables AJAX data source for draws listing.
+     */
+    public function getData(Request $request)
+    {
+        $draws = WeeklyDraw::latest('week_number')->get();
+
+        return DataTables::of($draws)
+            ->addIndexColumn()
+            ->addColumn('week_number', fn($row) => 'Week #' . $row->week_number)
+            ->addColumn('year', fn($row) => 'Year - ' . $row->year)
+            ->addColumn('status', function ($row) {
+                if ($row->is_paused) {
+                    return '<span class="badge bg-danger-transparent text-danger d-inline-flex align-items-center px-2 py-1">
+                                <i class="fe fe-pause-circle me-1"></i>
+                                Paused
+                            </span>';
+                }
+                $badges = [
+                    'active' => '<span class="badge badge-status status-active p-2 py-3">Active</span>',
+                    'claiming' => '<span class="badge badge-status status-claiming p-2 py-3">Claiming</span>',
+                    'completed' => '<span class="badge badge-status status-completed p-2 py-3">Completed</span>',
+                ];
+                return $badges[$row->status] ?? '<span class="badge bg-secondary">Unknown</span>';
+            })
+            ->addColumn('start_date', fn($row) => Carbon::parse($row->start_date)->format('M d, Y h:i A'))
+            ->addColumn('end_date', fn($row) => Carbon::parse($row->end_date)->format('M d, Y h:i A'))
+            ->addColumn('total_pool', fn($row) => '<span class="text-success fw-bold">$' . number_format($row->total_pool, 2) . '</span>')
+            ->addColumn('total_participants', fn($row) => '<span class="badge bg-warning text-dark">' . number_format($row->total_participants) . '</span>')
+            ->addColumn('expected_winners', function ($row) {
+                $expected = $row->total_participants > 0 ? (int) ceil($row->total_participants / 400) : 0;
+                return '<span class="badge bg-info">' . $expected . '</span>';
+            })
+            ->addColumn('total_recipients', function ($row) {
+                return $row->total_recipients > 0
+                    ? '<span class="badge bg-success py-3">' . $row->total_recipients . '</span>'
+                    : '<span class="text-muted">Pending</span>';
+            })
+            ->addColumn('admin_commission', fn($row) => '<span class="text-info">$' . number_format($row->admin_commission, 2) . '</span>')
+            ->addColumn('winners_selected', function ($row) {
+                return $row->winners_selected
+                    ? '<span class="badge bg-success py-3"> Yes</span>'
+                    : '<span class="badge bg-secondary py-3"> Pending</span>';
+            })
+            ->addColumn('action', function ($row) {
+                $actions = '<div class="btn-action-group">';
+
+                // View Button
+                $actions .= '<button type="button" class="btn btn-info btn-sm viewDraw" data-id="' . $row->id . '" title="View Details">
+                    <i class="fe fe-eye"></i>
+                </button>';
+
+                // Pause/Active Button for active draws
+                if ($row->status === 'active') {
+                    if ($row->is_paused) {
+                        $actions .= '<button type="button" onclick="togglePauseDraw(' . $row->id . ', false)" class="btn btn-success btn-sm" title="Make Active">
+                            <i class="fe fe-play"></i>
+                        </button>';
+                    } else {
+                        $actions .= '<button type="button" onclick="confirmPauseDraw(' . $row->id . ')" class="btn btn-secondary btn-sm" title="Pause Draw">
+                            <i class="fe fe-pause"></i>
+                        </button>';
+
+                        // Manual Finalize Button (emergency/manual action - only for active, non-paused draws)
+                        $actions .= '<a href="' . route('manual-finalize.show', $row->id) . '" class="btn btn-warning btn-sm" title="Manual Finalize">
+                            <i class="fe fe-zap"></i>
+                        </a>';
+                    }
+                }
+
+                // Soft Delete Button
+                $actions .= '<button type="button" onclick="softDeleteDraw(' . $row->id . ')" class="btn btn-danger btn-sm" title="Delete Draw">
+                    <i class="fe fe-trash-2"></i>
+                </button>';
+
+                $actions .= '</div>';
+                return $actions;
+            })
+            ->rawColumns(['status', 'total_pool', 'total_participants', 'expected_winners', 'total_recipients', 'admin_commission', 'winners_selected', 'action'])
+            ->make(true);
     }
 
 

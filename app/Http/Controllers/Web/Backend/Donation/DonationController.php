@@ -15,7 +15,10 @@ class DonationController extends Controller
     {
         if ($request->ajax()) {
             $query = Donation::with(['user:id,name,email,phone,donor_id', 'weeklyDraw:id,week_number'])
-                ->select('donations.*');
+                ->select('donations.*')
+                ->join('weekly_draws', 'donations.week_id', '=', 'weekly_draws.id')
+                ->orderBy('weekly_draws.week_number', 'desc')
+                ->orderBy('donations.donated_at', 'desc');
 
             // Filters
             if ($request->filled('week_id')) {

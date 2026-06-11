@@ -11,7 +11,8 @@
                 {{-- PAGE-HEADER --}}
                 <div class="page-header">
                     <div>
-                        <h1 class="page-title">Home page - Video section</h1>
+                        <h1 class="page-title">Video Section</h1>
+                        <p class="text-muted mb-0 mt-1" style="font-size: 13px;">Manage the promotional video for your home page.</p>
                     </div>
                     <div class="ms-auto pageheader-btn">
                         <ol class="breadcrumb">
@@ -23,37 +24,41 @@
 
                 {{-- PAGE-CONTENT --}}
                 <div class="row">
-                    <div class="col-lg-12">
-                        <div class="card box-shadow-0">
-                            <div class="card-header bg-light">
-                                <h4 class="card-title">Video</h4>
+                    <div class="col-lg-8 col-xl-6">
+                        <div class="hero-card">
+                            <div class="hero-card-header">
+                                <div class="hero-card-header-icon">
+                                    <i class="fe fe-video"></i>
+                                </div>
+                                <div>
+                                    <h5 class="hero-card-title mb-0">Promotional Video</h5>
+                                    <small class="text-muted">Upload an MP4 video to showcase on the home page.</small>
+                                </div>
                             </div>
-                            <div class="card-body">
+                            <div class="hero-card-body">
                                 <form class="form-horizontal" method="post"
                                     action="{{ route('cms.home.video.section.update') }}"
                                     enctype="multipart/form-data">
                                     @csrf
-                                    <div class="row mb-4">
-                                        {{-- video --}}
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label for="video_path" class="form-label">Video</label>
-                                                    <input type="file"
-                                                        class="dropify form-control @error('video_path') is-invalid @enderror"
-                                                        data-default-file="{{ !empty($data->video_path) && file_exists(public_path($data->video_path)) ? asset($data->image) : asset('default/placeholder-image.avif') }}"
-                                                        name="video_path" id="video_path">
-                                                    @error('video_path')
-                                                        <span class="text-danger">{{ $message }}</span>
-                                                    @enderror
-                                                </div>
-                                            </div>
-                                        </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="video_path" class="pro-label">Upload Video</label>
+                                        <input type="file"
+                                            class="dropify @error('video_path') is-invalid @enderror"
+                                            data-default-file="{{ !empty($data->video_path) && file_exists(public_path($data->video_path)) ? asset($data->video_path) : '' }}"
+                                            name="video_path" id="video_path"
+                                            data-allowed-file-extensions="mp4 webm mkv avi"
+                                            data-max-file-size="50M">
+                                        @error('video_path')
+                                            <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                                        @enderror
+                                    </div>
 
-                                        {{-- Submit --}}
-                                        <div class="form-group">
-                                            <button class="btn btn-primary" type="submit">Save changes</button>
-                                        </div>
+                                    {{-- Submit --}}
+                                    <div class="text-end">
+                                        <button class="pro-btn pro-btn-primary" type="submit">
+                                            <i class="fe fe-save me-2"></i> Save Video
+                                        </button>
                                     </div>
                                 </form>
                             </div>
@@ -63,9 +68,133 @@
             </div>
         </div>
     </div>
-
 @endsection
 
-@push('scripts')
+@push('styles')
+    <style>
+        /* ── Design Tokens ── */
+        :root {
+            --pro-radius: 12px;
+            --pro-radius-sm: 8px;
+            --pro-border: #e8eaed;
+            --pro-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 8px rgba(0,0,0,.04);
+            --pro-shadow-hover: 0 4px 16px rgba(0,0,0,.10);
+            --pro-accent: var(--primary-bg-color, #521aac);
+            --pro-accent-light: rgba(82, 26, 172, .08);
+            --pro-danger: #e03131;
+            --pro-text: #1a1d23;
+            --pro-muted: #6c757d;
+            --pro-transition: .18s ease;
+        }
 
+        /* ── Card ── */
+        .hero-card {
+            background: #fff;
+            border: 1px solid var(--pro-border);
+            border-radius: var(--pro-radius);
+            box-shadow: var(--pro-shadow);
+            overflow: hidden;
+            transition: box-shadow var(--pro-transition);
+        }
+        .hero-card:hover { box-shadow: var(--pro-shadow-hover); }
+
+        .hero-card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--pro-border);
+            background: #fafbfc;
+        }
+        .hero-card-header-icon {
+            width: 38px; height: 38px;
+            border-radius: var(--pro-radius-sm);
+            background: var(--pro-accent-light);
+            color: var(--pro-accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px;
+            flex-shrink: 0;
+        }
+        .hero-card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--pro-text);
+            letter-spacing: -.01em;
+        }
+        .hero-card-body { padding: 22px; }
+
+        /* ── Form Controls ── */
+        .pro-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--pro-text);
+            margin-bottom: 8px;
+            letter-spacing: -.01em;
+        }
+
+        /* ── Buttons ── */
+        .pro-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 10px 20px;
+            border-radius: var(--pro-radius-sm);
+            font-size: 13.5px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all var(--pro-transition);
+            letter-spacing: -.01em;
+        }
+        .pro-btn-primary {
+            background: var(--pro-accent);
+            color: #fff;
+        }
+        .pro-btn-primary:hover {
+            filter: brightness(1.12);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(82,26,172,.35);
+            color: #fff;
+        }
+        .pro-btn-primary:active { transform: translateY(0); }
+        .pro-btn-primary:disabled { opacity: .65; cursor: not-allowed; transform: none; }
+
+        /* Override Dropify styles for a more modern look */
+        .dropify-wrapper {
+            border: 2px dashed var(--pro-border) !important;
+            border-radius: var(--pro-radius-sm) !important;
+            background-color: #fafbfc !important;
+            padding: 20px !important;
+            transition: all var(--pro-transition);
+        }
+        .dropify-wrapper:hover {
+            border-color: var(--pro-accent) !important;
+            background-color: #f8f9fa !important;
+        }
+        .dropify-wrapper .dropify-message p {
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--pro-muted);
+        }
+        .dropify-wrapper .dropify-message span.file-icon {
+            font-size: 40px !important;
+            color: var(--pro-muted) !important;
+            margin-bottom: 10px;
+        }
+    </style>
+@endpush
+
+@push('scripts')
+    <script>
+        // Show success message with SweetAlert2
+        @if (session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '{{ session('success') }}',
+                timer: 3000,
+                showConfirmButton: false,
+                confirmButtonColor: '#521aac'
+            });
+        @endif
+    </script>
 @endpush

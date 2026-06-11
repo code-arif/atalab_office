@@ -420,7 +420,7 @@
                 processing: true,
                 responsive: false,
                 serverSide: true,
-                ajax: "{{ route('weekly-draws.index') }}",
+                ajax: "{{ route('weekly-draws.data') }}",
                 columns: [{
                         data: 'DT_RowIndex',
                         orderable: false,
@@ -481,7 +481,7 @@
                         if (d.is_paused) {
                             statusHtml = '<span class="badge bg-danger-transparent text-danger d-inline-flex align-items-center px-2 py-1"> <i class="fe fe-pause-circle me-1"></i> Paused </span>';
                         } else {
-                            statusHtml = `<span class="badge status-${d.status} px-2 py-1 text-uppercase">${d.status}</span>`;
+                            statusHtml = `<span class="badge status-${d.status} p-3 text-uppercase">${d.status}</span>`;
                         }
                         $('#view_status').html(statusHtml);
 
@@ -558,6 +558,13 @@
                                     toastr.success(res.message);
                                     dTable.ajax.reload();
                                 }
+                            },
+                            error: function(err) {
+                                let errMsg = 'An error occurred while deleting the draw.';
+                                if (err.responseJSON && err.responseJSON.message) {
+                                    errMsg = err.responseJSON.message;
+                                }
+                                toastr.error(errMsg);
                             }
                         });
                     }

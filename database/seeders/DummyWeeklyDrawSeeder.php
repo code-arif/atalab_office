@@ -25,20 +25,20 @@ class DummyWeeklyDrawSeeder extends Seeder
         $now = Carbon::now();
 
         // 2. Create a "completed" draw for last week
-        WeeklyDraw::create([
-            'week_number' => $now->copy()->subWeek()->weekOfYear,
-            'year' => $now->copy()->subWeek()->year,
-            'start_date' => $now->copy()->subDays(14)->startOfDay(),
-            'end_date' => $now->copy()->subDays(7)->endOfDay(),
-            'countdown_ends_at' => $now->copy()->subDays(7)->endOfDay(),
-            'claim_deadline' => $now->copy()->subDays(4)->endOfDay(),
-            'status' => 'completed',
-            'total_pool' => 500.00,
-            'total_participants' => 50,
-            'total_recipients' => 5,
-            'admin_commission' => 50.00,
-            'winners_selected' => true,
-        ]);
+        // WeeklyDraw::create([
+        //     'week_number' => $now->copy()->subWeek()->weekOfYear,
+        //     'year' => $now->copy()->subWeek()->year,
+        //     'start_date' => $now->copy()->subDays(14)->startOfDay(),
+        //     'end_date' => $now->copy()->subDays(7)->endOfDay(),
+        //     'countdown_ends_at' => $now->copy()->subDays(7)->endOfDay(),
+        //     'claim_deadline' => $now->copy()->subDays(4)->endOfDay(),
+        //     'status' => 'completed',
+        //     'total_pool' => 500.00,
+        //     'total_participants' => 50,
+        //     'total_recipients' => 5,
+        //     'admin_commission' => 50.00,
+        //     'winners_selected' => true,
+        // ]);
 
         // 3. Create an "active" draw for current week
         WeeklyDraw::create([
@@ -50,7 +50,7 @@ class DummyWeeklyDrawSeeder extends Seeder
             'claim_deadline' => $now->copy()->addDays(3)->endOfDay(),
             'status' => 'active',
             'total_pool' => 120.50,
-            'total_participants' => 15,
+            'total_participants' => 0,
             'total_recipients' => 0,
             'admin_commission' => 0.00,
             'winners_selected' => false,

@@ -24,7 +24,9 @@ class WeeklyDraw extends Model
         'admin_commission',
         'winners_selected',
         'year',
-        'is_paused'
+        'is_paused',
+        'draw_cycle_id',
+        'is_rolled_over'
     ];
 
     protected $casts = [
@@ -36,11 +38,20 @@ class WeeklyDraw extends Model
         'admin_commission' => 'decimal:2',
         'winners_selected' => 'boolean',
         'is_paused' => 'boolean',
+        'is_rolled_over' => 'boolean',
     ];
 
     /**
      * RELATIONSHIPS
      */
+
+    /**
+     * Get the draw cycle this week belongs to
+     */
+    public function drawCycle()
+    {
+        return $this->belongsTo(DrawCycle::class);
+    }
 
     /**
      * Get all donations for this week

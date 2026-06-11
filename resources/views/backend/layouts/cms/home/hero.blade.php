@@ -13,7 +13,8 @@
                 {{-- PAGE-HEADER --}}
                 <div class="page-header">
                     <div>
-                        <h1 class="page-title">Home page - Hero section</h1>
+                        <h1 class="page-title">Hero Section</h1>
+                        <p class="text-muted mb-0 mt-1" style="font-size: 13px;">Manage your homepage hero title and slider images.</p>
                     </div>
                     <div class="ms-auto pageheader-btn">
                         <ol class="breadcrumb">
@@ -25,79 +26,98 @@
                 {{-- PAGE-HEADER --}}
 
 
-                <div class="row">
-                    {{-- header manage --}}
-                    <div class="col-lg-12 col-xl-12 col-md-12 col-sm-12">
-                        <div class="card box-shadow-0">
-                            <div class="card-header bg-light">
-                                <h4 class="card-title">Header</h4>
-                                    </div>
-                            <div class="card-body">
+                {{-- ── Section Title Card ── --}}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="hero-card">
+                            <div class="hero-card-header">
+                                <div class="hero-card-header-icon">
+                                    <i class="fe fe-type"></i>
+                                </div>
+                                <div>
+                                    <h5 class="hero-card-title mb-0">Section Title</h5>
+                                    <small class="text-muted">The main heading displayed in the hero section.</small>
+                                </div>
+                            </div>
+                            <div class="hero-card-body">
                                 <form class="form-horizontal" method="post"
                                     action="{{ route('cms.home.hero.section.update') }}" enctype="multipart/form-data">
                                     @csrf
-                                    <div class="row mb-4">
-                                        {{-- section title --}}
-                                        <div class="form-group">
-                                            <label for="title" class="form-label">Title</label>
-                                            <input type="text" class="form-control @error('title') is-invalid @enderror"
-                                                name="title" placeholder="Enter title" id="title"
+                                    <div class="row align-items-end g-3">
+                                        <div class="col-lg-9 col-md-8">
+                                            <label for="title" class="pro-label">Title</label>
+                                            <input type="text"
+                                                class="pro-input @error('title') is-invalid @enderror"
+                                                name="title" placeholder="Enter hero section title…" id="title"
                                                 value="{{ $data->title ?? (old('title') ?? '') }}">
                                             @error('title')
-                                                <span class="text-danger">{{ $message }}</span>
+                                                <span class="invalid-feedback d-block">{{ $message }}</span>
                                             @enderror
                                         </div>
-                                        <div class="form-group">
-                                            <button class="btn btn-primary" type="submit">Save change</button>
+                                        <div class="col-lg-3 col-md-4">
+                                            <button class="pro-btn pro-btn-primary w-100" type="submit">
+                                                <i class="fe fe-save me-2"></i>Save Changes
+                                            </button>
                                         </div>
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {{-- slider manage --}}
-                                    </div>
+                {{-- ── Slider Management ── --}}
+                <div class="row g-4">
 
-                <div class="row">
-                    <!-- Add New Slider Card -->
+                    {{-- Add New Slider --}}
                     <div class="col-lg-4">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h3 class="card-title text-white">Add New Slider</h3>
+                        <div class="hero-card h-100">
+                            <div class="hero-card-header">
+                                <div class="hero-card-header-icon">
+                                    <i class="fe fe-upload-cloud"></i>
+                                </div>
+                                <div>
+                                    <h5 class="hero-card-title mb-0">Add New Slider</h5>
+                                    <small class="text-muted">Upload an image to the carousel.</small>
+                                </div>
                             </div>
-                            <div class="card-body">
+                            <div class="hero-card-body">
                                 <form id="sliderForm" enctype="multipart/form-data">
                                     @csrf
 
-                                    <div class="mb-3">
-                                        <label class="form-label">Slider Image <span class="text-danger">*</span></label>
-                                        <input type="file" name="image" id="sliderImage" class="form-control"
-                                            accept="image/*" required onchange="previewImage(event)">
-                                        <small class="text-muted">Recommended size: 1920x1080px</small>
+                                    {{-- Upload Zone --}}
+                                    <div class="upload-zone mb-3" id="uploadZone" onclick="document.getElementById('sliderImage').click()">
+                                        <div id="uploadPlaceholder">
+                                            <i class="fe fe-image upload-zone-icon"></i>
+                                            <p class="upload-zone-text mb-1">Click or drag to upload</p>
+                                            <small class="text-muted">Recommended: 1920 × 1080 px</small>
+                                        </div>
+                                        <div id="imagePreview" class="d-none">
+                                            <img src="" id="previewImg" class="upload-preview-img">
+                                            <div class="upload-preview-overlay">
+                                                <i class="fe fe-refresh-cw me-1"></i> Change image
                                             </div>
+                                        </div>
+                                        <input type="file" name="image" id="sliderImage"
+                                            accept="image/*" required onchange="previewImage(event)"
+                                            style="display:none;">
+                                    </div>
 
-                                            <!-- Image Preview -->
-                                    <div class="mb-3">
-                                            <div id="imagePreview" class="d-none">
-                                            <img src="" id="previewImg" class="img-fluid border"
-                                                style="max-height: 200px; width: 100%; object-fit: cover;">
+                                    {{-- Status Toggle --}}
+                                    <div class="pro-toggle-row mb-4">
+                                        <div>
+                                            <span class="pro-label mb-0">Active Status</span>
+                                            <small class="d-block text-muted" style="font-size: 11px;">Show this slider on the frontend</small>
+                                        </div>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input custom-toggle" type="checkbox"
+                                                name="status" id="status" value="1" checked>
                                         </div>
                                     </div>
 
-                                    <div class="mb-3" style="margin-left: 12px">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input custom-toggle" type="checkbox" name="status"
-                                                id="status" value="1" checked>
-                                            <label class="form-check-label" for="status"
-                                                style="margin-left: 22px; margin-top: 5px;">
-                                                Active Status
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <button type="submit" class="btn btn-primary w-100">
-                                        <span class="spinner-border spinner-border-sm d-none" id="submitSpinner"></span>
+                                    <button type="submit" class="pro-btn pro-btn-primary w-100" id="submitBtn">
+                                        <span class="spinner-border spinner-border-sm d-none me-2" id="submitSpinner"></span>
+                                        <i class="fe fe-plus me-2" id="submitIcon"></i>
                                         <span id="submitText">Add Slider</span>
                                     </button>
                                 </form>
@@ -105,63 +125,75 @@
                         </div>
                     </div>
 
-                    <!-- Slider List -->
+                    {{-- Slider List --}}
                     <div class="col-lg-8">
-                        <div class="card">
-                            <div class="card-header bg-light">
-                                <h3 class="card-title">All Sliders ({{ $sliders->count() }})</h3>
+                        <div class="hero-card h-100">
+                            <div class="hero-card-header">
+                                <div class="hero-card-header-icon">
+                                    <i class="fe fe-layers"></i>
+                                </div>
+                                <div>
+                                    <h5 class="hero-card-title mb-0">
+                                        All Sliders
+                                        <span class="slider-count-badge">{{ $sliders->count() }}</span>
+                                    </h5>
+                                    <small class="text-muted">Drag to reorder. Changes save automatically.</small>
+                                </div>
                             </div>
-                            <div class="card-body">
+                            <div class="hero-card-body">
                                 @if ($sliders->isEmpty())
-                                    <div class="text-center py-5">
-                                        <i class="fe fe-image" style="font-size: 48px; color: #ccc;"></i>
-                                        <p class="text-muted mt-3">No sliders found. Add your first slider!</p>
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">
+                                            <i class="fe fe-image"></i>
+                                        </div>
+                                        <h6 class="mt-3 mb-1">No sliders yet</h6>
+                                        <p class="text-muted mb-0" style="font-size: 13px;">Upload your first slider image using the form on the left.</p>
                                     </div>
                                 @else
-                                    <div id="sortable-sliders" class="row">
+                                    <div id="sortable-sliders" class="slider-list">
                                         @foreach ($sliders as $slider)
-                                            <div class="col-md-6 mb-3 sortable-item" data-id="{{ $slider->id }}">
-                                                <div class="card border">
-                                                    <div class="card-body p-2">
-                                                        <div class="d-flex align-items-center">
-                                                            <!-- Drag Handle -->
-                                                            <div class="me-2 drag-handle" style="cursor: move;">
-                                                                <i class="fe fe-menu" style="font-size: 20px;"></i>
-                                                    </div>
+                                            <div class="slider-item sortable-item" data-id="{{ $slider->id }}">
+                                                {{-- Drag Handle --}}
+                                                <div class="slider-drag drag-handle" title="Drag to reorder">
+                                                    <i class="fe fe-more-vertical"></i>
+                                                    <i class="fe fe-more-vertical" style="margin-left: -8px;"></i>
+                                                </div>
 
-                                                            <!-- Image Preview -->
-                                                            <div class="me-2">
-                                                                <img src="{{ asset('/' . $slider->image) }}"
-                                                                    class="img-fluid border"
-                                                                    style="width: 80px; height: 60px; object-fit: cover;">
+                                                {{-- Thumbnail --}}
+                                                <div class="slider-thumb">
+                                                    <img src="{{ asset('/' . $slider->image) }}"
+                                                        alt="Slider #{{ $slider->id }}">
+                                                </div>
+
+                                                {{-- Info --}}
+                                                <div class="slider-info">
+                                                    <span class="slider-name">Slide #{{ $slider->id }}</span>
+                                                    <small class="text-muted">Order: {{ $slider->order }}</small>
+                                                </div>
+
+                                                {{-- Actions --}}
+                                                <div class="slider-actions">
+                                                    {{-- Status Badge --}}
+                                                    <span class="status-label {{ $slider->status ? 'status-active' : 'status-inactive' }}"
+                                                        id="status-label-{{ $slider->id }}">
+                                                        {{ $slider->status ? 'Active' : 'Inactive' }}
+                                                    </span>
+                                                    
+                                                    <div class="action-buttons">
+                                                        {{-- Status Toggle --}}
+                                                        <div class="form-check form-switch mb-0">
+                                                            <input
+                                                                class="form-check-input status-toggle custom-toggle"
+                                                                type="checkbox" data-id="{{ $slider->id }}"
+                                                                {{ $slider->status ? 'checked' : '' }}
+                                                                style="cursor: pointer;" value="1">
                                                         </div>
 
-                                                            <!-- Slider Info -->
-                                                            <div class="flex-grow-1">
-                                                                <p class="mb-1 fw-bold">Slider #{{ $slider->id }}</p>
-                                                                <small class="text-muted">
-                                                                    Order: {{ $slider->order }}
-                                                                </small>
-                                                            </div>
-
-                                                            <!-- Actions -->
-                                                            <div class="d-flex align-items-center gap-3">
-                                                                <!-- Status Toggle -->
-                                                                <div class="form-check form-switch mb-0">
-                                                                    <input
-                                                                        class="form-check-input status-toggle custom-toggle"
-                                                                        type="checkbox" data-id="{{ $slider->id }}"
-                                                                        {{ $slider->status ? 'checked' : '' }}
-                                                                        style="cursor: pointer;" value="1">
-                                                                </div>
-
-                                                                <!-- Delete Button -->
-                                                                <button class="btn btn-sm btn-danger delete-slider"
-                                                                    data-id="{{ $slider->id }}">
-                                                                <i class="fe fe-trash-2"></i>
-                                                            </button>
-                                                            </div>
-                                                        </div>
+                                                        {{-- Delete --}}
+                                                        <button class="pro-icon-btn danger delete-slider"
+                                                            data-id="{{ $slider->id }}" title="Delete slider">
+                                                            <i class="fe fe-trash-2"></i>
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -171,6 +203,7 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
 
             </div>
@@ -181,21 +214,318 @@
 
 @push('styles')
     <style>
-        /* Custom Toggle Switch Styling */
+        /* ── Design Tokens ── */
+        :root {
+            --pro-radius: 12px;
+            --pro-radius-sm: 8px;
+            --pro-border: #e8eaed;
+            --pro-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 8px rgba(0,0,0,.04);
+            --pro-shadow-hover: 0 4px 16px rgba(0,0,0,.10);
+            --pro-accent: var(--primary-bg-color, #521aac);
+            --pro-accent-light: rgba(82, 26, 172, .08);
+            --pro-danger: #e03131;
+            --pro-danger-light: #fff5f5;
+            --pro-success: #2f9e44;
+            --pro-text: #1a1d23;
+            --pro-muted: #6c757d;
+            --pro-transition: .18s ease;
+        }
+
+        /* ── Card ── */
+        .hero-card {
+            background: #fff;
+            border: 1px solid var(--pro-border);
+            border-radius: var(--pro-radius);
+            box-shadow: var(--pro-shadow);
+            overflow: hidden;
+            transition: box-shadow var(--pro-transition);
+        }
+        .hero-card:hover { box-shadow: var(--pro-shadow-hover); }
+
+        .hero-card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--pro-border);
+            background: #fafbfc;
+        }
+        .hero-card-header-icon {
+            width: 38px; height: 38px;
+            border-radius: var(--pro-radius-sm);
+            background: var(--pro-accent-light);
+            color: var(--pro-accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px;
+            flex-shrink: 0;
+        }
+        .hero-card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--pro-text);
+            letter-spacing: -.01em;
+        }
+        .hero-card-body { padding: 22px; }
+
+        /* ── Form Controls ── */
+        .pro-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--pro-text);
+            margin-bottom: 6px;
+            letter-spacing: -.01em;
+        }
+        .pro-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--pro-border);
+            border-radius: var(--pro-radius-sm);
+            font-size: 14px;
+            color: var(--pro-text);
+            background: #fff;
+            transition: border-color var(--pro-transition), box-shadow var(--pro-transition);
+            outline: none;
+        }
+        .pro-input:focus {
+            border-color: var(--pro-accent);
+            box-shadow: 0 0 0 3px rgba(59,91,219,.12);
+        }
+        .pro-input.is-invalid { border-color: var(--pro-danger); }
+        .invalid-feedback { font-size: 12px; color: var(--pro-danger); margin-top: 4px; }
+
+        /* ── Buttons ── */
+        .pro-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 10px 20px;
+            border-radius: var(--pro-radius-sm);
+            font-size: 13.5px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all var(--pro-transition);
+            letter-spacing: -.01em;
+        }
+        .pro-btn-primary {
+            background: var(--pro-accent);
+            color: #fff;
+        }
+        .pro-btn-primary:hover {
+            filter: brightness(1.12);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(82,26,172,.35);
+            color: #fff;
+        }
+        .pro-btn-primary:active { transform: translateY(0); }
+        .pro-btn-primary:disabled { opacity: .65; cursor: not-allowed; transform: none; }
+
+        .pro-icon-btn {
+            width: 32px; height: 32px;
+            border-radius: var(--pro-radius-sm);
+            border: 1.5px solid var(--pro-border);
+            background: transparent;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all var(--pro-transition);
+            color: var(--pro-muted);
+        }
+        .pro-icon-btn.danger:hover {
+            background: var(--pro-danger-light);
+            border-color: var(--pro-danger);
+            color: var(--pro-danger);
+        }
+
+        /* ── Toggle ── */
         .custom-toggle {
             width: 40px !important;
             height: 20px !important;
             cursor: pointer;
         }
-
         .custom-toggle:checked {
-            background-color: #521aac !important;
-            border-color: #521aac !important;
+            background-color: var(--primary-bg-color, #521aac) !important;
+            border-color: var(--primary-bg-color, #521aac) !important;
+        }
+        .custom-toggle:focus {
+            box-shadow: 0 0 0 3px rgba(82,26,172,.18) !important;
+            border-color: var(--primary-bg-color, #521aac) !important;
         }
 
-        .custom-toggle:focus {
-            box-shadow: 0 0 0 0.25rem rgba(82, 26, 172, 0.25) !important;
-            border-color: #521aac !important;
+        .pro-toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            border: 1.5px solid var(--pro-border);
+            border-radius: var(--pro-radius-sm);
+            background: #fafbfc;
+        }
+
+        /* ── Upload Zone ── */
+        .upload-zone {
+            position: relative;
+            border: 2px dashed #d0d5e8;
+            border-radius: var(--pro-radius-sm);
+            background: #fafbff;
+            cursor: pointer;
+            transition: all var(--pro-transition);
+            overflow: hidden;
+            text-align: center;
+            padding: 36px 20px;
+        }
+        .upload-zone:hover {
+            border-color: var(--pro-accent);
+            background: var(--pro-accent-light);
+        }
+        .upload-zone-icon {
+            font-size: 36px;
+            color: #a5b0d0;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .upload-zone:hover .upload-zone-icon { color: var(--pro-accent); }
+        .upload-zone-text {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--pro-text);
+        }
+        .upload-preview-img {
+            width: 100%; max-height: 180px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+        .upload-preview-overlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,.45);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 600;
+            opacity: 0;
+            transition: opacity var(--pro-transition);
+            border-radius: var(--pro-radius-sm);
+        }
+        .upload-zone:hover .upload-preview-overlay { opacity: 1; }
+        #imagePreview { padding: 0; }
+
+        /* ── Slider Count Badge ── */
+        .slider-count-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 22px; height: 22px;
+            padding: 0 7px;
+            border-radius: 100px;
+            background: var(--pro-accent-light);
+            color: var(--pro-accent);
+            font-size: 11px; font-weight: 700;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        /* ── Slider List ── */
+        .slider-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .slider-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border: 1.5px solid var(--pro-border);
+            border-radius: var(--pro-radius-sm);
+            background: #fff;
+            transition: all var(--pro-transition);
+        }
+        .slider-item:hover {
+            border-color: #c7cde8;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+
+        .slider-drag {
+            cursor: grab;
+            color: #c0c5d0;
+            font-size: 16px;
+            display: flex;
+            flex-shrink: 0;
+            transition: color var(--pro-transition);
+        }
+        .slider-drag:hover { color: var(--pro-accent); }
+        .slider-drag:active { cursor: grabbing; }
+
+        .slider-thumb img {
+            width: 72px; height: 48px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--pro-border);
+            flex-shrink: 0;
+        }
+
+        .slider-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+        .slider-name {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--pro-text);
+        }
+
+        .slider-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .action-buttons .form-check.form-switch {
+            padding-left: 2.5em;
+            margin-bottom: 0;
+            min-height: auto;
+            display: flex;
+            align-items: center;
+        }
+        .action-buttons .form-check-input {
+            margin-top: 0;
+            margin-left: -2.5em;
+            vertical-align: middle;
+        }
+        .pro-icon-btn {
+            position: relative;
+        }
+
+        .status-label {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 100px;
+            letter-spacing: .03em;
+        }
+        .status-active {
+            background: #d3f9d8;
+            color: var(--pro-success);
+        }
+        .status-inactive {
+            background: #f1f3f5;
+            color: var(--pro-muted);
+        }
+
+        /* ── Empty State ── */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+        }
+        .empty-state-icon {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: #f1f3f5;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 28px;
+            color: #adb5bd;
         }
     </style>
 @endpush
@@ -207,33 +537,39 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <script>
-        // Image Preview
+        // ── Image Preview ──
         function previewImage(event) {
             const file = event.target.files[0];
             const preview = document.getElementById('imagePreview');
+            const placeholder = document.getElementById('uploadPlaceholder');
             const previewImg = document.getElementById('previewImg');
+            const zone = document.getElementById('uploadZone');
 
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     previewImg.src = e.target.result;
                     preview.classList.remove('d-none');
+                    placeholder.classList.add('d-none');
+                    zone.style.padding = '0';
                 }
                 reader.readAsDataURL(file);
             }
         }
 
-        // Add Slider Form Submit
+        // ── Add Slider Form Submit ──
         document.getElementById('sliderForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const submitBtn = this.querySelector('button[type="submit"]');
+            const submitBtn = document.getElementById('submitBtn');
             const spinner = document.getElementById('submitSpinner');
             const submitText = document.getElementById('submitText');
+            const submitIcon = document.getElementById('submitIcon');
 
             submitBtn.disabled = true;
             spinner.classList.remove('d-none');
-            submitText.textContent = ' Adding...';
+            submitIcon.classList.add('d-none');
+            submitText.textContent = 'Adding…';
 
             const formData = new FormData(this);
 
@@ -258,6 +594,7 @@
             } catch (error) {
                 submitBtn.disabled = false;
                 spinner.classList.add('d-none');
+                submitIcon.classList.remove('d-none');
                 submitText.textContent = 'Add Slider';
 
                 if (error.response && error.response.status === 422) {
@@ -282,14 +619,14 @@
             }
         });
 
-        // Status Toggle with SweetAlert Confirmation
+        // ── Status Toggle ──
         document.querySelectorAll('.status-toggle').forEach(toggle => {
             toggle.addEventListener('change', async function() {
                 const id = this.getAttribute('data-id');
                 const newStatus = this.checked;
                 const statusText = newStatus ? 'activate' : 'deactivate';
 
-                // Prevent toggle until confirmed
+                // Revert until confirmed
                 this.checked = !newStatus;
 
                 Swal.fire({
@@ -304,24 +641,28 @@
                 }).then(async (result) => {
                     if (result.isConfirmed) {
                         try {
-                            const url = "{{ route('cms.slider.status', ':id') }}".replace(
-                                ':id', id);
+                            const url = "{{ route('cms.slider.status', ':id') }}".replace(':id', id);
 
                             const response = await axios.post(url, {
                                 status: newStatus ? 1 : 0
                             }, {
                                 headers: {
-                                    'X-CSRF-TOKEN': document.querySelector(
-                                        'input[name="_token"]').value,
+                                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
                                     'Content-Type': 'application/json'
                                 }
                             });
 
-                            // Update toggle to new status
                             this.checked = newStatus;
 
+                            // Update status badge
+                            const label = document.getElementById('status-label-' + id);
+                            if (label) {
+                                label.textContent = newStatus ? 'Active' : 'Inactive';
+                                label.className = 'status-label ' + (newStatus ? 'status-active' : 'status-inactive');
+                            }
+
                             Swal.fire({
-                                title: 'Success!',
+                                title: 'Updated!',
                                 text: response.data.message,
                                 icon: 'success',
                                 confirmButtonColor: '#521aac',
@@ -330,47 +671,42 @@
                             });
 
                         } catch (error) {
-                            // Keep toggle at old status
                             this.checked = !newStatus;
 
                             Swal.fire({
                                 title: 'Error!',
-                                text: error.response?.data?.message ||
-                                    'Failed to update status.',
+                                text: error.response?.data?.message || 'Failed to update status.',
                                 icon: 'error',
                                 confirmButtonColor: '#521aac'
                             });
                         }
                     }
-                    // If cancelled, keep toggle at old status (already set above)
                 });
             });
         });
 
-        // Delete Slider with SweetAlert
+        // ── Delete Slider ──
         document.querySelectorAll('.delete-slider').forEach(button => {
             button.addEventListener('click', async function() {
                 const id = this.getAttribute('data-id');
 
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "You won't be able to revert this!",
+                    title: 'Delete Slider?',
+                    text: "This action cannot be undone.",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#521aac',
-                    cancelButtonColor: '#d33',
+                    confirmButtonColor: '#e03131',
+                    cancelButtonColor: '#521aac',
                     confirmButtonText: 'Yes, delete it!',
                     cancelButtonText: 'Cancel'
                 }).then(async (result) => {
                     if (result.isConfirmed) {
                         try {
-                            const url = "{{ route('cms.slider.destroy', ':id') }}".replace(
-                                ':id', id);
+                            const url = "{{ route('cms.slider.destroy', ':id') }}".replace(':id', id);
 
                             const response = await axios.delete(url, {
                                 headers: {
-                                    'X-CSRF-TOKEN': document.querySelector(
-                                        'input[name="_token"]').value
+                                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
                                 }
                             });
 
@@ -390,8 +726,7 @@
                         } catch (error) {
                             Swal.fire({
                                 title: 'Error!',
-                                text: error.response?.data?.message ||
-                                    'Failed to delete slider.',
+                                text: error.response?.data?.message || 'Failed to delete slider.',
                                 icon: 'error',
                                 confirmButtonColor: '#521aac'
                             });
@@ -401,12 +736,13 @@
             });
         });
 
-        // Sortable (Drag & Drop)
+        // ── Sortable Drag & Drop ──
         const sortableList = document.getElementById('sortable-sliders');
         if (sortableList && sortableList.children.length > 0) {
             new Sortable(sortableList, {
-                animation: 150,
+                animation: 180,
                 handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
                 onEnd: async function(evt) {
                     const orders = [];
                     document.querySelectorAll('.sortable-item').forEach((item, index) => {
@@ -426,7 +762,7 @@
                         });
 
                         iziToast.success({
-                            title: 'Success',
+                            title: 'Order Saved',
                             message: response.data.message,
                             position: 'topRight'
                         });

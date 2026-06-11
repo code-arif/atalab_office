@@ -2,9 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Models\DrawAutomateSetting;
 use App\Models\WeeklyDraw;
 use App\Services\WeeklyDrawService;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -37,11 +39,18 @@ class AutomateWeeklyDraws extends Command
         ]);
 
         // Retrieve settings, with database fallbacks
-        $settings = \App\Models\DrawAutomateSetting::firstOrCreate([], [
+        // $settings = DrawAutomateSetting::firstOrCreate([], [
+        //     'draw_start_day' => 'Monday',
+        //     'draw_start_time' => '00:00:00',
+        //     'draw_end_day' => 'Sunday',
+        //     'draw_end_time' => '17:00:00',
+        // ]);
+
+        $settings = DrawAutomateSetting::firstOrCreate([], [
             'draw_start_day' => 'Monday',
             'draw_start_time' => '00:00:00',
-            'draw_end_day' => 'Sunday',
-            'draw_end_time' => '17:00:00',
+            'draw_end_day' => 'Tuesday',
+            'draw_end_time' => '11:20:00',
         ]);
 
         $startTime = Carbon::parse($settings->draw_start_time);
@@ -80,7 +89,7 @@ class AutomateWeeklyDraws extends Command
             $draw = $this->weeklyDrawService->createNewDraw();
 
             $this->info("New draw created: Week #{$draw->week_number}");
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Failed to create draw: ' . $e->getMessage());
         }
     }
@@ -106,6 +115,11 @@ class AutomateWeeklyDraws extends Command
             // Step 2: Select Winners
             $result = $this->weeklyDrawService->selectWinners($draw->id);
 
+            if (isset($result['rollover']) && $result['rollover']) {
+                $this->info("Draw rolled over due to insufficient participants ({$result['participants']}).");
+                return;
+            }
+
             $this->info("Winners selected successfully!");
             $this->info("   - Winners: {$result['recipients']}");
             $this->info("   - Total distributed: $" . number_format($result['total_distributed'], 2));
@@ -118,7 +132,7 @@ class AutomateWeeklyDraws extends Command
                 'admin_commission' => $result['admin_commission'],
                 'timezone' => config('app.timezone'),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Failed: ' . $e->getMessage());
             Log::error('Finalization/selection failed', [
                 'error' => $e->getMessage(),

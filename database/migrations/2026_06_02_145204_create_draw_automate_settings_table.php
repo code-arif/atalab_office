@@ -13,19 +13,19 @@ return new class extends Migration
     {
         Schema::create('draw_automate_settings', function (Blueprint $table) {
             $table->id();
-            
+
             // Core Settings
-            $table->decimal('admin_fee_percentage', 5, 2)->default(7.50);
-            $table->integer('odds_ratio')->default(400);
-            $table->integer('minimum_participants')->default(100);
-            $table->integer('winner_exclusion_months')->default(6);
+            $table->decimal('admin_fee_percentage', 5, 2)->default(10);
+            $table->integer('odds_ratio')->default(250);
+            $table->integer('minimum_participants')->default(250);
+            $table->integer('winner_exclusion_months')->default(12);
 
             // Schedule Settings
             $table->string('draw_start_day')->default('Monday');
             $table->time('draw_start_time')->default('00:00:00');
             $table->string('draw_end_day')->default('Sunday');
             $table->time('draw_end_time')->default('17:00:00');
-            
+
             $table->timestamps();
         });
     }
