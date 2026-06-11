@@ -53,6 +53,8 @@ class AutomateWeeklyDraws extends Command
             'draw_end_time' => '11:20:00',
         ]);
 
+        Log::info($settings);
+
         $startTime = Carbon::parse($settings->draw_start_time);
         $endTime = Carbon::parse($settings->draw_end_time);
 

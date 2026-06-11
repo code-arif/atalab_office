@@ -141,12 +141,6 @@ class WeeklyDrawService
 
             $draw->update(['status' => 'claiming']);
 
-            // Log::info('Draw finalized', [
-            //     'week_id' => $weekId,
-            //     'week_number' => $draw->week_number,
-            //     'year' => $draw->year
-            // ]);
-
             return $draw->fresh();
         });
     }
@@ -185,7 +179,7 @@ class WeeklyDrawService
                     'total_participants' => $totalParticipants, // store rolling count
                     'total_pool' => $totalPool
                 ]);
-                
+
                 Log::info('Draw Rolled Over', [
                     'week_id' => $weekId,
                     'week_number' => $draw->week_number,
