@@ -12,6 +12,7 @@
                 <div class="page-header">
                     <div>
                         <h1 class="page-title">Eligibility Page</h1>
+                        <p class="text-muted mb-0 mt-1" style="font-size: 13px;">Manage the content for the Eligibility criteria section.</p>
                     </div>
                     <div class="ms-auto pageheader-btn">
                         <ol class="breadcrumb">
@@ -24,39 +25,48 @@
                 {{-- PAGE-CONTENT --}}
                 <div class="row">
                     <div class="col-lg-12">
-                        <div class="card box-shadow-0">
-                            <div class="card-body">
-                                <form class="form-horizontal" method="post"
-                                    action="{{ route('cms.eligibility.hero.section.update') }}"
-                                    enctype="multipart/form-data">
+                        <div class="hero-card">
+                            <div class="hero-card-header">
+                                <div class="hero-card-header-icon">
+                                    <i class="fe fe-check-square"></i>
+                                </div>
+                                <div>
+                                    <h5 class="hero-card-title mb-0">Eligibility Criteria</h5>
+                                    <small class="text-muted">Enter the title and detailed description of the eligibility terms.</small>
+                                </div>
+                            </div>
+                            <div class="hero-card-body">
+                                <form method="post" action="{{ route('cms.eligibility.hero.section.update') }}" enctype="multipart/form-data">
                                     @csrf
-                                    <div class="row mb-4">
+                                    
+                                    {{-- Title --}}
+                                    <div class="mb-4">
+                                        <label for="title" class="pro-label">Page Title</label>
+                                        <input type="text" class="pro-input @error('title') is-invalid @enderror"
+                                            name="title" placeholder="Enter title" id="title"
+                                            value="{{ $data->title ?? old('title') }}">
+                                        @error('title')
+                                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                                        @enderror
+                                    </div>
 
-                                        {{-- Title --}}
-                                        <div class="form-group mb-3">
-                                            <label for="title" class="form-label">Title</label>
-                                            <input type="text" class="form-control @error('title') is-invalid @enderror"
-                                                name="title" placeholder="Enter title" id="title"
-                                                value="{{ $data->title ?? old('title') }}">
-                                            @error('title')
-                                                <span class="text-danger">{{ $message }}</span>
-                                            @enderror
-                                        </div>
-
-                                        {{-- Description --}}
-                                        <div class="form-group mb-3">
-                                            <label for="description" class="form-label">Description</label>
-                                            <textarea name="description" id="summernote" class="form-control @error('description') is-invalid @enderror"
+                                    {{-- Description --}}
+                                    <div class="mb-4">
+                                        <label for="description" class="pro-label">Detailed Description</label>
+                                        <div class="editor-container @error('description') is-invalid-editor @enderror">
+                                            <textarea name="description" id="summernote" class="form-control"
                                                 rows="6" placeholder="Enter description">{{ $data->description ?? old('description') }}</textarea>
-                                            @error('description')
-                                                <span class="text-danger">{{ $message }}</span>
-                                            @enderror
                                         </div>
+                                        @error('description')
+                                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                                        @enderror
+                                    </div>
 
-                                        {{-- Submit --}}
-                                        <div class="form-group">
-                                            <button class="btn btn-primary" type="submit">Save changes</button>
-                                        </div>
+                                    {{-- Submit --}}
+                                    <div class="text-end pt-3 border-top" style="border-color: var(--pro-border) !important;">
+                                        <button class="pro-btn pro-btn-primary px-5" type="submit">
+                                            <i class="fe fe-save me-2"></i> Save Changes
+                                        </button>
                                     </div>
                                 </form>
                             </div>
@@ -66,7 +76,6 @@
             </div>
         </div>
     </div>
-
 @endsection
 
 @push('scripts')
@@ -77,7 +86,7 @@
             $('#summernote').summernote({
                 placeholder: 'Enter section description...',
                 tabsize: 2,
-                height: 300,
+                height: 250,
                 disableDragAndDrop: false,
 
                 toolbar: [
@@ -89,79 +98,179 @@
                     ['table', ['table']],
                     ['insert', ['link', 'picture']],
                     ['view', ['fullscreen', 'codeview', 'help']]
-                ],
-
-                callbacks: {
-                    onInit: function() {
-                        $('.note-editable').css('color', '#e0e0e0');
-                    },
-                    onChange: function(contents, $editable) {
-                        $('.note-editable').css('color', '#e0e0e0');
-                    }
-                }
-            });
-
-            $('#summernote').on('summernote.change', function() {
-                $('.note-editable').css('color', '#e0e0e0');
+                ]
             });
         });
+
+        // Show success message with SweetAlert2
+        @if (session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '{{ session('success') }}',
+                timer: 3000,
+                showConfirmButton: false,
+                confirmButtonColor: '#521aac'
+            });
+        @endif
     </script>
 @endpush
-
 
 @push('styles')
     <!-- Summernote Lite CSS -->
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
 
-    <!-- Dark Mode Custom CSS -->
     <style>
-        /* Summernote Dark Theme */
-        .note-editor.note-frame {
-            border: 1px solid #444;
-            border-radius: 8px;
-            background-color: #1e1e1e !important;
+        /* ── Design Tokens ── */
+        :root {
+            --pro-radius: 12px;
+            --pro-radius-sm: 8px;
+            --pro-border: #e8eaed;
+            --pro-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 8px rgba(0,0,0,.04);
+            --pro-shadow-hover: 0 4px 16px rgba(0,0,0,.10);
+            --pro-accent: var(--primary-bg-color, #521aac);
+            --pro-accent-light: rgba(82, 26, 172, .08);
+            --pro-danger: #e03131;
+            --pro-text: #1a1d23;
+            --pro-muted: #6c757d;
+            --pro-transition: .18s ease;
         }
 
-        .note-editor .note-toolbar {
-            background-color: #2d2d2d !important;
-            border-bottom: 1px solid #444;
+        /* ── Card ── */
+        .hero-card {
+            background: #fff;
+            border: 1px solid var(--pro-border);
+            border-radius: var(--pro-radius);
+            box-shadow: var(--pro-shadow);
+            overflow: hidden;
+            transition: box-shadow var(--pro-transition);
+        }
+        .hero-card:hover { box-shadow: var(--pro-shadow-hover); }
+
+        .hero-card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--pro-border);
+            background: #fafbfc;
+        }
+        .hero-card-header-icon {
+            width: 38px; height: 38px;
+            border-radius: var(--pro-radius-sm);
+            background: var(--pro-accent-light);
+            color: var(--pro-accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px;
+            flex-shrink: 0;
+        }
+        .hero-card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--pro-text);
+            letter-spacing: -.01em;
+        }
+        .hero-card-body { padding: 30px; }
+
+        /* ── Form Controls ── */
+        .pro-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--pro-text);
+            margin-bottom: 8px;
+            letter-spacing: -.01em;
+        }
+        .pro-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--pro-border);
+            border-radius: var(--pro-radius-sm);
+            font-size: 14px;
+            color: var(--pro-text);
+            background: #fff;
+            transition: border-color var(--pro-transition), box-shadow var(--pro-transition);
+            outline: none;
+        }
+        .pro-input:focus {
+            border-color: var(--pro-accent);
+            box-shadow: 0 0 0 3px rgba(82,26,172,.18);
+        }
+        .pro-input.is-invalid { border-color: var(--pro-danger); }
+        .invalid-feedback { font-size: 12px; color: var(--pro-danger); margin-top: 4px; }
+
+        /* ── Buttons ── */
+        .pro-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 10px 20px;
+            border-radius: var(--pro-radius-sm);
+            font-size: 13.5px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all var(--pro-transition);
+            letter-spacing: -.01em;
+        }
+        .pro-btn-primary {
+            background: var(--pro-accent);
             color: #fff;
         }
-
-        .note-editor .note-editing-area .note-editable {
-            background-color: #1e1e1e !important;
-            color: #e0e0e0 !important;
-            caret-color: #fff;
+        .pro-btn-primary:hover {
+            filter: brightness(1.12);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(82,26,172,.35);
+            color: #fff;
         }
+        .pro-btn-primary:active { transform: translateY(0); }
 
-        .note-editor .note-statusbar {
-            background-color: #2d2d2d !important;
-            color: #aaa;
+        /* ── Clean Summernote Overrides ── */
+        .editor-container {
+            border-radius: var(--pro-radius-sm);
+            overflow: hidden;
+            border: 1.5px solid var(--pro-border);
+            transition: border-color var(--pro-transition);
         }
-
-        /* Toolbar buttons color fix */
-        .note-editor .note-btn {
-            background-color: #333 !important;
-            color: #ddd !important;
+        .editor-container:focus-within {
+            border-color: var(--pro-accent);
+        }
+        .editor-container.is-invalid-editor {
+            border-color: var(--pro-danger);
+        }
+        .note-editor.note-frame {
             border: none !important;
+            border-radius: 0 !important;
+            margin-bottom: 0 !important;
+            box-shadow: none !important;
         }
-
-        .note-editor .note-btn:hover {
-            background-color: #444 !important;
+        .note-editor .note-toolbar {
+            background-color: #fafbfc !important;
+            border-bottom: 1px solid var(--pro-border) !important;
+            padding: 10px 10px 5px 10px !important;
         }
-
-        /* Dropdown menu dark */
-        .note-editor .dropdown-menu {
-            background-color: #2d2d2d !important;
-            border: 1px solid #555;
+        .note-editor .note-statusbar {
+            background-color: #fafbfc !important;
+            border-top: 1px solid var(--pro-border) !important;
         }
-
-        .note-editor .dropdown-item {
-            color: #ddd !important;
+        .note-btn {
+            border-radius: 6px !important;
+            border: 1px solid transparent !important;
+            background: transparent !important;
+            color: var(--pro-text) !important;
+            box-shadow: none !important;
         }
-
-        .note-editor .dropdown-item:hover {
-            background-color: #444 !important;
+        .note-btn:hover {
+            background: rgba(0,0,0,.05) !important;
+            border-color: var(--pro-border) !important;
+        }
+        .note-editor .note-editing-area .note-editable {
+            padding: 20px !important;
+            color: var(--pro-text) !important;
+            font-size: 14px;
+        }
+        .note-editor .note-editing-area .note-placeholder {
+            padding: 20px !important;
+            font-size: 14px;
+            color: var(--pro-muted) !important;
         }
     </style>
 @endpush
