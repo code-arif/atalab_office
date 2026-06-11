@@ -3,15 +3,16 @@
 namespace App\Http\Controllers\Web\Backend;
 
 
-use Carbon\Carbon;
-use App\Models\User;
+use App\Http\Controllers\Controller;
 use App\Models\Donation;
 use App\Models\DrawWinner;
+use App\Models\User;
+use App\Models\Visitor;
 use App\Models\WeeklyDraw;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -52,7 +53,7 @@ class DashboardController extends Controller
                 'week_number' => $activeDraw->week_number,
                 'total_pool' => $activeDraw->total_pool,
                 'total_participants' => $activeDraw->total_participants,
-                'ends_at_timestamp' => $endsAt->timestamp, // এটা ১০০% integer হবে
+                'ends_at_timestamp' => $endsAt->timestamp,
                 'time_remaining' => $timeRemaining,
                 'has_ended' => $hasEnded,
             ];
@@ -138,8 +139,8 @@ class DashboardController extends Controller
             return [
                 'today_unique' => $todayStats->unique_visitors ?? 0,
                 'today_total' => $todayStats->total_visitors ?? 0,
-                'all_time_unique' => \App\Models\Visitor::distinct('ip_address')->count('ip_address'),
-                'live_now' => \App\Models\Visitor::whereDate('visit_date', $today)
+                'all_time_unique' => Visitor::distinct('ip_address')->count('ip_address'),
+                'live_now' => Visitor::whereDate('visit_date', $today)
                     ->whereTime('updated_at', '>=', now()->subMinutes(5))
                     ->count()
             ];

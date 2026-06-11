@@ -148,7 +148,7 @@ class WeeklyDrawService
 
                 foreach ($previousParticipants as $participant) {
                     // Check if they won in the previous draw, just in case (though excludedUserIds should catch it)
-                    $hasWon = \App\Models\DrawWinner::where('weekly_draw_id', $previousDraw->id)
+                    $hasWon = DrawWinner::where('weekly_draw_id', $previousDraw->id)
                         ->where('user_id', $participant->user_id)
                         ->exists();
 
@@ -165,7 +165,7 @@ class WeeklyDrawService
             }
 
             // 2. New Participants for current draw
-            $newDonations = \App\Models\Donation::where('week_id', $draw->id)
+            $newDonations = Donation::where('week_id', $draw->id)
                 ->where('stripe_payment_status', 'completed')
                 ->where('is_eligible_for_draw', true)
                 ->whereNotIn('user_id', $excludedUserIds)
@@ -206,7 +206,7 @@ class WeeklyDrawService
 
             // Calculate totals using the snapshot participants
             $participantDonationIds = DrawParticipant::where('weekly_draw_id', $draw->id)->pluck('donation_id');
-            $totalPool = (float) \App\Models\Donation::whereIn('id', $participantDonationIds)->sum('amount');
+            $totalPool = (float) Donation::whereIn('id', $participantDonationIds)->sum('amount');
             $totalParticipants = $participantDonationIds->count();
 
             $settings = $this->getSettings();
@@ -267,12 +267,6 @@ class WeeklyDrawService
 
             // Check if we have enough eligible participants
             if ($eligibleCount < $numberOfWinners) {
-                // Log::error('Not enough eligible participants after exclusion', [
-                //     'needed' => $numberOfWinners,
-                //     'available' => $eligibleCount,
-                //     'excluded' => count($excludedUserIds),
-                // ]);
-
                 throw new Exception(
                     "Not enough eligible participants. Need {$numberOfWinners}, found {$eligibleCount} (after 6-month exclusion)"
                 );
