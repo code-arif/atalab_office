@@ -51,7 +51,6 @@ class WeeklyDrawController extends Controller
         return DataTables::of($draws)
             ->addIndexColumn()
             ->addColumn('week_number', fn($row) => 'Week #' . $row->week_number)
-            ->addColumn('year', fn($row) => 'Year - ' . $row->year)
             ->addColumn('status', function ($row) {
                 if ($row->is_paused) {
                     return '<span class="badge bg-danger-transparent text-danger d-inline-flex align-items-center px-2 py-1">
@@ -70,21 +69,6 @@ class WeeklyDrawController extends Controller
             ->addColumn('end_date', fn($row) => Carbon::parse($row->end_date)->format('M d, Y h:i A'))
             ->addColumn('total_pool', fn($row) => '<span class="text-success fw-bold">$' . number_format($row->total_pool, 2) . '</span>')
             ->addColumn('total_participants', fn($row) => '<span class="badge bg-warning text-dark">' . number_format($row->total_participants) . '</span>')
-            ->addColumn('expected_winners', function ($row) {
-                $expected = $row->total_participants > 0 ? (int) ceil($row->total_participants / 400) : 0;
-                return '<span class="badge bg-info">' . $expected . '</span>';
-            })
-            ->addColumn('total_recipients', function ($row) {
-                return $row->total_recipients > 0
-                    ? '<span class="badge bg-success py-3">' . $row->total_recipients . '</span>'
-                    : '<span class="text-muted">Pending</span>';
-            })
-            ->addColumn('admin_commission', fn($row) => '<span class="text-info">$' . number_format($row->admin_commission, 2) . '</span>')
-            ->addColumn('winners_selected', function ($row) {
-                return $row->winners_selected
-                    ? '<span class="badge bg-success py-3"> Yes</span>'
-                    : '<span class="badge bg-secondary py-3"> Pending</span>';
-            })
             ->addColumn('action', function ($row) {
                 $actions = '<div class="btn-action-group">';
 
@@ -119,7 +103,7 @@ class WeeklyDrawController extends Controller
                 $actions .= '</div>';
                 return $actions;
             })
-            ->rawColumns(['status', 'total_pool', 'total_participants', 'expected_winners', 'total_recipients', 'admin_commission', 'winners_selected', 'action'])
+            ->rawColumns(['status', 'total_pool', 'total_participants', 'action'])
             ->make(true);
     }
 
@@ -181,11 +165,18 @@ class WeeklyDrawController extends Controller
             $draw = WeeklyDraw::withTrashed()->findOrFail($id);
             $settings = DrawAutomateSetting::first();
             $expectedWinners = $draw->total_participants > 0 ? (int) ceil($draw->total_participants / $settings->odds_ratio) : 0;
+            
+            // Participant breakdown
+            $rollovers = \App\Models\DrawParticipant::where('weekly_draw_id', $id)->where('is_rollover', true)->count();
+            $newParticipants = \App\Models\DrawParticipant::where('weekly_draw_id', $id)->where('is_rollover', false)->count();
+
             return response()->json([
                 'success' => true,
                 'data' => array_merge($draw->toArray(), [
                     'expected_winners' => $expectedWinners,
                     'distribution_pool' => $draw->total_pool - $draw->admin_commission,
+                    'rollovers' => $rollovers,
+                    'new_participants' => $newParticipants,
                     'settings' => $settings
                 ])
             ]);

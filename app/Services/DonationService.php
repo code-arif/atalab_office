@@ -370,9 +370,43 @@ class DonationService
                 ->selectRaw('SUM(amount) as total, COUNT(DISTINCT user_id) as participants')
                 ->first();
 
+            $newTotal = $stats->total ?? 0;
+            $newParticipantsCount = $stats->participants ?? 0;
+
+            // Calculate rollover from previous week
+            $previousDraw = WeeklyDraw::whereIn('status', ['completed', 'claiming'])
+                ->where('id', '<', $draw->id)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($previousDraw) {
+                // Get excluded user IDs to not count them
+                $excludedUserIds = \App\Models\WinnerExclusion::where('is_active', true)
+                    ->where('exclusion_ends_at', '>', now())
+                    ->pluck('user_id')
+                    ->unique()
+                    ->toArray();
+
+                $rolloverParticipants = \App\Models\DrawParticipant::where('weekly_draw_id', $previousDraw->id)
+                    ->whereNotIn('user_id', $excludedUserIds)
+                    ->get();
+                
+                $previousWinners = \App\Models\DrawWinner::where('weekly_draw_id', $previousDraw->id)->pluck('user_id')->toArray();
+
+                $validRollovers = $rolloverParticipants->filter(function ($p) use ($previousWinners) {
+                    return !in_array($p->user_id, $previousWinners);
+                });
+
+                $rolloverCount = $validRollovers->count();
+                $rolloverTotal = \App\Models\Donation::whereIn('id', $validRollovers->pluck('donation_id'))->sum('amount');
+
+                $newTotal += $rolloverTotal;
+                $newParticipantsCount += $rolloverCount;
+            }
+
             $draw->update([
-                'total_pool' => $stats->total ?? 0,
-                'total_participants' => $stats->participants ?? 0,
+                'total_pool' => $newTotal,
+                'total_participants' => $newParticipantsCount,
                 'last_stats_update' => now(),
             ]);
         }

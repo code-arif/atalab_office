@@ -9,7 +9,7 @@ use App\Models\WeeklyDraw;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Models\WinnerExclusion;
-use App\Models\DrawCycle;
+use App\Models\DrawParticipant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
@@ -89,14 +89,7 @@ class WeeklyDrawService
                 throw new Exception("Draw for Week #{$weekNumber} of year {$year} already exists");
             }
 
-            // Get or create active DrawCycle
-            $cycle = DrawCycle::where('status', 'active')->first();
-            if (!$cycle) {
-                $cycle = DrawCycle::create(['status' => 'active']);
-            }
-
             $draw = WeeklyDraw::create([
-                'draw_cycle_id' => $cycle->id,
                 'week_number' => $weekNumber,
                 'year' => $year, // Store year separately
                 'start_date' => $startDate,
@@ -139,7 +132,61 @@ class WeeklyDrawService
                 throw new Exception('Draw is not active');
             }
 
-            $draw->update(['status' => 'claiming']);
+            // SNAPSHOT GENERATION
+            $excludedUserIds = $this->getExcludedUserIds();
+
+            // 1. Rollover Participants from previous draw
+            $previousDraw = WeeklyDraw::whereIn('status', ['completed', 'claiming'])
+                ->where('id', '<', $draw->id)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($previousDraw) {
+                $previousParticipants = DrawParticipant::where('weekly_draw_id', $previousDraw->id)
+                    ->whereNotIn('user_id', $excludedUserIds)
+                    ->get();
+
+                foreach ($previousParticipants as $participant) {
+                    // Check if they won in the previous draw, just in case (though excludedUserIds should catch it)
+                    $hasWon = \App\Models\DrawWinner::where('weekly_draw_id', $previousDraw->id)
+                        ->where('user_id', $participant->user_id)
+                        ->exists();
+
+                    if (!$hasWon) {
+                        DrawParticipant::firstOrCreate([
+                            'weekly_draw_id' => $draw->id,
+                            'user_id' => $participant->user_id,
+                        ], [
+                            'donation_id' => $participant->donation_id,
+                            'is_rollover' => true,
+                        ]);
+                    }
+                }
+            }
+
+            // 2. New Participants for current draw
+            $newDonations = \App\Models\Donation::where('week_id', $draw->id)
+                ->where('stripe_payment_status', 'completed')
+                ->where('is_eligible_for_draw', true)
+                ->whereNotIn('user_id', $excludedUserIds)
+                ->get();
+
+            foreach ($newDonations as $donation) {
+                DrawParticipant::firstOrCreate([
+                    'weekly_draw_id' => $draw->id,
+                    'user_id' => $donation->user_id,
+                ], [
+                    'donation_id' => $donation->id,
+                    'is_rollover' => false,
+                ]);
+            }
+
+            $totalParticipants = DrawParticipant::where('weekly_draw_id', $draw->id)->count();
+
+            $draw->update([
+                'status' => 'claiming',
+                'total_participants' => $totalParticipants,
+            ]);
 
             return $draw->fresh();
         });
@@ -157,16 +204,10 @@ class WeeklyDrawService
                 throw new Exception('Winners already selected for this draw');
             }
 
-            // Get the DrawCycle to evaluate rolling donations
-            $cycleId = $draw->draw_cycle_id;
-
-            // Calculate totals using the entire active DrawCycle
-            $cycleDonationsQuery = Donation::whereHas('weeklyDraw', function ($q) use ($cycleId) {
-                $q->where('draw_cycle_id', $cycleId);
-            })->where('stripe_payment_status', 'completed');
-
-            $totalPool = (float) $cycleDonationsQuery->sum('amount');
-            $totalParticipants = $cycleDonationsQuery->distinct('user_id')->count('user_id');
+            // Calculate totals using the snapshot participants
+            $participantDonationIds = DrawParticipant::where('weekly_draw_id', $draw->id)->pluck('donation_id');
+            $totalPool = (float) \App\Models\Donation::whereIn('id', $participantDonationIds)->sum('amount');
+            $totalParticipants = $participantDonationIds->count();
 
             $settings = $this->getSettings();
 
@@ -206,7 +247,6 @@ class WeeklyDrawService
 
             Log::info('Winner Selection Process', [
                 'week_id' => $weekId,
-                'draw_cycle_id' => $cycleId,
                 'week_number' => $draw->week_number,
                 'year' => $draw->year,
                 'participants' => $totalParticipants,
@@ -215,18 +255,15 @@ class WeeklyDrawService
                 'excluded_users' => count($excludedUserIds),
             ]);
 
-            // Get eligible donations across the ENTIRE cycle (excluding recent winners)
-            $eligibleDonations = Donation::whereHas('weeklyDraw', function ($q) use ($cycleId) {
-                    $q->where('draw_cycle_id', $cycleId);
-                })
-                ->where('stripe_payment_status', 'completed')
-                ->where('is_eligible_for_draw', true)
+            // Get eligible participants from snapshot
+            $eligibleParticipants = DrawParticipant::with('donation')
+                ->where('weekly_draw_id', $draw->id)
                 ->whereNotIn('user_id', $excludedUserIds)
                 ->inRandomOrder()
                 ->limit($numberOfWinners * 2) // Get extra for safety
                 ->get();
 
-            $eligibleCount = $eligibleDonations->unique('user_id')->count();
+            $eligibleCount = $eligibleParticipants->count();
 
             // Check if we have enough eligible participants
             if ($eligibleCount < $numberOfWinners) {
@@ -245,23 +282,23 @@ class WeeklyDrawService
             $selectedUserIds = [];
             $winners = [];
 
-            foreach ($eligibleDonations as $donation) {
+            foreach ($eligibleParticipants as $participant) {
                 if (count($selectedUserIds) >= $numberOfWinners) {
                     break;
                 }
 
                 // Ensure one entry per user
-                if (in_array($donation->user_id, $selectedUserIds)) {
+                if (in_array($participant->user_id, $selectedUserIds)) {
                     continue;
                 }
 
-                $selectedUserIds[] = $donation->user_id;
+                $selectedUserIds[] = $participant->user_id;
 
                 // Create winner record
                 $winner = DrawWinner::create([
                     'weekly_draw_id' => $draw->id,
-                    'user_id' => $donation->user_id,
-                    'donation_id' => $donation->id,
+                    'user_id' => $participant->user_id,
+                    'donation_id' => $participant->donation_id,
                     'amount_won' => round($amountPerWinner, 2),
                     'claimed' => false,
                     'payout_status' => 'pending',
@@ -271,7 +308,7 @@ class WeeklyDrawService
                 $this->createWinnerExclusion($winner);
 
                 // Update user stats
-                $this->updateUserWinStats($donation->user_id, $amountPerWinner);
+                $this->updateUserWinStats($participant->user_id, $amountPerWinner);
 
                 $winners[] = $winner;
             }
@@ -289,11 +326,6 @@ class WeeklyDrawService
                 'is_rolled_over' => false,
                 'last_stats_update' => now(),
             ]);
-
-            // Close the DrawCycle
-            if ($draw->drawCycle) {
-                $draw->drawCycle->update(['status' => 'completed']);
-            }
 
             // Clear cache
             Cache::forget('excluded_user_ids');

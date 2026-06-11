@@ -41,9 +41,9 @@ class DrawAutomateSettingController extends Controller
             'minimum_participants' => 'nullable|integer|min:1',
             'winner_exclusion_months' => 'nullable|integer|min:0',
             'draw_start_day' => 'nullable|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
-            'draw_start_time' => 'nullable|date_format:H:i',
+            'draw_start_time' => 'nullable|date_format:H:i:s',
             'draw_end_day' => 'nullable|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
-            'draw_end_time' => 'nullable|date_format:H:i',
+            'draw_end_time' => 'nullable|date_format:H:i:s',
         ]);
 
         try {

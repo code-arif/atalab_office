@@ -143,7 +143,7 @@
                                                     class="form-control time-picker @error('draw_start_time') is-invalid @enderror"
                                                     id="draw_start_time" name="draw_start_time"
                                                     placeholder="Select Start Time"
-                                                    value="{{ \Carbon\Carbon::parse($settings->draw_start_time ?? '00:00:00')->format('H:i') }}">
+                                                    value="{{ \Carbon\Carbon::parse($settings->draw_start_time ?? '00:00:00')->format('H:i:s') }}">
                                             </div>
                                             @error('draw_start_time')
                                                 <div class="text-danger small mt-1">{{ $message }}</div>
@@ -178,7 +178,7 @@
                                                     class="form-control time-picker @error('draw_end_time') is-invalid @enderror"
                                                     id="draw_end_time" name="draw_end_time"
                                                     placeholder="Select Finalize Time"
-                                                    value="{{ \Carbon\Carbon::parse($settings->draw_end_time ?? '17:00:00')->format('H:i') }}">
+                                                    value="{{ \Carbon\Carbon::parse($settings->draw_end_time ?? '17:00:00')->format('H:i:s') }}">
                                             </div>
                                             @error('draw_end_time')
                                                 <div class="text-danger small mt-1">{{ $message }}</div>
@@ -225,10 +225,12 @@
         document.addEventListener('DOMContentLoaded', function () {
             flatpickr(".time-picker", {
                 enableTime: true,
+                enableSeconds: true,
                 noCalendar: true,
-                dateFormat: "H:i",
+                dateFormat: "H:i:S",
                 altInput: true,
-                altFormat: "h:i K", // Displays in AM/PM 12-hour format
+                altFormat: "H:i:S", // Displays in 24-hour format with seconds
+                time_24hr: true
             });
         });
     </script>

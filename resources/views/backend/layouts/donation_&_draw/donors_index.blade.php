@@ -79,6 +79,7 @@
                         d.min_amount = $('#minAmount').val();
                         d.max_amount = $('#maxAmount').val();
                         d.payment_status = $('#paymentStatusFilter').val();
+                        d.participant_type = $('#participantTypeFilter').val();
                     }
                 },
                 columns: [{
@@ -108,6 +109,10 @@
                         name: 'week'
                     },
                     {
+                        data: 'type',
+                        name: 'type'
+                    },
+                    {
                         data: 'amount',
                         name: 'amount'
                     },
@@ -130,7 +135,7 @@
                     $('#totalCount').text(settings.json.recordsFiltered);
                 },
                 order: [
-                    [6, 'desc']
+                    [7, 'desc']
                 ],
                 pageLength: 50,
                 lengthMenu: [
@@ -151,6 +156,8 @@
             $('#exportBtn').click(function() {
                 window.location = "{{ route('donors.export') }}?" + new URLSearchParams({
                     week_id: $('#weekFilter').val(),
+                    participant_type: $('#participantTypeFilter').val(),
+                    payment_status: $('#paymentStatusFilter').val(),
                     date_from: $('#dateFrom').val(),
                     date_to: $('#dateTo').val(),
                     min_amount: $('#minAmount').val(),

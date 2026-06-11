@@ -700,7 +700,7 @@
         setInterval(async () => {
             try {
                 // Update Donation Stats
-                const statsResponse = await fetch('/api/dashboard/live-stats');
+                const statsResponse = await fetch('/admin/dashboard/live-stats');
                 const statsData = await statsResponse.json();
 
                 if (statsData.success) {
@@ -722,7 +722,7 @@
                 }
 
                 // Update Donation Feed
-                const feedResponse = await fetch('/api/dashboard/recent-donations');
+                const feedResponse = await fetch('/admin/dashboard/recent-donations');
                 const feedData = await feedResponse.json();
 
                 if (feedData.success) {

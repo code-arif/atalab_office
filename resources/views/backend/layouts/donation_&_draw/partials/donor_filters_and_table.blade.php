@@ -21,7 +21,15 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                        <div class="col-xl-1 col-lg-3 col-md-4 col-sm-6">
+                            <label class="form-label small mb-1">Type</label>
+                            <select class="form-select form-select-sm" id="participantTypeFilter">
+                                <option value="">All</option>
+                                <option value="new">New Entry</option>
+                                <option value="rollover">Rollover</option>
+                            </select>
+                        </div>
+                        <div class="col-xl-1 col-lg-3 col-md-4 col-sm-6">
                             <label class="form-label small mb-1">Payment Status</label>
                             <select class="form-select form-select-sm" id="paymentStatusFilter">
                                 <option value="">All</option>
@@ -80,6 +88,7 @@
                                 <th>Email</th>
                                 <th>Phone</th>
                                 <th>Week</th>
+                                <th>Type</th>
                                 <th>Amount</th>
                                 <th>Donated At</th>
                                 <th>Status</th>

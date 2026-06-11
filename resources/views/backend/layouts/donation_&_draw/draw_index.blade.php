@@ -122,16 +122,11 @@
                                             <tr>
                                                 <th>#</th>
                                                 <th>Week Number</th>
-                                                <th>Year</th>
                                                 <th>Status</th>
                                                 <th>Start Date</th>
                                                 <th>End Date</th>
                                                 <th>Total Pool</th>
                                                 <th>Participants</th>
-                                                <th>Expected Winners</th>
-                                                <th>Actual Recipients</th>
-                                                <th>Commission</th>
-                                                <th>Winners Selected</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -259,12 +254,20 @@
                                             <span class="info-value fw-bolder text-info fs-5"
                                                 id="view_expected_winners">---</span>
                                         </div>
-                                        <div class="col-6 pt-2">
+                                        <div class="col-6 border-end border-bottom pb-3 pt-2">
+                                            <span class="info-label">Rollovers</span>
+                                            <span class="info-value text-muted fs-5 fw-bold" id="view_rollovers">---</span>
+                                        </div>
+                                        <div class="col-6 border-bottom pb-3 pt-2">
+                                            <span class="info-label">New Participants</span>
+                                            <span class="info-value text-muted fs-5 fw-bold" id="view_new_participants">---</span>
+                                        </div>
+                                        <div class="col-6 border-end pt-3">
                                             <span class="info-label">Actual Recipients</span>
                                             <span class="info-value fw-bolder text-success fs-5"
                                                 id="view_recipients">---</span>
                                         </div>
-                                        <div class="col-6 pt-2">
+                                        <div class="col-6 pt-3">
                                             <span class="info-label">Global Odds</span>
                                             <span class="info-value text-muted fs-5 fw-bold" id="view_odds">1:400</span>
                                         </div>
@@ -430,9 +433,6 @@
                         data: 'week_number'
                     },
                     {
-                        data: 'year'
-                    },
-                    {
                         data: 'status'
                     },
                     {
@@ -446,18 +446,6 @@
                     },
                     {
                         data: 'total_participants'
-                    },
-                    {
-                        data: 'expected_winners'
-                    },
-                    {
-                        data: 'total_recipients'
-                    },
-                    {
-                        data: 'admin_commission'
-                    },
-                    {
-                        data: 'winners_selected'
                     },
                     {
                         data: 'action',
@@ -498,6 +486,8 @@
                         $('#view_distribution_pool').text('$' + d.distribution_pool.toFixed(2));
                         $('#view_participants').text(d.total_participants);
                         $('#view_expected_winners').text(d.expected_winners);
+                        $('#view_rollovers').text(d.rollovers);
+                        $('#view_new_participants').text(d.new_participants);
                         $('#view_recipients').text(d.total_recipients || 'Pending');
                         $('#view_odds').text('1: ' + d.settings.odds_ratio);
                         $('#viewDrawModal').modal('show');

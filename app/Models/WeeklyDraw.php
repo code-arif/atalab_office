@@ -25,7 +25,6 @@ class WeeklyDraw extends Model
         'winners_selected',
         'year',
         'is_paused',
-        'draw_cycle_id',
         'is_rolled_over'
     ];
 
@@ -46,11 +45,11 @@ class WeeklyDraw extends Model
      */
 
     /**
-     * Get the draw cycle this week belongs to
+     * Get all participants for this draw
      */
-    public function drawCycle()
+    public function participants(): HasMany
     {
-        return $this->belongsTo(DrawCycle::class);
+        return $this->hasMany(DrawParticipant::class);
     }
 
     /**
