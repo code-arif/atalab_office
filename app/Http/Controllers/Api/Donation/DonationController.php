@@ -62,6 +62,7 @@ class DonationController extends Controller
                 'checkout_url' => $result['checkout_url'],
                 'session_id' => $result['session_id'],
                 'payment_method_type' => $paymentMethodType,
+                'donation_id_formatted' => $result['donation_id_formatted'],
                 'is_cover' => $isCover,
                 'processing_fee' => $result['processing_fee'],
                 'total_amount' => $result['total_amount'],
@@ -112,6 +113,7 @@ class DonationController extends Controller
                 'checkout_url' => $result['checkout_url'],
                 'session_id' => $result['session_id'],
                 'payment_method_type' => $paymentMethodType,
+                'donation_id_formatted' => $result['donation_id_formatted'],
             ]);
         } catch (Exception $e) {
             return response()->json([
@@ -144,6 +146,7 @@ class DonationController extends Controller
                 'success' => true,
                 'donation' => $donation,
                 'donor_id' => $donation->user->donor_id,
+                'donation_id_formatted' => $donation->donation_id,
             ]);
         } catch (Exception $e) {
             return response()->json([

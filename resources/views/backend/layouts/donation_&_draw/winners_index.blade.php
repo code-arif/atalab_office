@@ -408,6 +408,7 @@
                         );
                         $('#view_stripe_id').text(d.payout_stripe_id || 'N/A');
                         $('#view_donation_id').text(d.donation?.stripe_payment_id || 'N/A');
+                        $('#view_donation_id_formatted').text(d.donation?.donation_id || 'N/A');
 
                         // =============================
                         // VERIFICATION INFORMATION

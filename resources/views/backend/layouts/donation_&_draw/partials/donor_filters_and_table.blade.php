@@ -85,6 +85,7 @@
                                 <th width="50">#</th>
                                 <th>Donor Name</th>
                                 <th>Donor ID</th>
+                                <th>Donation ID</th>
                                 <th>Email</th>
                                 <th>Phone</th>
                                 <th>Week</th>

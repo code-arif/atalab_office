@@ -97,6 +97,11 @@
                         name: 'donor_id'
                     },
                     {
+                        data: 'donation_id_formatted',
+                        name: 'donation_id_formatted',
+                        title: 'Donation ID'
+                    },
+                    {
                         data: 'email',
                         name: 'email'
                     },
@@ -233,6 +238,7 @@
 
                         // ==== DONATION DETAILS ====
                         $('#donation_id').text(d.id || 'N/A');
+                        $('#donation_id_formatted').text(d.donation_id || 'N/A');
                         $('#d_amount').text('$' + parseFloat(d.amount || 0).toFixed(2));
                         $('#d_processing_fee').text('$' + parseFloat(d.processing_fee || 0).toFixed(2));
                         $('#d_total_amount').text('$' + parseFloat(d.total_amount || 0).toFixed(2));

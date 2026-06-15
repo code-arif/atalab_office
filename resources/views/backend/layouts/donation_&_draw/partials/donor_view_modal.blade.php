@@ -164,6 +164,10 @@
                                         <span class="info-value text-primary fw-bold" id="donation_id">---</span>
                                     </div>
                                     <div class="col-6">
+                                        <span class="info-label">Formatted Donation ID</span>
+                                        <span class="info-value"><code id="donation_id_formatted" class="text-primary fs-13 bg-primary-transparent px-2 py-1 rounded-1 fw-bold border border-primary-transparent">---</code></span>
+                                    </div>
+                                    <div class="col-6">
                                         <span class="info-label">Payment Type</span>
                                         <span class="info-value fw-bold" id="payment_type">---</span>
                                     </div>

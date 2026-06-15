@@ -149,7 +149,7 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="fw-bold">Donation ID:</td>
+                                        <td class="fw-bold">Stripe ID:</td>
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <code id="view_donation_id" class="text-break small me-2">---</code>
@@ -158,6 +158,12 @@
                                                     <i class="fe fe-copy"></i>
                                                 </button>
                                             </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Formatted Donation ID:</td>
+                                        <td>
+                                            <code id="view_donation_id_formatted" class="text-break small me-2 fw-bold text-primary">---</code>
                                         </td>
                                     </tr>
                                 </table>

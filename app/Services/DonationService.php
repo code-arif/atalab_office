@@ -32,6 +32,58 @@ class DonationService
     }
 
     /**
+     * Generate a unique donation ID with sequential format: DONATION-0000000001
+     */
+    public function generateUniqueDonationId(): string
+    {
+        $maxRetries = 5;
+        $attempt = 0;
+
+        while ($attempt < $maxRetries) {
+            try {
+                return DB::transaction(function () {
+                    // Lock for atomic operation
+                    $lastDonation = Donation::whereNotNull('donation_id')
+                        ->orderByRaw('CAST(SUBSTRING(donation_id, 10) AS UNSIGNED) DESC')
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (!$lastDonation || !$lastDonation->donation_id) {
+                        $nextNumber = 1;
+                    } else {
+                        $lastNumber = (int) substr($lastDonation->donation_id, 9);
+                        $nextNumber = $lastNumber + 1;
+                    }
+
+                    $donationId = 'DONATION-' . str_pad($nextNumber, 10, '0', STR_PAD_LEFT);
+
+                    // Verify uniqueness
+                    $exists = Donation::where('donation_id', $donationId)->exists();
+                    if ($exists) {
+                        throw new Exception('Donation ID collision detected');
+                    }
+
+                    return $donationId;
+                });
+            } catch (Exception $e) {
+                $attempt++;
+                Log::warning('Donation ID generation retry', [
+                    'attempt' => $attempt,
+                    'error' => $e->getMessage()
+                ]);
+
+                if ($attempt >= $maxRetries) {
+                    throw new Exception('Failed to generate unique donation ID after ' . $maxRetries . ' attempts');
+                }
+
+                usleep(100000); // 100ms delay before retry
+            }
+        }
+
+        throw new Exception('Failed to generate donation ID');
+    }
+
+    /**
      * FIXED: Create standard donation with donor_id assignment BEFORE payment
      *
      * Supports is_cover (cover processing fees) feature:
@@ -63,10 +115,6 @@ class DonationService
                 if (!$currentDraw) {
                     throw new Exception('No active draw available. Donations are paused.');
                 }
-
-                // if (!$this->isDonationAllowed()) {
-                //     throw new Exception('Donations are currently paused. Please try again on Monday at 12:00 AM.');
-                // }
 
                 // Check week eligibility
                 $eligibility = $this->registrationService->canUserDonateToWeek($userId, $currentDraw->id);
@@ -123,8 +171,12 @@ class DonationService
                     $processingFee
                 );
 
+                // Generate unique donation ID
+                $donationId = $this->generateUniqueDonationId();
+
                 // Create donation record
                 $donation = Donation::create([
+                    'donation_id' => $donationId,
                     'user_id' => $user->id,
                     'week_id' => $currentDraw->id,
                     'amount' => $donationAmount,
@@ -153,6 +205,7 @@ class DonationService
 
                 Log::info('Standard donation initiated', [
                     'donation_id' => $donation->id,
+                    'donation_id_formatted' => $donation->donation_id,
                     'user_id' => $user->id,
                     'donor_id' => $user->donor_id,
                     'week_id' => $currentDraw->id,
@@ -167,6 +220,7 @@ class DonationService
                     'checkout_url' => $session->url,
                     'session_id' => $session->id,
                     'donation_id' => $donation->id,
+                    'donation_id_formatted' => $donation->donation_id,
                     'donor_id' => $user->donor_id,
                     'is_cover' => $isCover,
                     'processing_fee' => $processingFee,
@@ -259,7 +313,11 @@ class DonationService
                     $processingFee
                 );
 
+                // Generate unique donation ID
+                $donationId = $this->generateUniqueDonationId();
+
                 $donation = Donation::create([
+                    'donation_id' => $donationId,
                     'user_id' => $user->id,
                     'week_id' => $currentDraw->id,
                     'amount' => $paymentAmount,
@@ -286,6 +344,7 @@ class DonationService
 
                 Log::info('Custom donation initiated', [
                     'donation_id' => $donation->id,
+                    'donation_id_formatted' => $donation->donation_id,
                     'user_id' => $user->id,
                     'donor_id' => $user->donor_id,
                     'amount' => $amount,
@@ -297,6 +356,7 @@ class DonationService
                     'checkout_url' => $session->url,
                     'session_id' => $session->id,
                     'donation_id' => $donation->id,
+                    'donation_id_formatted' => $donation->donation_id,
                     'donor_id' => $user->donor_id,
                 ];
             });
@@ -314,8 +374,8 @@ class DonationService
 
         $now = now(config('app.timezone'));
 
-        $startDayConstant = constant('\Carbon\Carbon::' . strtoupper($settings->draw_start_day));
-        $endDayConstant = constant('\Carbon\Carbon::' . strtoupper($settings->draw_end_day));
+        $startDayConstant = constant('\\Carbon\\Carbon::' . strtoupper($settings->draw_start_day));
+        $endDayConstant = constant('\\Carbon\\Carbon::' . strtoupper($settings->draw_end_day));
 
         $startTime = Carbon::parse($settings->draw_start_time);
         $endTime = Carbon::parse($settings->draw_end_time);
@@ -372,6 +432,7 @@ class DonationService
 
                 Log::info('Payment verified - webhook completed', [
                     'donation_id' => $donation->id,
+                    'donation_id_formatted' => $donation->donation_id,
                     'user_id' => $donation->user_id,
                     'donor_id' => $donation->user->donor_id,
                 ]);
@@ -459,6 +520,7 @@ class DonationService
 
             Log::info('Donation confirmation email sent', [
                 'donation_id' => $donation->id,
+                'donation_id_formatted' => $donation->donation_id,
                 'user_id' => $donation->user_id,
                 'name'=> $donation->user->name,
                 'email' => $donation->user->email,
@@ -501,6 +563,7 @@ class DonationService
 
                 Log::info('Checkout completed webhook', [
                     'donation_id' => $donation->id,
+                    'donation_id_formatted' => $donation->donation_id,
                     'user_id' => $donation->user_id,
                     'donor_id' => $donation->user->donor_id,
                 ]);
@@ -557,6 +620,7 @@ class DonationService
 
         return [
             'status' => $donation->stripe_payment_status,
+            'donation_id' => $donation->donation_id,
             'amount' => $donation->amount,
             'processing_fee' => $donation->processing_fee,
             'total_amount' => $donation->total_amount,

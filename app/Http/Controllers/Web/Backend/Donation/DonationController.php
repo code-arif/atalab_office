@@ -15,7 +15,7 @@ class DonationController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = DrawParticipant::with(['user:id,name,email,phone,donor_id', 'weeklyDraw:id,week_number', 'donation'])
+            $query = DrawParticipant::with(['user:id,name,email,phone,donor_id', 'weeklyDraw:id,week_number', 'donation:id,donation_id,user_id,week_id,amount,processing_fee,total_amount,is_cover,stripe_payment_id,stripe_payment_status,donated_at'])
                 ->select('draw_participants.*')
                 ->join('weekly_draws', 'draw_participants.weekly_draw_id', '=', 'weekly_draws.id')
                 ->join('donations', 'draw_participants.donation_id', '=', 'donations.id')
@@ -56,6 +56,7 @@ class DonationController extends Controller
                 ->addIndexColumn()
                 ->addColumn('donor_name', fn($row) => $row->user->name ?? 'N/A')
                 ->addColumn('donor_id', fn($row) => $row->user->donor_id ?? 'N/A')
+                ->addColumn('donation_id_formatted', fn($row) => $row->donation->donation_id ?? 'N/A')
                 ->addColumn('email', fn($row) => $row->user->email ?? 'N/A')
                 ->addColumn('phone', fn($row) => $row->user->phone ?? 'N/A')
                 ->addColumn('week', fn($row) => $row->weeklyDraw ? '<span class="badge bg-primary">Week #' . $row->weeklyDraw->week_number . '</span>' : '-')
@@ -141,7 +142,7 @@ class DonationController extends Controller
 
         $callback = function () use ($participants) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['Participant ID', 'Name', 'Email', 'Phone', 'Week', 'Type', 'Amount', 'Processing Fee', 'Total Amount', 'Fee Covered', 'Donated At', 'Payment ID', 'Status']);
+            fputcsv($file, ['Participant ID', 'Name', 'Email', 'Phone', 'Week', 'Type', 'Amount', 'Processing Fee', 'Total Amount', 'Fee Covered', 'Donated At', 'Donation ID', 'Payment ID', 'Status']);
 
             foreach ($participants as $p) {
                 fputcsv($file, [
@@ -156,6 +157,7 @@ class DonationController extends Controller
                     '$' . number_format($p->donation->total_amount ?? 0, 2),
                     ($p->donation->is_cover ?? false) ? 'Yes' : 'No',
                     $p->donation ? Carbon::parse($p->donation->donated_at)->format('Y-m-d H:i:s') : 'N/A',
+                    $p->donation->donation_id ?? 'N/A',
                     $p->donation->stripe_payment_id ?? 'N/A',
                     ucfirst($p->donation->stripe_payment_status ?? 'N/A'),
                 ]);

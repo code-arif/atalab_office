@@ -182,7 +182,7 @@ class DrawWinnerController extends Controller
             $winner = DrawWinner::with([
                 'user',
                 'weeklyDraw:id,week_number,start_date,end_date,total_pool',
-                'donation:id,amount,stripe_payment_id,donated_at',
+                'donation:id,donation_id,amount,stripe_payment_id,donated_at',
                 'verification' => function ($query) {
                     $query->with('verifiedBy:id,name');
                 }
