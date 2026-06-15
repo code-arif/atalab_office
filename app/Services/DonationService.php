@@ -64,9 +64,9 @@ class DonationService
                     throw new Exception('No active draw available. Donations are paused.');
                 }
 
-                if (!$this->isDonationAllowed()) {
-                    throw new Exception('Donations are currently paused. Please try again on Monday at 12:00 AM.');
-                }
+                // if (!$this->isDonationAllowed()) {
+                //     throw new Exception('Donations are currently paused. Please try again on Monday at 12:00 AM.');
+                // }
 
                 // Check week eligibility
                 $eligibility = $this->registrationService->canUserDonateToWeek($userId, $currentDraw->id);
