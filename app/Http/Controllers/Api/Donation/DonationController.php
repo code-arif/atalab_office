@@ -31,6 +31,7 @@ class DonationController extends Controller
         $validator = Validator::make($request->all(), [
             'user_id' => 'required|integer|exists:users,id',
             'payment_method_type' => 'nullable|in:card,us_bank_account',
+            'is_cover' => ['nullable', 'boolean'],
         ]);
 
         if ($validator->fails()) {
@@ -46,12 +47,14 @@ class DonationController extends Controller
             $cancelUrl = $baseUrl . '/cancel';
 
             $paymentMethodType = $request->input('payment_method_type', 'card');
+            $isCover = $request->boolean('is_cover');
 
             $result = $this->donationService->createStandardDonation(
                 $request->user_id,
                 $successUrl,
                 $cancelUrl,
-                $paymentMethodType
+                $paymentMethodType,
+                $isCover
             );
 
             return response()->json([
@@ -59,6 +62,9 @@ class DonationController extends Controller
                 'checkout_url' => $result['checkout_url'],
                 'session_id' => $result['session_id'],
                 'payment_method_type' => $paymentMethodType,
+                'is_cover' => $isCover,
+                'processing_fee' => $result['processing_fee'],
+                'total_amount' => $result['total_amount'],
             ]);
         } catch (Exception $e) {
             return response()->json([

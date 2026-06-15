@@ -17,6 +17,7 @@ class Donation extends Model
         'amount',
         'processing_fee',
         'total_amount',
+        'is_cover',
         'stripe_payment_id',
         'stripe_payment_status',
         'stripe_charge_id',
@@ -28,6 +29,7 @@ class Donation extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'is_cover' => 'boolean',
         'is_eligible_for_draw' => 'boolean',
         'donated_at' => 'datetime',
         'created_at' => 'datetime',

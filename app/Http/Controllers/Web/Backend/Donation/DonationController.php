@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Web\Backend\Donation;
 
-use Carbon\Carbon;
+use App\Http\Controllers\Controller;
 use App\Models\Donation;
+use App\Models\DrawParticipant;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
 
 class DonationController extends Controller
@@ -14,7 +15,7 @@ class DonationController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = \App\Models\DrawParticipant::with(['user:id,name,email,phone,donor_id', 'weeklyDraw:id,week_number', 'donation'])
+            $query = DrawParticipant::with(['user:id,name,email,phone,donor_id', 'weeklyDraw:id,week_number', 'donation'])
                 ->select('draw_participants.*')
                 ->join('weekly_draws', 'draw_participants.weekly_draw_id', '=', 'weekly_draws.id')
                 ->join('donations', 'draw_participants.donation_id', '=', 'donations.id')
@@ -60,6 +61,12 @@ class DonationController extends Controller
                 ->addColumn('week', fn($row) => $row->weeklyDraw ? '<span class="badge bg-primary">Week #' . $row->weeklyDraw->week_number . '</span>' : '-')
                 ->addColumn('type', fn($row) => $row->is_rollover ? '<span class="badge bg-secondary">Rollover</span>' : '<span class="badge bg-info">New Entry</span>')
                 ->addColumn('amount', fn($row) => '<span class="badge bg-success">$' . number_format($row->donation->amount ?? 0, 2) . '</span>')
+                ->addColumn('processing_fee', fn($row) => '<span class="badge bg-secondary">$' . number_format($row->donation->processing_fee ?? 0, 2) . '</span>')
+                ->addColumn('total_amount', fn($row) => '<span class="badge bg-info">$' . number_format($row->donation->total_amount ?? 0, 2) . '</span>')
+                ->addColumn('is_cover', fn($row) => ($row->donation->is_cover ?? false)
+                    ? '<span class="badge bg-success"><i class="fe fe-check" style="font-size:10px"></i> Yes</span>'
+                    : '<span class="badge bg-secondary">No</span>'
+                )
                 ->addColumn('donated_at', fn($row) => $row->donation ? Carbon::parse($row->donation->donated_at)->format('M d, Y h:i A') : 'N/A')
                 ->addColumn(
                     'payment_status',
@@ -75,7 +82,7 @@ class DonationController extends Controller
                         <i class="fe fe-eye" style="font-size: 10px;"></i>
                      </button>'
                 )
-                ->rawColumns(['week', 'type', 'amount', 'payment_status', 'action'])
+                ->rawColumns(['week', 'type', 'amount', 'processing_fee', 'total_amount', 'is_cover', 'payment_status', 'action'])
                 ->make(true);
         }
 
@@ -134,7 +141,7 @@ class DonationController extends Controller
 
         $callback = function () use ($participants) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['Participant ID', 'Name', 'Email', 'Phone', 'Week', 'Type', 'Amount', 'Donated At', 'Payment ID', 'Status']);
+            fputcsv($file, ['Participant ID', 'Name', 'Email', 'Phone', 'Week', 'Type', 'Amount', 'Processing Fee', 'Total Amount', 'Fee Covered', 'Donated At', 'Payment ID', 'Status']);
 
             foreach ($participants as $p) {
                 fputcsv($file, [
@@ -145,6 +152,9 @@ class DonationController extends Controller
                     $p->weeklyDraw ? 'Week #' . $p->weeklyDraw->week_number : 'N/A',
                     $p->is_rollover ? 'Rollover' : 'New Entry',
                     '$' . number_format($p->donation->amount ?? 0, 2),
+                    '$' . number_format($p->donation->processing_fee ?? 0, 2),
+                    '$' . number_format($p->donation->total_amount ?? 0, 2),
+                    ($p->donation->is_cover ?? false) ? 'Yes' : 'No',
                     $p->donation ? Carbon::parse($p->donation->donated_at)->format('Y-m-d H:i:s') : 'N/A',
                     $p->donation->stripe_payment_id ?? 'N/A',
                     ucfirst($p->donation->stripe_payment_status ?? 'N/A'),

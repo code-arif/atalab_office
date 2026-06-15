@@ -117,6 +117,24 @@
                         name: 'amount'
                     },
                     {
+                        data: 'processing_fee',
+                        name: 'processing_fee',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'total_amount',
+                        name: 'total_amount',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'is_cover',
+                        name: 'is_cover',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
                         data: 'donated_at',
                         name: 'donated_at'
                     },
@@ -216,6 +234,15 @@
                         // ==== DONATION DETAILS ====
                         $('#donation_id').text(d.id || 'N/A');
                         $('#d_amount').text('$' + parseFloat(d.amount || 0).toFixed(2));
+                        $('#d_processing_fee').text('$' + parseFloat(d.processing_fee || 0).toFixed(2));
+                        $('#d_total_amount').text('$' + parseFloat(d.total_amount || 0).toFixed(2));
+
+                        // Fee Covered Badge
+                        let coverBadge = d.is_cover ?
+                            '<span class="badge bg-success"><i class="fe fe-check" style="font-size:10px"></i> Yes</span>' :
+                            '<span class="badge bg-secondary">No</span>';
+                        $('#d_is_cover').html(coverBadge);
+
                         $('#d_donated_at').text(d.donated_at ?
                             new Date(d.donated_at).toLocaleString() : 'N/A');
                         $('#payment_type').text(d.payment_type ? d.payment_type.toUpperCase() :

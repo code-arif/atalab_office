@@ -90,6 +90,9 @@
                                 <th>Week</th>
                                 <th>Type</th>
                                 <th>Amount</th>
+                                <th>Fee</th>
+                                <th>Total</th>
+                                <th>Cover</th>
                                 <th>Donated At</th>
                                 <th>Status</th>
                                 <th width="80">Action</th>

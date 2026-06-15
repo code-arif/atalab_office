@@ -31,13 +31,17 @@ class DonationService
 
     /**
      * FIXED: Create standard donation with donor_id assignment BEFORE payment
+     *
+     * Supports is_cover (cover processing fees) feature:
+     * - When is_cover = true,  total_amount = donation_amount + processing_fee (donor pays both)
+     * - When is_cover = false, total_amount = donation_amount only (organization absorbs the fee)
      */
-    public function createStandardDonation(int $userId, string $successUrl, string $cancelUrl, string $paymentMethodType = 'card'): array
+    public function createStandardDonation(int $userId, string $successUrl, string $cancelUrl, string $paymentMethodType = 'card', bool $isCover = false): array
     {
         $lockKey = "donation_lock:user_{$userId}";
 
-        return Cache::lock($lockKey, 10)->block(5, function () use ($userId, $successUrl, $cancelUrl, $paymentMethodType) {
-            return DB::transaction(function () use ($userId, $successUrl, $cancelUrl, $paymentMethodType) {
+        return Cache::lock($lockKey, 10)->block(5, function () use ($userId, $successUrl, $cancelUrl, $paymentMethodType, $isCover) {
+            return DB::transaction(function () use ($userId, $successUrl, $cancelUrl, $paymentMethodType, $isCover) {
                 $allowedPaymentMethods = ['card', 'us_bank_account'];
                 if (!in_array($paymentMethodType, $allowedPaymentMethods, true)) {
                     throw new Exception('Invalid payment method type. Allowed values: card, us_bank_account.');
@@ -80,13 +84,13 @@ class DonationService
 
                 // Dynamic amount from DB
                 $setting = StripeSetting::query()->first();
-                $paymentAmount = $setting ? floatval($setting->donation_amount) : 25.00;
+                $donationAmount = $setting ? floatval($setting->donation_amount) : 25.00;
 
-                if ($paymentAmount <= 0) {
-                    $paymentAmount = 25.00; // fallback if missing
+                if ($donationAmount <= 0) {
+                    $donationAmount = 25.00; // fallback if missing
                 }
 
-                // Calculate processing fee
+                // Calculate processing fee based on payment method
                 $processingFee = 0.00;
                 if ($paymentMethodType === 'us_bank_account') {
                     $achFlatFee = floatval($setting?->ach_flat_fee ?? 0.00);
@@ -94,21 +98,26 @@ class DonationService
                 } elseif ($paymentMethodType === 'card') {
                     $cardPct = floatval($setting?->card_fee_percentage ?? 2.9);
                     $cardFixed = floatval($setting?->card_fixed_fee ?? 0.30);
-                    $processingFee = round(($paymentAmount * ($cardPct / 100)) + $cardFixed, 2);
+                    $processingFee = round(($donationAmount * ($cardPct / 100)) + $cardFixed, 2);
                 }
 
-                $totalAmount = round($paymentAmount + $processingFee, 2);
+                // Calculate total amount based on whether donor covers fees
+                // is_cover = true:  donor pays donation + processing fee
+                // is_cover = false: donor pays donation only (org absorbs fee)
+                $paymentAmount = $isCover
+                    ? round($donationAmount + $processingFee, 2)
+                    : $donationAmount;
 
-                // Create Stripe checkout session
+                // Create Stripe checkout session with the final payment amount
                 $session = $this->stripeService->createCheckoutSession(
-                    $totalAmount,
+                    $paymentAmount,
                     $currentDraw,
                     'standard',
                     $successUrl,
                     $cancelUrl,
                     $user,
                     $paymentMethodType,
-                    $paymentAmount,
+                    $donationAmount,
                     $processingFee
                 );
 
@@ -116,9 +125,10 @@ class DonationService
                 $donation = Donation::create([
                     'user_id' => $user->id,
                     'week_id' => $currentDraw->id,
-                    'amount' => $paymentAmount,
+                    'amount' => $donationAmount,
                     'processing_fee' => $processingFee,
-                    'total_amount' => $totalAmount,
+                    'total_amount' => $paymentAmount,
+                    'is_cover' => $isCover,
                     'stripe_payment_id' => $session->id,
                     'stripe_payment_status' => 'pending',
                     'is_eligible_for_draw' => false,
@@ -145,8 +155,10 @@ class DonationService
                     'donor_id' => $user->donor_id,
                     'week_id' => $currentDraw->id,
                     'session_id' => $session->id,
-                    'total_amount' => $totalAmount,
+                    'donation_amount' => $donationAmount,
                     'processing_fee' => $processingFee,
+                    'is_cover' => $isCover,
+                    'total_amount' => $paymentAmount,
                 ]);
 
                 return [
@@ -154,6 +166,9 @@ class DonationService
                     'session_id' => $session->id,
                     'donation_id' => $donation->id,
                     'donor_id' => $user->donor_id,
+                    'is_cover' => $isCover,
+                    'processing_fee' => $processingFee,
+                    'total_amount' => $paymentAmount,
                 ];
             });
         });
@@ -526,6 +541,9 @@ class DonationService
         return [
             'status' => $donation->stripe_payment_status,
             'amount' => $donation->amount,
+            'processing_fee' => $donation->processing_fee,
+            'total_amount' => $donation->total_amount,
+            'is_cover' => $donation->is_cover,
             'donated_at' => $donation->donated_at,
             'is_eligible_for_draw' => $donation->is_eligible_for_draw,
         ];

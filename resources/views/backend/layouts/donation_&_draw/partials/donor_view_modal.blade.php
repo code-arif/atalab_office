@@ -168,6 +168,18 @@
                                         <span class="info-value fw-bold" id="payment_type">---</span>
                                     </div>
                                     <div class="col-6">
+                                        <span class="info-label">Processing Fee</span>
+                                        <span class="info-value fw-bold text-warning" id="d_processing_fee">---</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="info-label">Total Charged</span>
+                                        <span class="info-value fw-bold text-info" id="d_total_amount">---</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="info-label">Fee Covered</span>
+                                        <div class="mt-1" id="d_is_cover">---</div>
+                                    </div>
+                                    <div class="col-6">
                                         <span class="info-label">Attempt Number</span>
                                         <span class="info-value fw-bold" id="attempt_number">---</span>
                                     </div>

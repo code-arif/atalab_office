@@ -27,10 +27,18 @@ class DonationFactory extends Factory
      */
     public function definition(): array
     {
+        $amount = 25.00;
+        $processingFee = round(($amount * 0.029) + 0.30, 2);
+        $isCover = fake()->boolean();
+        $totalAmount = $isCover ? round($amount + $processingFee, 2) : $amount;
+
         return [
             'user_id' => User::factory(),
             'week_id' => WeeklyDraw::factory(),
-            'amount' => 25.00, // Standard donation
+            'amount' => $amount, // Standard donation
+            'processing_fee' => $processingFee,
+            'total_amount' => $totalAmount,
+            'is_cover' => $isCover,
             'stripe_payment_id' => 'cs_test_' . Str::random(40),
             'stripe_payment_status' => 'completed',
             'stripe_charge_id' => 'ch_test_' . Str::random(24),
