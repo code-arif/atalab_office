@@ -5,11 +5,13 @@ namespace App\Services;
 use App\Events\DonationCreated;
 use App\Mail\DonationConfirmation;
 use App\Models\Donation;
+use App\Models\DrawAutomateSetting;
 use App\Models\StripeSetting;
 use App\Models\User;
 use App\Models\UserWeekParticipation;
 use App\Models\WeeklyDraw;
 use Exception;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -303,17 +305,32 @@ class DonationService
 
     protected function isDonationAllowed(): bool
     {
+        $settings = DrawAutomateSetting::first();
+
+        // Default to allowing donations if no settings exist
+        if (!$settings) {
+            return true;
+        }
+
         $now = now(config('app.timezone'));
 
-        if ($now->isSunday() && $now->hour >= 17) {
-            return false;
-        }
+        $startDayConstant = constant('\Carbon\Carbon::' . strtoupper($settings->draw_start_day));
+        $endDayConstant = constant('\Carbon\Carbon::' . strtoupper($settings->draw_end_day));
 
-        if ($now->isMonday() && $now->hour < 0) {
-            return false;
-        }
+        $startTime = Carbon::parse($settings->draw_start_time);
+        $endTime = Carbon::parse($settings->draw_end_time);
 
-        return true;
+        // Calculate the current draw period from DB settings
+        $drawStart = $now->copy()
+            ->startOfWeek($startDayConstant)
+            ->setTime($startTime->hour, $startTime->minute, 0);
+
+        $drawEnd = $drawStart->copy()
+            ->endOfWeek($endDayConstant)
+            ->setTime($endTime->hour, $endTime->minute, 0);
+
+        // Donations allowed only within the active draw window (exclusive end boundary)
+        return $now->gte($drawStart) && $now->lt($drawEnd);
     }
 
     /**
