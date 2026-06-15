@@ -231,7 +231,7 @@ class DonationService
                 $user = $user->fresh();
 
                 // Get setting
-                $setting = \App\Models\StripeSetting::query()->first();
+                $setting = StripeSetting::query()->first();
                 $paymentAmount = $amount;
 
                 // Calculate processing fee
@@ -422,7 +422,7 @@ class DonationService
                 $rolloverParticipants = \App\Models\DrawParticipant::where('weekly_draw_id', $previousDraw->id)
                     ->whereNotIn('user_id', $excludedUserIds)
                     ->get();
-                
+
                 $previousWinners = \App\Models\DrawWinner::where('weekly_draw_id', $previousDraw->id)->pluck('user_id')->toArray();
 
                 $validRollovers = $rolloverParticipants->filter(function ($p) use ($previousWinners) {
