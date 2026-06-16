@@ -44,6 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->validateCsrfTokens(except: [
             'webhook/stripe',
+            '/v2/webhook/stripe',
             'api/*'
         ]);
         // Rate limiting for donation endpoints
