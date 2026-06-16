@@ -215,7 +215,7 @@ class DonationV2Controller extends Controller
     {
         $payload = $request->getContent();
         $sigHeader = $request->header('Stripe-Signature');
-        $webhookSecret = config('services.stripe.webhook_secret');
+        $webhookSecret = config('services.stripe.v2_webhook_secret');
 
         Log::info('[V2] Webhook received', [
             'signature_present' => !empty($sigHeader),

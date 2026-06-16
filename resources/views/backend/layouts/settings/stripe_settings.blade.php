@@ -98,10 +98,10 @@
                                         </div>
                                     </div>
 
-                                    {{-- Webhook Secret --}}
+                                    {{-- Webhook Secret (V1) --}}
                                     <div class="row mb-4 align-items-start">
                                         <label for="stripe_webhook_secret" class="col-md-3 form-label fw-semibold pt-2">
-                                            Webhook Secret
+                                            Webhook Secret (V1)
                                             <span
                                                 class="badge bg-warning-transparent text-warning ms-1 fs-10">Webhook</span>
                                         </label>
@@ -117,7 +117,31 @@
                                             @error('stripe_webhook_secret')
                                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                                             @enderror
-                                            <small class="text-muted">Found in your Stripe Dashboard under
+                                            <small class="text-muted">For the V1 endpoint: <code>/webhook/stripe</code>. Found in Stripe Dashboard under
+                                                <strong>Developers → Webhooks</strong>.</small>
+                                        </div>
+                                    </div>
+
+                                    {{-- Webhook Secret (V2) --}}
+                                    <div class="row mb-4 align-items-start">
+                                        <label for="stripe_v2_webhook_secret" class="col-md-3 form-label fw-semibold pt-2">
+                                            Webhook Secret (V2)
+                                            <span
+                                                class="badge bg-warning-transparent text-warning ms-1 fs-10">Webhook</span>
+                                        </label>
+                                        <div class="col-md-9">
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fa-solid fa-link"></i></span>
+                                                <input
+                                                    class="form-control @error('stripe_v2_webhook_secret') is-invalid @enderror"
+                                                    id="stripe_v2_webhook_secret" name="stripe_v2_webhook_secret"
+                                                    placeholder="whsec_xxxxxxxxxxxxxxxxxxxxxxxx" type="text"
+                                                    value="{{ env('STRIPE_V2_WEBHOOK_SECRET') ?? old('stripe_v2_webhook_secret') }}">
+                                            </div>
+                                            @error('stripe_v2_webhook_secret')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                            <small class="text-muted">For the V2 endpoint: <code>/v2/webhook/stripe</code>. Found in Stripe Dashboard under
                                                 <strong>Developers → Webhooks</strong>.</small>
                                         </div>
                                     </div>

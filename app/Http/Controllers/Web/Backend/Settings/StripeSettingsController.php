@@ -31,9 +31,10 @@ class StripeSettingsController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $request->validate([
-            'stripe_key'            => 'nullable|string|regex:/^[\S]*$/',
-            'stripe_secret'         => 'nullable|string|regex:/^[\S]*$/',
-            'stripe_webhook_secret' => 'nullable|string|regex:/^[\S]*$/',
+            'stripe_key'               => 'nullable|string|regex:/^[\S]*$/',
+            'stripe_secret'            => 'nullable|string|regex:/^[\S]*$/',
+            'stripe_webhook_secret'    => 'nullable|string|regex:/^[\S]*$/',
+            'stripe_v2_webhook_secret' => 'nullable|string|regex:/^[\S]*$/',
         ]);
 
         try {
@@ -41,9 +42,10 @@ class StripeSettingsController extends Controller
             $envContent = File::exists($envPath) ? File::get($envPath) : '';
 
             $keys = [
-                'STRIPE_KEY'            => $request->stripe_key,
-                'STRIPE_SECRET'         => $request->stripe_secret,
-                'STRIPE_WEBHOOK_SECRET' => $request->stripe_webhook_secret,
+                'STRIPE_KEY'               => $request->stripe_key,
+                'STRIPE_SECRET'            => $request->stripe_secret,
+                'STRIPE_WEBHOOK_SECRET'    => $request->stripe_webhook_secret,
+                'STRIPE_V2_WEBHOOK_SECRET' => $request->stripe_v2_webhook_secret,
             ];
 
             foreach ($keys as $key => $value) {

@@ -65,6 +65,7 @@ return [
         'secret' => env('STRIPE_SECRET'),
         'public_key' => env('STRIPE_PUBLIC_KEY'),
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'v2_webhook_secret' => env('STRIPE_V2_WEBHOOK_SECRET'),
     ],
 
     // Twilio Configuration (for SMS OTP)
