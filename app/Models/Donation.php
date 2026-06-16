@@ -22,6 +22,9 @@ class Donation extends Model
         'stripe_payment_id',
         'stripe_payment_status',
         'stripe_charge_id',
+        'card_fingerprint',
+        'stripe_payment_method_id',
+        'stripe_payment_intent_id',
         'is_eligible_for_draw',
         'payment_type',
         'donated_at',
@@ -35,6 +38,13 @@ class Donation extends Model
         'donated_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     */
+    protected $hidden = [
+        'card_fingerprint',
     ];
 
 

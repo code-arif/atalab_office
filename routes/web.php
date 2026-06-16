@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\Api\Donation\DonationController;
+use App\Http\Controllers\Api\V2\Donation\DonationV2Controller;
 use App\Http\Controllers\Api\Auth\AuthenticationController;
 
 Route::get('/', function () {
@@ -107,6 +108,11 @@ Route::get('/verify-email/{token}', [AuthenticationController::class, 'verifyEma
 // STRIPE WEBHOOK (NO AUTH REQUIRED)
 // ============================================
 Route::post('/webhook/stripe', [DonationController::class, 'handleStripeWebhook']);
+
+// V2 Stripe Webhook — Dedicated endpoint for V2 payment module.
+// Configure this URL as a second webhook endpoint in Stripe Dashboard:
+// Endpoint URL: https://your-domain.com/api/v2/webhook/stripe
+Route::post('/api/v2/webhook/stripe', [DonationV2Controller::class, 'handleStripeWebhook']);
 
 
 require __DIR__ . '/auth.php';

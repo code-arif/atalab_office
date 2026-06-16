@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Auth\RegistrationController;
 use App\Http\Controllers\Api\Donation\DonationController;
 use App\Http\Controllers\Api\Auth\AuthenticationController;
 use App\Http\Controllers\Api\Donation\WeeklyDrawController;
+use App\Http\Controllers\Api\V2\Donation\DonationV2Controller;
 
 /*
 |--------------------------------------------------------------------------
@@ -198,4 +199,40 @@ Route::post('/track-visitor', [VisitorController::class, 'trackVisitor'])
 // Retrieve aggregated visitor statistics for the admin dashboard.
 Route::prefix('dashboard')->group(function () {
     Route::get('/visitor-stats', [VisitorController::class, 'getVisitorStats']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| V2 Payment Module Routes
+|--------------------------------------------------------------------------
+|
+| V2 payment endpoints with card fingerprint tracking, processing fee
+| management, and duplicate card detection. Entirely independent from
+| the V1 payment flow — existing production code is untouched.
+|
+*/
+Route::prefix('v2')->group(function () {
+
+    /*
+    |----------------------------------------------------------------------
+    | V2 Donation Routes
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('donate')->group(function () {
+
+        // Initiate a standard donation with fee calculation (server-side).
+        Route::post('/standard', [DonationV2Controller::class, 'createStandardDonation']); // done
+
+        // Initiate a custom amount donation with fee calculation.
+        Route::post('/custom', [DonationV2Controller::class, 'createCustomDonation']);
+
+        // Verify payment after redirect from Stripe (with fingerprint extraction).
+        Route::post('/verify', [DonationV2Controller::class, 'verifyPayment']); // done
+
+        // Check payment status by Stripe payment ID.
+        Route::get('/{paymentId}/status', [DonationV2Controller::class, 'checkPaymentStatus']);
+
+        // Check if a card fingerprint has been used in the current draw.
+        Route::post('/check-duplicate-card', [DonationV2Controller::class, 'checkDuplicateCard']);
+    });
 });
