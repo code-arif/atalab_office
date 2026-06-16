@@ -132,7 +132,7 @@ class DashboardController extends Controller
             ->pluck('count', 'stripe_payment_status');
 
         // Visitor Statistics (NEW)
-        $visitorStats = Cache::remember('dashboard_visitor_stats', 300, function () {
+        $visitorStats = Cache::remember('admin_dashboard_visitor_stats', 300, function () {
             $today = today(config('app.timezone'));
             $todayStats = \App\Models\VisitorStatistic::whereDate('date', $today)->first();
 
