@@ -112,7 +112,7 @@ Route::post('/webhook/stripe', [DonationController::class, 'handleStripeWebhook'
 // V2 Stripe Webhook — Dedicated endpoint for V2 payment module.
 // Configure this URL as a second webhook endpoint in Stripe Dashboard:
 // Endpoint URL: https://your-domain.com/api/v2/webhook/stripe
-Route::post('/api/v2/webhook/stripe', [DonationV2Controller::class, 'handleStripeWebhook']);
+Route::post('/v2/webhook/stripe', [DonationV2Controller::class, 'handleStripeWebhook']);
 
 
 require __DIR__ . '/auth.php';
