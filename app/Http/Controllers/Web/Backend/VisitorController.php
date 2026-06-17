@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Web\Backend;
 
-use Carbon\Carbon;
+use App\Http\Controllers\Controller;
 use App\Models\Visitor;
-use Illuminate\Http\Request;
 use App\Models\VisitorStatistic;
+use Carbon\Carbon;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Cache;
 
 class VisitorController extends Controller
 {
@@ -62,7 +63,7 @@ class VisitorController extends Controller
                 'success' => true,
                 'message' => 'Visitor tracked successfully'
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Visitor tracking failed: ' . $e->getMessage());
 
             return response()->json([
@@ -146,7 +147,7 @@ class VisitorController extends Controller
                 'success' => true,
                 'data' => $stats
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch stats'
