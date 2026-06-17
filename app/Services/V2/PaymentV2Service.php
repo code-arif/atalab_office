@@ -5,10 +5,13 @@ namespace App\Services\V2;
 use App\Mail\DonationConfirmation;
 use App\Models\Donation;
 use App\Models\DrawAutomateSetting;
+use App\Models\DrawParticipant;
+use App\Models\DrawWinner;
 use App\Models\StripeSetting;
 use App\Models\User;
 use App\Models\UserWeekParticipation;
 use App\Models\WeeklyDraw;
+use App\Models\WinnerExclusion;
 use App\Services\DonationService;
 use App\Services\RegistrationService;
 use App\Services\StripeService;
@@ -227,19 +230,19 @@ class PaymentV2Service
                 $donationId = $this->donationService->generateUniqueDonationId();
 
                 $donation = Donation::create([
-                    'donation_id'             => $donationId,
-                    'user_id'                 => $user->id,
-                    'week_id'                 => $currentDraw->id,
-                    'amount'                  => $amount,
-                    'processing_fee'          => $processingFee,
-                    'total_amount'            => $totalAmount,
-                    'is_cover'                => true, // custom always includes fees
-                    'stripe_payment_id'       => $session->id,
-                    'stripe_payment_status'   => 'pending',
-                    'is_eligible_for_draw'    => false,
-                    'payment_type'            => 'custom',
-                    'donated_at'              => now(config('app.timezone')),
-                    'attempt_number'          => 1,
+                    'donation_id' => $donationId,
+                    'user_id' => $user->id,
+                    'week_id' => $currentDraw->id,
+                    'amount' => $amount,
+                    'processing_fee' => $processingFee,
+                    'total_amount' => $totalAmount,
+                    'is_cover' => true, // custom always includes fees
+                    'stripe_payment_id' => $session->id,
+                    'stripe_payment_status' => 'pending',
+                    'is_eligible_for_draw' => false,
+                    'payment_type' => 'custom',
+                    'donated_at' => now(config('app.timezone')),
+                    'attempt_number' => 1,
                 ]);
 
                 UserWeekParticipation::updateOrCreate(
@@ -248,20 +251,20 @@ class PaymentV2Service
                 );
 
                 Log::info('[V2] Custom donation initiated', [
-                    'donation_id'       => $donation->id,
-                    'donation_id_fmt'   => $donation->donation_id,
-                    'user_id'           => $user->id,
-                    'amount'            => $amount,
-                    'total_amount'      => $totalAmount,
-                    'processing_fee'    => $processingFee,
+                    'donation_id' => $donation->id,
+                    'donation_id_fmt' => $donation->donation_id,
+                    'user_id' => $user->id,
+                    'amount' => $amount,
+                    'total_amount' => $totalAmount,
+                    'processing_fee' => $processingFee,
                 ]);
 
                 return [
-                    'checkout_url'          => $session->url,
-                    'session_id'            => $session->id,
-                    'donation_id'           => $donation->id,
+                    'checkout_url' => $session->url,
+                    'session_id' => $session->id,
+                    'donation_id' => $donation->id,
                     'donation_id_formatted' => $donation->donation_id,
-                    'donor_id'              => $user->donor_id,
+                    'donor_id' => $user->donor_id,
                 ];
             });
         });
@@ -320,7 +323,7 @@ class PaymentV2Service
             if (!$paymentMethod) {
                 Log::warning('[V2] No payment method on PaymentIntent', [
                     'payment_intent_id' => $paymentIntentId,
-                    'donation_id'       => $donationId,
+                    'donation_id' => $donationId,
                 ]);
                 return;
             }
@@ -335,14 +338,14 @@ class PaymentV2Service
                 // ACH / US bank accounts don't have card fingerprints
                 Log::info('[V2] Non-card payment method, skipping fingerprint', [
                     'payment_method_id' => $paymentMethodId,
-                    'type'              => $paymentMethod->type ?? 'unknown',
+                    'type' => $paymentMethod->type ?? 'unknown',
                 ]);
             }
 
             // Store on donation
             $updateData = [
-                'stripe_payment_method_id'   => $paymentMethodId,
-                'stripe_payment_intent_id'   => $paymentIntentId,
+                'stripe_payment_method_id' => $paymentMethodId,
+                'stripe_payment_intent_id' => $paymentIntentId,
             ];
 
             if ($fingerprint) {
@@ -352,16 +355,16 @@ class PaymentV2Service
             Donation::where('id', $donationId)->update($updateData);
 
             Log::info('[V2] Card fingerprint stored', [
-                'donation_id'        => $donationId,
-                'fingerprint'        => $fingerprint ? substr($fingerprint, 0, 8) . '...' : 'N/A',
-                'payment_method_id'  => $paymentMethodId,
-                'payment_intent_id'  => $paymentIntentId,
+                'donation_id' => $donationId,
+                'fingerprint' => $fingerprint ? substr($fingerprint, 0, 8) . '...' : 'N/A',
+                'payment_method_id' => $paymentMethodId,
+                'payment_intent_id' => $paymentIntentId,
             ]);
         } catch (Exception $e) {
             Log::error('[V2] Failed to extract card fingerprint', [
                 'payment_intent_id' => $paymentIntentId,
-                'donation_id'       => $donationId,
-                'error'             => $e->getMessage(),
+                'donation_id' => $donationId,
+                'error' => $e->getMessage(),
             ]);
             // Do not throw — fingerprint extraction should not break the payment flow
         }
@@ -396,27 +399,27 @@ class PaymentV2Service
 
         if ($existing) {
             Log::warning('[V2] Duplicate card detected', [
-                'fingerprint'          => substr($fingerprint, 0, 8) . '...',
-                'week_id'              => $weekId,
+                'fingerprint' => substr($fingerprint, 0, 8) . '...',
+                'week_id' => $weekId,
                 'existing_donation_id' => $existing->id,
-                'existing_user_id'     => $existing->user_id,
+                'existing_user_id' => $existing->user_id,
             ]);
 
             return [
-                'is_duplicate'      => true,
+                'is_duplicate' => true,
                 'existing_donation' => [
-                    'id'                => $existing->id,
-                    'donation_id'       => $existing->donation_id,
-                    'user_id'           => $existing->user_id,
-                    'week_id'           => $existing->week_id,
-                    'amount'            => $existing->amount,
-                    'donated_at'        => $existing->donated_at,
+                    'id' => $existing->id,
+                    'donation_id' => $existing->donation_id,
+                    'user_id' => $existing->user_id,
+                    'week_id' => $existing->week_id,
+                    'amount' => $existing->amount,
+                    'donated_at' => $existing->donated_at,
                 ],
             ];
         }
 
         return [
-            'is_duplicate'      => false,
+            'is_duplicate' => false,
             'existing_donation' => null,
         ];
     }
@@ -457,7 +460,7 @@ class PaymentV2Service
                         Log::warning('[V2] Duplicate card detected during verification', [
                             'donation_id' => $donation->id,
                             'fingerprint' => substr($donation->card_fingerprint, 0, 8) . '...',
-                            'week_id'     => $donation->week_id,
+                            'week_id' => $donation->week_id,
                         ]);
                     }
                 }
@@ -465,7 +468,7 @@ class PaymentV2Service
                 $donation->update([
                     'stripe_payment_status' => 'completed',
                     'stripe_charge_id' => $session->payment_intent,
-                    'is_eligible_for_draw'  => true,
+                    'is_eligible_for_draw' => true,
                 ]);
 
                 UserWeekParticipation::where('user_id', $donation->user_id)
@@ -519,10 +522,10 @@ class PaymentV2Service
                     // The duplicate card user will still get their donation recorded,
                     // but we flag it for admin review.
                     Log::warning('[V2] Duplicate card detected in webhook', [
-                        'new_donation_id'     => $donation->id,
+                        'new_donation_id' => $donation->id,
                         'existing_donation_id' => $duplicateCheck['existing_donation']['id'],
-                        'week_id'             => $donation->week_id,
-                        'fingerprint'         => substr($donation->card_fingerprint, 0, 8) . '...',
+                        'week_id' => $donation->week_id,
+                        'fingerprint' => substr($donation->card_fingerprint, 0, 8) . '...',
                     ]);
                 }
             }
@@ -530,7 +533,7 @@ class PaymentV2Service
             // --- STEP 3: Complete the donation ---
             $donation->update([
                 'stripe_payment_status' => 'completed',
-                'stripe_charge_id'      => $session->payment_intent,
+                'stripe_charge_id' => $session->payment_intent,
                 'is_eligible_for_draw'  => true,
             ]);
 
@@ -543,10 +546,10 @@ class PaymentV2Service
             $this->sendDonationConfirmationEmail($donation);
 
             Log::info('[V2] Checkout completed webhook processed with fingerprint tracking', [
-                'donation_id'       => $donation->id,
-                'donation_id_fmt'   => $donation->donation_id,
-                'user_id'           => $donation->user_id,
-                'card_fingerprint'  => $donation->card_fingerprint
+                'donation_id' => $donation->id,
+                'donation_id_fmt' => $donation->donation_id,
+                'user_id' => $donation->user_id,
+                'card_fingerprint' => $donation->card_fingerprint
                     ? substr($donation->card_fingerprint, 0, 8) . '...'
                     : 'N/A',
             ]);
@@ -590,14 +593,14 @@ class PaymentV2Service
                 if ($duplicate['is_duplicate']) {
                     Log::warning('[V2] Duplicate card on payment_intent.succeeded', [
                         'donation_id' => $donation->id,
-                        'week_id'     => $donation->week_id,
+                        'week_id' => $donation->week_id,
                     ]);
                 }
             }
 
             $donation->update([
                 'stripe_payment_status' => 'completed',
-                'is_eligible_for_draw'  => true,
+                'is_eligible_for_draw' => true,
             ]);
 
             $this->updateWeeklyDrawStats($donation->week_id);
@@ -621,11 +624,11 @@ class PaymentV2Service
             if ($donation) {
                 $donation->update([
                     'stripe_payment_status' => 'failed',
-                    'is_eligible_for_draw'  => false,
+                    'is_eligible_for_draw' => false,
                 ]);
 
                 Log::info('[V2] Payment failed recorded', [
-                    'donation_id'  => $donation->id,
+                    'donation_id' => $donation->id,
                     'payment_intent' => $paymentIntent->id,
                 ]);
             }
@@ -640,19 +643,19 @@ class PaymentV2Service
         $donation = Donation::where('stripe_payment_id', $paymentId)->firstOrFail();
 
         return [
-            'status'                => $donation->stripe_payment_status,
-            'donation_id'           => $donation->donation_id,
-            'amount'                => $donation->amount,
-            'processing_fee'        => $donation->processing_fee,
-            'total_amount'          => $donation->total_amount,
-            'is_cover'              => $donation->is_cover,
-            'card_fingerprint'      => $donation->card_fingerprint
+            'status' => $donation->stripe_payment_status,
+            'donation_id' => $donation->donation_id,
+            'amount' => $donation->amount,
+            'processing_fee' => $donation->processing_fee,
+            'total_amount' => $donation->total_amount,
+            'is_cover' => $donation->is_cover,
+            'card_fingerprint' => $donation->card_fingerprint
                 ? substr($donation->card_fingerprint, 0, 8) . '...'
                 : null,
-            'has_duplicate_card'    => $donation->card_fingerprint
+            'has_duplicate_card' => $donation->card_fingerprint
                 ? $this->checkDuplicateCard($donation->card_fingerprint, $donation->week_id, $donation->id)['is_duplicate']
                 : false,
-            'donated_at'            => $donation->donated_at,
+            'donated_at' => $donation->donated_at,
             'is_eligible_for_draw'  => $donation->is_eligible_for_draw,
         ];
     }
@@ -701,9 +704,9 @@ class PaymentV2Service
         DB::table('users')
             ->where('id', $userId)
             ->update([
-                'total_donations_count'    => DB::raw('total_donations_count + 1'),
+                'total_donations_count' => DB::raw('total_donations_count + 1'),
                 'lifetime_donation_amount' => DB::raw("lifetime_donation_amount + {$amount}"),
-                'last_donation_at'         => now(),
+                'last_donation_at' => now(),
             ]);
     }
 
@@ -728,33 +731,33 @@ class PaymentV2Service
             ->first();
 
         if ($previousDraw) {
-            $excludedUserIds = \App\Models\WinnerExclusion::where('is_active', true)
+            $excludedUserIds = WinnerExclusion::where('is_active', true)
                 ->where('exclusion_ends_at', '>', now())
                 ->pluck('user_id')
                 ->unique()
                 ->toArray();
 
-            $rolloverParticipants = \App\Models\DrawParticipant::where('weekly_draw_id', $previousDraw->id)
+            $rolloverParticipants = DrawParticipant::where('weekly_draw_id', $previousDraw->id)
                 ->whereNotIn('user_id', $excludedUserIds)
                 ->get();
 
-            $previousWinners = \App\Models\DrawWinner::where('weekly_draw_id', $previousDraw->id)
+            $previousWinners = DrawWinner::where('weekly_draw_id', $previousDraw->id)
                 ->pluck('user_id')
                 ->toArray();
 
             $validRollovers = $rolloverParticipants->filter(fn($p) => !in_array($p->user_id, $previousWinners));
 
-            $rolloverCount  = $validRollovers->count();
-            $rolloverTotal  = Donation::whereIn('id', $validRollovers->pluck('donation_id'))->sum('amount');
+            $rolloverCount = $validRollovers->count();
+            $rolloverTotal = Donation::whereIn('id', $validRollovers->pluck('donation_id'))->sum('amount');
 
             $newTotal += $rolloverTotal;
             $newParticipantsCount += $rolloverCount;
         }
 
         $draw->update([
-            'total_pool'          => $newTotal,
-            'total_participants'  => $newParticipantsCount,
-            'last_stats_update'   => now(),
+            'total_pool' => $newTotal,
+            'total_participants' => $newParticipantsCount,
+            'last_stats_update' => now(),
         ]);
     }
 
@@ -767,13 +770,13 @@ class PaymentV2Service
 
             Log::info('[V2] Donation confirmation email sent', [
                 'donation_id' => $donation->id,
-                'user_id'     => $donation->user_id,
-                'email'       => $donation->user->email,
+                'user_id' => $donation->user_id,
+                'email' => $donation->user->email,
             ]);
         } catch (Exception $e) {
             Log::error('[V2] Failed to send donation confirmation email', [
                 'donation_id' => $donation->id,
-                'error'       => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }

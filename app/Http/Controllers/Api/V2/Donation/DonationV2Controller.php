@@ -7,6 +7,7 @@ use App\Http\Requests\V2\Donation\CustomDonationRequest;
 use App\Http\Requests\V2\Donation\StandardDonationRequest;
 use App\Http\Requests\V2\Donation\VerifyPaymentRequest;
 use App\Http\Resources\V2\Donation\DonationResource;
+use App\Models\WeeklyDraw;
 use App\Services\V2\PaymentV2Service;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -87,12 +88,12 @@ class DonationV2Controller extends Controller
             );
 
             return response()->json([
-                'success'               => true,
-                'message'               => 'Custom donation session created.',
-                'checkout_url'          => $result['checkout_url'],
-                'session_id'            => $result['session_id'],
+                'success' => true,
+                'message' => 'Custom donation session created.',
+                'checkout_url' => $result['checkout_url'],
+                'session_id' => $result['session_id'],
                 'donation_id_formatted' => $result['donation_id_formatted'],
-                'version'               => 'v2',
+                'version' => 'v2',
             ]);
         } catch (Exception $e) {
             return response()->json([
@@ -167,7 +168,7 @@ class DonationV2Controller extends Controller
         try {
             $weekId = $request->week_id;
             if (!$weekId) {
-                $currentDraw = \App\Models\WeeklyDraw::where('status', 'active')->first();
+                $currentDraw = WeeklyDraw::where('status', 'active')->first();
                 if (!$currentDraw) {
                     return response()->json([
                         'success' => false,
@@ -183,13 +184,13 @@ class DonationV2Controller extends Controller
             );
 
             return response()->json([
-                'success'       => true,
-                'is_duplicate'  => $result['is_duplicate'],
-                'message'       => $result['is_duplicate']
+                'success' => true,
+                'is_duplicate' => $result['is_duplicate'],
+                'message' => $result['is_duplicate']
                     ? 'This card has already been used for the current draw.'
                     : 'No duplicate card found.',
-                'data'          => $result,
-                'version'       => 'v2',
+                'data' => $result,
+                'version' => 'v2',
             ]);
         } catch (Exception $e) {
             return response()->json([
