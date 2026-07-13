@@ -199,6 +199,15 @@
                     </a>
                 </li>
 
+                {{-- Blog Management --}}
+                <li class="slide">
+                    <a class="side-menu__item {{ request()->routeIs('blog.*') ? 'has-link' : '' }}"
+                        href="{{ route('blog.index') }}">
+                        <i class="fa-solid fa-blog"></i>
+                        <span class="side-menu__label mb-1">Blog</span>
+                    </a>
+                </li>
+
 
                 {{-- topbar, footer --}}
                 <li class="slide">
