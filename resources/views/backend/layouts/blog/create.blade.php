@@ -1,4 +1,6 @@
-@extends('backend.app', ['title' => 'Create Blog Post'])
+@extends('backend.app')
+
+@section('title', 'Create Blog Post')
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
