@@ -1,6 +1,7 @@
 @extends('backend.app', ['title' => 'Edit Blog Post'])
 
 @push('styles')
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
 <style>
     .meta-card {
         background: #f8f9fc;
@@ -47,9 +48,27 @@
         color: #856404;
     }
 
-    /* ── CKEditor Minimum Height ── */
-    .ck-editor__editable_inline {
-        min-height: 450px;
+    /* ── Summernote fixes ── */
+    .note-editor.note-frame {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .note-editor .note-toolbar {
+        background-color: #fafbfc;
+        border-bottom: 1px solid #e8eaed;
+        padding: 10px 10px 5px 10px;
+    }
+    .note-editor .note-statusbar {
+        background-color: #fafbfc;
+        border-top: 1px solid #e8eaed;
+    }
+    .note-editor .note-editing-area .note-editable {
+        padding: 20px;
+        font-size: 14px;
+    }
+    .note-editor .note-editing-area .note-placeholder {
+        padding: 20px;
+        font-size: 14px;
     }
 </style>
 @endpush
@@ -249,29 +268,25 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 <script>
-    // Initialize CKEditor for content (CKEditor 5 is loaded globally from backend partials)
-    ClassicEditor
-        .create(document.querySelector('#content'), {
-            toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', 'insertTable', 'undo', 'redo'],
-            heading: {
-                options: [
-                    { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                    { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
-                    { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' },
-                    { model: 'heading4', view: 'h4', title: 'Heading 4', class: 'ck-heading_heading4' },
-                ]
-            }
-        })
-        .then(editor => {
-            // Set a placeholder message
-            editor.editing.view.change(writer => {
-                writer.setAttribute('placeholder', 'Start writing your blog content...', editor.editing.view.document.getRoot());
-            });
-        })
-        .catch(error => {
-            console.error('CKEditor initialization error:', error);
-        });
+    // Initialize Summernote for content
+    $('#content').summernote({
+        placeholder: 'Start writing your blog content...',
+        tabsize: 2,
+        height: 450,
+        disableDragAndDrop: false,
+        toolbar: [
+            ['style', ['style']],
+            ['font', ['bold', 'italic', 'underline', 'clear']],
+            ['fontname', ['fontname']],
+            ['color', ['color']],
+            ['para', ['ol', 'paragraph']],
+            ['table', ['table']],
+            ['insert', ['link', 'picture']],
+            ['view', ['fullscreen', 'codeview', 'help']]
+        ]
+    });
 
     // Auto-generate slug preview on title input
     document.getElementById('title').addEventListener('input', function() {
