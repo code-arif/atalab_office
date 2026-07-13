@@ -76,13 +76,13 @@ class CmsController extends Controller
     }
 
     /**
-     * Get structure page CMS data
+     * Get privacy policy page CMS data
      */
-    public function structure()
+    public function privacyPolicy()
     {
-        $data = CMS::where('page', 'structure')->get();
+        $data = CMS::where('page', 'privacy-policy')->get();
 
-        return $this->success(CMSResource::collection($data), 'Structure data retrieved successfully');
+        return $this->success(CMSResource::collection($data), 'Privacy policy data retrieved successfully');
     }
 
     /**
@@ -122,6 +122,16 @@ class CmsController extends Controller
         $data = CMS::where('page', 'ethical-boundaries')->get();
 
         return $this->success(CMSResource::collection($data), 'Ethical boundaries data retrieved successfully');
+    }
+
+    /**
+     * Get terms and conditions page CMS data
+     */
+    public function termsAndConditions()
+    {
+        $data = CMS::where('page', 'terms-and-conditions')->get();
+
+        return $this->success(CMSResource::collection($data), 'Terms and conditions data retrieved successfully');
     }
 
     /**

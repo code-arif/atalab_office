@@ -54,11 +54,11 @@ Route::group(['middleware' => 'guest:api'], function () {
         Route::get('/home', [CmsController::class, 'home']); // Retrieve homepage content blocks.
         Route::get('/our-story', [CmsController::class, 'ourStory']); // Retrieve the "Our Story" page content.
         Route::get('/how-it-works', [CmsController::class, 'howItWorks']); // Retrieve the "How It Works" page content.
-        Route::get('/structure', [CmsController::class, 'structure']); // Retrieve the organizational structure page content.
+        Route::get('/privacy-policy', [CmsController::class, 'privacyPolicy']); // Retrieve the privacy policy page content.
         Route::get('/eligibility', [CmsController::class, 'eligibility']); // Retrieve the eligibility criteria page content.
         Route::get('/payment-policy', [CmsController::class, 'paymentPolicy']); // Retrieve the payment policy page content.
         Route::get('/tax-policy', [CmsController::class, 'taxPolicy']); // Retrieve the tax policy page content.
-        Route::get('/ethical-boundaries', [CmsController::class, 'ethicalBoundaries']); // Retrieve the ethical boundaries page content.
+        Route::get('/terms-and-conditions', [CmsController::class, 'termsAndConditions']); // Retrieve the terms and conditions page content.
         Route::get('/officer-compensation-policy', [CmsController::class, 'officerCompensationPolicy']); // Retrieve the officer compensation policy page content.
         Route::get('/archives', [CmsController::class, 'archives']); // Retrieve archived content listings.
         Route::get('/contact-us', [CmsController::class, 'contactUs']); // Retrieve the "Contact Us" page content and metadata.

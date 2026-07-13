@@ -9,21 +9,21 @@ use Illuminate\Http\Request;
 use App\Http\Requests\CmsRequest;
 use App\Http\Controllers\Controller;
 
-class EthicalPageController extends Controller
+class PrivacyPolicyPageController extends Controller
 {
     /**
-     * show ethical-boundaries page hero section data and section item
+     * show privacy policy page hero section data and section item
      */
     public function index(Request $request)
     {
-        $data = CMS::where('page', 'ethical-boundaries')->where('section', 'hero')->where('name', 'item')->first();
+        $data = CMS::where('page', 'privacy-policy')->where('section', 'hero')->where('name', 'item')->first();
 
-        return view("backend.layouts.cms.tax_policy.ethical_boundaries", compact("data"));
+        return view("backend.layouts.cms.tax_policy.privacy_policy", compact("data"));
     }
 
 
     /**
-     * update ethical-boundaries page hero section
+     * update privacy policy page hero section
      **/
     public function update(CmsRequest $request)
     {
@@ -31,14 +31,14 @@ class EthicalPageController extends Controller
             $validated_data = $request->validated();
 
             // get the existing record
-            CMS::where('page', 'ethical-boundaries')
+            CMS::where('page', 'privacy-policy')
                 ->where('section', 'hero')
                 ->where('name', 'item')
                 ->first();
 
             CMS::updateOrCreate(
                 [
-                    'page' => 'ethical-boundaries',
+                    'page' => 'privacy-policy',
                     'section' => 'hero',
                     'name' => 'item'
                 ],

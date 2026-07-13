@@ -5,7 +5,7 @@ use App\Http\Controllers\Web\Backend\CMS\ArchivePageController;
 use App\Http\Controllers\Web\Backend\CMS\ContactUsPageController;
 use App\Http\Controllers\Web\Backend\CMS\DrawSettingController;
 use App\Http\Controllers\Web\Backend\CMS\EligibilityPageController;
-use App\Http\Controllers\Web\Backend\CMS\EthicalPageController;
+use App\Http\Controllers\Web\Backend\CMS\PrivacyPolicyPageController;
 use App\Http\Controllers\Web\Backend\CMS\FooterManageController;
 use App\Http\Controllers\Web\Backend\CMS\Home\DisclaimerController;
 use App\Http\Controllers\Web\Backend\CMS\Home\DistributionController;
@@ -21,7 +21,7 @@ use App\Http\Controllers\Web\Backend\CMS\Home\TestimonialController;
 use App\Http\Controllers\Web\Backend\CMS\Home\VideoController;
 use App\Http\Controllers\Web\Backend\CMS\Home\WeBelieveController;
 use App\Http\Controllers\Web\Backend\CMS\HowItWorks\HowItWorksPageController;
-use App\Http\Controllers\Web\Backend\CMS\HowItWorks\StructurePageController;
+use App\Http\Controllers\Web\Backend\CMS\HowItWorks\TermsConditionsPageController;
 use App\Http\Controllers\Web\Backend\CMS\OfficersCompPageController;
 use App\Http\Controllers\Web\Backend\CMS\OurStory\OurStoryPageController;
 use App\Http\Controllers\Web\Backend\CMS\PaymentPageController;
@@ -145,9 +145,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/how-it-works/hero', [HowItWorksPageController::class, 'index'])->name('how_it_works.hero.section');
         Route::post('/how-it-works/hero/update', [HowItWorksPageController::class, 'update'])->name('how_it_works.hero.section.update');
 
-        // Structure Page — Hero Section
-        Route::get('/structure/hero', [StructurePageController::class, 'index'])->name('structure.hero.section');
-        Route::post('/structure/hero/update', [StructurePageController::class, 'update'])->name('structure.hero.section.update');
+        // Terms & Conditions Page — Hero Section
+        Route::get('/terms_&_conditions/hero', [TermsConditionsPageController::class, 'index'])->name('terms_conditions.hero.section');
+        Route::post('/terms_&_conditions/hero/update', [TermsConditionsPageController::class, 'update'])->name('terms_conditions.hero.section.update');
 
         // Eligibility Page — Hero Section
         Route::get('/eligibility/hero', [EligibilityPageController::class, 'index'])->name('eligibility.hero.section');
@@ -161,9 +161,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/tax-policy/hero', [TaxPolicyPageController::class, 'index'])->name('tax_policy.hero.section');
         Route::post('/tax-policy/hero/update', [TaxPolicyPageController::class, 'update'])->name('tax_policy.hero.section.update');
 
-        // Ethical Boundaries Page — Hero Section
-        Route::get('/ethical/hero', [EthicalPageController::class, 'index'])->name('ethical_boundaries.hero.section');
-        Route::post('/ethical/hero/update', [EthicalPageController::class, 'update'])->name('ethical_boundaries.hero.section.update');
+        // Privacy Policy Page — Hero Section
+        Route::get('/privacy_policy/hero', [PrivacyPolicyPageController::class, 'index'])->name('privacy_policy.hero.section');
+        Route::post('/privacy_policy/hero/update', [PrivacyPolicyPageController::class, 'update'])->name('privacy_policy.hero.section.update');
 
         // Officer Compensation Page — Hero Section
         Route::get('/officer-compensation/hero', [OfficersCompPageController::class, 'index'])->name('officer_compensation.hero.section');

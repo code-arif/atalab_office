@@ -134,7 +134,7 @@
                         <li><a href="{{ route('cms.how_it_works.hero.section') }}" class="slide-item">How It
                                 Works</a>
                         </li>
-                        <li><a href="{{ route('cms.structure.hero.section') }}" class="slide-item">Structure</a>
+                        <li><a href="{{ route('cms.terms_conditions.hero.section') }}" class="slide-item">Terms & Conditions</a>
                         </li>
                     </ul>
                 </li>
@@ -161,14 +161,13 @@
                 <li class="slide">
                     <a class="side-menu__item" data-bs-toggle="slide" href="#">
                         <i class="fa-solid fa-tower-observation"></i>
-                        <span class="mb-1">Tax Policy Page</span>
+                        <span class="mb-1">Tax & Privacy Policy Page</span>
                         <i class="angle fa fa-angle-right ms-auto"></i>
                     </a>
                     <ul class="slide-menu">
-                        <li><a href="{{ route('cms.tax_policy.hero.section') }}" class="slide-item">Tax Policy</a>
+                        <li><a href="{{ route('cms.privacy_policy.hero.section') }}" class="slide-item">Privacy Policy</a>
                         </li>
-                        <li><a href="{{ route('cms.ethical_boundaries.hero.section') }}" class="slide-item">Ethical
-                                boundaries</a>
+                        <li><a href="{{ route('cms.tax_policy.hero.section') }}" class="slide-item">Tax Policy</a>
                         </li>
                     </ul>
                 </li>

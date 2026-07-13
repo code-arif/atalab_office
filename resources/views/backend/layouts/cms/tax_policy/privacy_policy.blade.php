@@ -1,6 +1,6 @@
 @extends('backend.app')
 
-@section('title', 'Structure Page')
+@section('title', 'Privacy Policy Page')
 
 @section('content')
     <!--app-content open-->
@@ -11,13 +11,13 @@
                 {{-- PAGE-HEADER --}}
                 <div class="page-header">
                     <div>
-                        <h1 class="page-title">Structure Page</h1>
-                        <p class="text-muted mb-0 mt-1" style="font-size: 13px;">Manage the content for the Structure section.</p>
+                        <h1 class="page-title">Privacy Policy Page</h1>
+                        <p class="text-muted mb-0 mt-1" style="font-size: 13px;">Manage the content for the Privacy Policy section.</p>
                     </div>
                     <div class="ms-auto pageheader-btn">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="javascript:void(0);">Home Page</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Structure Page</li>
+                            <li class="breadcrumb-item"><a href="javascript:void(0);">Privacy Policy Page</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Index</li>
                         </ol>
                     </div>
                 </div>
@@ -28,17 +28,17 @@
                         <div class="hero-card">
                             <div class="hero-card-header">
                                 <div class="hero-card-header-icon">
-                                    <i class="fe fe-layout"></i>
+                                    <i class="fe fe-shield"></i>
                                 </div>
                                 <div>
-                                    <h5 class="hero-card-title mb-0">Hero Section</h5>
-                                    <small class="text-muted">Enter the title and structure details.</small>
+                                    <h5 class="hero-card-title mb-0">Policy Content</h5>
+                                    <small class="text-muted">Enter the title and full privacy policy description.</small>
                                 </div>
                             </div>
                             <div class="hero-card-body">
-                                <form method="post" action="{{ route('cms.structure.hero.section.update') }}" enctype="multipart/form-data">
+                                <form method="post" action="{{ route('cms.privacy_policy.hero.section.update') }}" enctype="multipart/form-data">
                                     @csrf
-                                    
+
                                     {{-- Title --}}
                                     <div class="mb-4">
                                         <label for="title" class="pro-label">Page Title</label>

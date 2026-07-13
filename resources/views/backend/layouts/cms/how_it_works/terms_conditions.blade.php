@@ -1,6 +1,6 @@
 @extends('backend.app')
 
-@section('title', 'Ethical Boundaries Page')
+@section('title', 'Terms & Conditions Page')
 
 @section('content')
     <!--app-content open-->
@@ -11,13 +11,13 @@
                 {{-- PAGE-HEADER --}}
                 <div class="page-header">
                     <div>
-                        <h1 class="page-title">Ethical Boundaries Page</h1>
-                        <p class="text-muted mb-0 mt-1" style="font-size: 13px;">Manage the content for the Ethical Boundaries section.</p>
+                        <h1 class="page-title">Terms & Conditions Page</h1>
+                        <p class="text-muted mb-0 mt-1" style="font-size: 13px;">Manage the content for the Terms & Conditions section.</p>
                     </div>
                     <div class="ms-auto pageheader-btn">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="javascript:void(0);">Ethical Boundaries Page</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Index</li>
+                            <li class="breadcrumb-item"><a href="javascript:void(0);">Home Page</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Terms & Conditions Page</li>
                         </ol>
                     </div>
                 </div>
@@ -28,17 +28,17 @@
                         <div class="hero-card">
                             <div class="hero-card-header">
                                 <div class="hero-card-header-icon">
-                                    <i class="fe fe-shield"></i>
+                                    <i class="fe fe-layout"></i>
                                 </div>
                                 <div>
-                                    <h5 class="hero-card-title mb-0">Policy Content</h5>
-                                    <small class="text-muted">Enter the title and full ethical boundaries description.</small>
+                                    <h5 class="hero-card-title mb-0">Hero Section</h5>
+                                    <small class="text-muted">Enter the title and structure details.</small>
                                 </div>
                             </div>
                             <div class="hero-card-body">
-                                <form method="post" action="{{ route('cms.ethical_boundaries.hero.section.update') }}" enctype="multipart/form-data">
+                                <form method="post" action="{{ route('cms.terms_conditions.hero.section.update') }}" enctype="multipart/form-data">
                                     @csrf
-                                    
+
                                     {{-- Title --}}
                                     <div class="mb-4">
                                         <label for="title" class="pro-label">Page Title</label>

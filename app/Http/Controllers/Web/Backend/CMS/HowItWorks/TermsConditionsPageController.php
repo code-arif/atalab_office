@@ -9,21 +9,21 @@ use Illuminate\Http\Request;
 use App\Http\Requests\CmsRequest;
 use App\Http\Controllers\Controller;
 
-class StructurePageController extends Controller
+class TermsConditionsPageController extends Controller
 {
     /**
-     * show stru page hero section data and section item
+     * show terms & conditions page hero section data and section item
      */
     public function index(Request $request)
     {
-        $data = CMS::where('page', 'structure')->where('section', 'hero')->where('name', 'item')->first();
+        $data = CMS::where('page', 'terms-and-conditions')->where('section', 'hero')->where('name', 'item')->first();
 
-        return view("backend.layouts.cms.how_it_works.structure", compact("data"));
+        return view("backend.layouts.cms.how_it_works.terms_conditions", compact("data"));
     }
 
 
     /**
-     * update structure page hero section
+     * update terms & conditions page hero section
      **/
     public function update(CmsRequest $request)
     {
@@ -31,14 +31,14 @@ class StructurePageController extends Controller
             $validated_data = $request->validated();
 
             // get the existing record
-            CMS::where('page', 'structure')
+            CMS::where('page', 'terms-and-conditions')
                 ->where('section', 'hero')
                 ->where('name', 'item')
                 ->first();
 
             CMS::updateOrCreate(
                 [
-                    'page' => 'structure',
+                    'page' => 'terms-and-conditions',
                     'section' => 'hero',
                     'name' => 'item'
                 ],
