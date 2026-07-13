@@ -51,6 +51,25 @@
     .blog-detail-content p {
         margin-bottom: 1rem;
     }
+    .blog-detail-content ul,
+    .blog-detail-content ol {
+        margin: 1rem 0;
+        padding-left: 2rem;
+    }
+    .blog-detail-content ul {
+        list-style-type: disc;
+    }
+    .blog-detail-content ol {
+        list-style-type: decimal;
+    }
+    .blog-detail-content li {
+        margin-bottom: 0.4rem;
+        line-height: 1.7;
+    }
+    .blog-detail-content li > ul,
+    .blog-detail-content li > ol {
+        margin: 0.25rem 0;
+    }
     .blog-detail-content img {
         max-width: 100%;
         border-radius: 8px;

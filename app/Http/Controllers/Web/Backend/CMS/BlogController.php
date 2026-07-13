@@ -21,9 +21,19 @@ class BlogController extends Controller
 
             return DataTables::of($blogs)
                 ->addIndexColumn()
+                ->addColumn('featured_image', fn($item) => $item->featured_image
+                    ? '<div class="d-flex justify-content-center">
+                        <a href="' . e(asset($item->featured_image)) . '" target="_blank" title="View full image">
+                            <img src="' . e(asset($item->featured_image)) . '" class="rounded" style="width:56px;height:56px;object-fit:cover;border:1px solid #e5e7eb;" alt="">
+                        </a>
+                       </div>'
+                    : '<div class="d-flex justify-content-center">
+                        <div class="rounded d-flex align-items-center justify-content-center bg-light" style="width:56px;height:56px;">
+                            <i class="fa fa-image text-muted" style="font-size:18px;"></i>
+                        </div>
+                       </div>')
                 ->addColumn('title', fn($item) => '
                     <div class="d-flex align-items-center">
-                        ' . ($item->featured_image ? '<img src="' . e(asset($item->featured_image)) . '" class="blog-thumb me-2" alt="">' : '<div class="blog-thumb me-2 d-flex align-items-center justify-content-center bg-light rounded"><i class="fa fa-image text-muted"></i></div>') . '
                         <div>
                             <strong>' . e(Str::limit($item->title, 60)) . '</strong>
                             <br>
@@ -61,7 +71,7 @@ class BlogController extends Controller
                             <i class="fa fa-trash"></i>
                         </button>
                     </div>')
-                ->rawColumns(['title', 'author', 'status', 'published_at', 'action'])
+                ->rawColumns(['featured_image', 'title', 'author', 'status', 'published_at', 'action'])
                 ->make(true);
         }
 

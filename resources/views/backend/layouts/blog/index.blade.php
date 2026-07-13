@@ -88,7 +88,8 @@
                                     <thead>
                                         <tr>
                                             <th class="bg-transparent border-bottom-0 wp-5">#</th>
-                                            <th class="bg-transparent border-bottom-0 wp-25">Title</th>
+                                            <th class="bg-transparent border-bottom-0 wp-8">Image</th>
+                                            <th class="bg-transparent border-bottom-0 wp-22">Title</th>
                                             <th class="bg-transparent border-bottom-0 wp-10">Author</th>
                                             <th class="bg-transparent border-bottom-0 wp-10">Status</th>
                                             <th class="bg-transparent border-bottom-0 wp-10">Published</th>
@@ -152,6 +153,13 @@
                         name: 'DT_RowIndex',
                         orderable: false,
                         searchable: false
+                    },
+                    {
+                        data: 'featured_image',
+                        name: 'featured_image',
+                        orderable: false,
+                        searchable: false,
+                        className: 'dt-center'
                     },
                     {
                         data: 'title',

@@ -29,6 +29,11 @@
         padding: 0.15rem 0.5rem;
         border-radius: 4px;
     }
+
+    /* ── CKEditor Minimum Height ── */
+    .ck-editor__editable_inline {
+        min-height: 450px;
+    }
 </style>
 @endpush
 
@@ -215,9 +220,8 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
 <script>
-    // Initialize CKEditor for content
+    // Initialize CKEditor for content (CKEditor 5 is loaded globally from backend partials)
     ClassicEditor
         .create(document.querySelector('#content'), {
             toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', 'insertTable', 'undo', 'redo'],
@@ -230,8 +234,14 @@
                 ]
             }
         })
+        .then(editor => {
+            // Set a placeholder message
+            editor.editing.view.change(writer => {
+                writer.setAttribute('placeholder', 'Start writing your blog content...', editor.editing.view.document.getRoot());
+            });
+        })
         .catch(error => {
-            console.error(error);
+            console.error('CKEditor initialization error:', error);
         });
 
     // Auto-generate slug preview on title input
