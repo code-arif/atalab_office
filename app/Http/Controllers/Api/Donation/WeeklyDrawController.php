@@ -88,7 +88,7 @@ class WeeklyDrawController extends Controller
                 'success' => true,
                 'draw' => $draw
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
