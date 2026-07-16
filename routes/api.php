@@ -1,17 +1,18 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Auth\AuthenticationController;
+use App\Http\Controllers\Api\Auth\RegistrationController;
+use App\Http\Controllers\Api\Blog\BlogController;
+use App\Http\Controllers\Api\Chat\ChatApiController;
 use App\Http\Controllers\Api\CMS\CmsController;
 use App\Http\Controllers\Api\ContactController;
-use App\Http\Controllers\Api\NewsletterController;
-use App\Http\Controllers\Api\Chat\ChatApiController;
-use App\Http\Controllers\Api\DrawSettingsController;
-use App\Http\Controllers\Web\Backend\VisitorController;
-use App\Http\Controllers\Api\Auth\RegistrationController;
 use App\Http\Controllers\Api\Donation\DonationController;
-use App\Http\Controllers\Api\Auth\AuthenticationController;
 use App\Http\Controllers\Api\Donation\WeeklyDrawController;
+use App\Http\Controllers\Api\DrawSettingsController;
+use App\Http\Controllers\Api\NewsletterController;
 use App\Http\Controllers\Api\V2\Donation\DonationV2Controller;
+use App\Http\Controllers\Web\Backend\VisitorController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -109,6 +110,23 @@ Route::prefix('v1')->group(function () {
 
     // Register a new user account and initiate the OTP verification flow.
     Route::post('auth/register', [RegistrationController::class, 'register']);
+
+    /*
+    |----------------------------------------------------------------------
+    | Blog Routes — Public Information
+    |----------------------------------------------------------------------
+    |
+    | Public endpoints for retrieving blog posts. No authentication required.
+    |
+    */
+    Route::prefix('blogs')->group(function () {
+
+        // Retrieve a paginated list of published blog posts.
+        Route::get('/', [BlogController::class, 'index']);
+
+        // Retrieve a single published blog post by its slug.
+        Route::get('/{slug}', [BlogController::class, 'show']);
+    });
 
     /*
     |----------------------------------------------------------------------
