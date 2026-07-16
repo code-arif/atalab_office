@@ -1,77 +1,6 @@
-@extends('backend.app', ['title' => 'Edit Blog Post'])
+@extends('backend.app')
 
-@push('styles')
-<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
-<style>
-    .meta-card {
-        background: #f8f9fc;
-        border: 1px dashed #d2d6dc;
-        border-radius: 8px;
-        padding: 1.25rem;
-        margin-top: 1rem;
-    }
-    .meta-card .form-label {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #4b5563;
-    }
-    .slug-preview {
-        font-size: 0.8rem;
-        color: #6b7280;
-        background: #eef0f5;
-        padding: 0.2rem 0.6rem;
-        border-radius: 4px;
-        display: inline-block;
-    }
-    .seo-badge {
-        background: #e8edf5;
-        color: #4a5a7a;
-        font-size: 0.7rem;
-        padding: 0.15rem 0.5rem;
-        border-radius: 4px;
-    }
-    .current-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.35rem 0.85rem;
-        border-radius: 20px;
-        font-weight: 500;
-        font-size: 0.8rem;
-    }
-    .current-status.published {
-        background: #d4edda;
-        color: #155724;
-    }
-    .current-status.draft {
-        background: #fff3cd;
-        color: #856404;
-    }
-
-    /* ── Summernote fixes ── */
-    .note-editor.note-frame {
-        border-radius: 8px;
-        overflow: hidden;
-    }
-    .note-editor .note-toolbar {
-        background-color: #fafbfc;
-        border-bottom: 1px solid #e8eaed;
-        padding: 10px 10px 5px 10px;
-    }
-    .note-editor .note-statusbar {
-        background-color: #fafbfc;
-        border-top: 1px solid #e8eaed;
-    }
-    .note-editor .note-editing-area .note-editable {
-        padding: 20px;
-        font-size: 14px;
-    }
-    .note-editor .note-editing-area .note-placeholder {
-        padding: 20px;
-        font-size: 14px;
-    }
-</style>
-@endpush
+@section('title', 'Edit Blog Post')
 
 @section('content')
 <!--app-content open-->
@@ -266,6 +195,79 @@
 </div>
 <!-- CONTAINER CLOSED -->
 @endsection
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+<style>
+    .meta-card {
+        background: #f8f9fc;
+        border: 1px dashed #d2d6dc;
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-top: 1rem;
+    }
+    .meta-card .form-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #4b5563;
+    }
+    .slug-preview {
+        font-size: 0.8rem;
+        color: #6b7280;
+        background: #eef0f5;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    .seo-badge {
+        background: #e8edf5;
+        color: #4a5a7a;
+        font-size: 0.7rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+    }
+    .current-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 0.85rem;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+    .current-status.published {
+        background: #d4edda;
+        color: #155724;
+    }
+    .current-status.draft {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    /* ── Summernote fixes ── */
+    .note-editor.note-frame {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .note-editor .note-toolbar {
+        background-color: #fafbfc;
+        border-bottom: 1px solid #e8eaed;
+        padding: 10px 10px 5px 10px;
+    }
+    .note-editor .note-statusbar {
+        background-color: #fafbfc;
+        border-top: 1px solid #e8eaed;
+    }
+    .note-editor .note-editing-area .note-editable {
+        padding: 20px;
+        font-size: 14px;
+    }
+    .note-editor .note-editing-area .note-placeholder {
+        padding: 20px;
+        font-size: 14px;
+    }
+</style>
+@endpush
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>

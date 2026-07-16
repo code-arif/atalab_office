@@ -1,4 +1,130 @@
-@extends('backend.app', ['title' => $blog->title])
+@extends('backend.app')
+
+@section('title', $blog->title)
+
+@section('content')
+<!--app-content open-->
+<div class="app-content main-content mt-0">
+    <div class="side-app">
+
+        <!-- CONTAINER -->
+        <div class="main-container container-fluid">
+
+            <!-- PAGE-HEADER -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Blog Post</h1>
+                </div>
+                <div class="ms-auto pageheader-btn">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ route('blog.index') }}">Blog</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">View</li>
+                    </ol>
+                </div>
+            </div>
+            <!-- PAGE-HEADER END -->
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+                            <h3 class="card-title mb-0">Post Preview</h3>
+                            <div class="d-flex gap-2">
+                                <a href="{{ route('blog.edit', $blog->id) }}" class="btn btn-primary btn-sm">
+                                    <i class="fa fa-edit"></i> Edit
+                                </a>
+                                <a href="{{ route('blog.index') }}" class="btn btn-secondary btn-sm">
+                                    <i class="fa fa-arrow-left"></i> Back
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Blog Header -->
+                            <div class="blog-detail-header">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="status-badge {{ $blog->status }}">
+                                        <i class="fa {{ $blog->status === 'published' ? 'fa-check-circle' : 'fa-clock' }}"></i>
+                                        {{ ucfirst($blog->status) }}
+                                    </span>                                    <span class="badge bg-info-soft text-dark">
+                                        <i class="fa fa-clock-o"></i> {{ $blog->reading_time }} min read
+                                    </span>
+                                </div>
+                                <h1 class="blog-title">{{ $blog->title }}</h1>
+                                <div class="blog-meta">
+                                    @if($blog->author)
+                                    <span>
+                                        <i class="fa fa-user"></i>
+                                        {{ $blog->author->name }}
+                                    </span>
+                                    @endif
+                                    @if($blog->published_at)
+                                    <span>
+                                        <i class="fa fa-calendar"></i>
+                                        {{ $blog->published_at->format('F d, Y') }}
+                                    </span>
+                                    @endif
+                                    <span>
+                                        <i class="fa fa-folder"></i>
+                                        Blog
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Featured Image -->
+                            @if($blog->featured_image)
+                            <img src="{{ asset($blog->featured_image) }}" alt="{{ $blog->title }}" class="blog-detail-image">
+                            @endif
+
+                            <!-- Excerpt -->
+                            @if($blog->excerpt)
+                            <div class="alert alert-info bg-light border-0 ps-4 py-3 mb-4" style="border-left: 4px solid #5066e1;">
+                                <strong>Excerpt:</strong>
+                                <p class="mb-0 text-muted mt-1">{{ $blog->excerpt }}</p>
+                            </div>
+                            @endif
+
+                            <!-- Content -->
+                            <div class="blog-detail-content">
+                                {!! $blog->content !!}
+                            </div>
+
+                            <!-- SEO Metadata -->
+                            <div class="seo-metadata">
+                                <h5 class="mb-3"><i class="fa fa-search me-1"></i> SEO Metadata</h5>
+                                <dl class="mb-0">
+                                    <dt>Slug</dt>
+                                    <dd><code>/blog/{{ $blog->slug }}</code></dd>
+
+                                    @if($blog->meta_title)
+                                    <dt>Meta Title</dt>
+                                    <dd>{{ $blog->meta_title }} <span class="text-muted">({{ strlen($blog->meta_title) }} chars)</span></dd>
+                                    @endif
+
+                                    @if($blog->meta_description)
+                                    <dt>Meta Description</dt>
+                                    <dd>{{ $blog->meta_description }} <span class="text-muted">({{ strlen($blog->meta_description) }} chars)</span></dd>
+                                    @endif
+
+                                    @if($blog->meta_keywords)
+                                    <dt>Meta Keywords</dt>
+                                    <dd>
+                                        @foreach(explode(',', $blog->meta_keywords) as $keyword)
+                                        <span class="badge bg-light text-dark me-1">{{ trim($keyword) }}</span>
+                                        @endforeach
+                                    </dd>
+                                    @endif
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- CONTAINER CLOSED -->
+@endsection
 
 @push('styles')
 <style>
@@ -138,127 +264,3 @@
     }
 </style>
 @endpush
-
-@section('content')
-<!--app-content open-->
-<div class="app-content main-content mt-0">
-    <div class="side-app">
-
-        <!-- CONTAINER -->
-        <div class="main-container container-fluid">
-
-            <!-- PAGE-HEADER -->
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">Blog Post</h1>
-                </div>
-                <div class="ms-auto pageheader-btn">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('blog.index') }}">Blog</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">View</li>
-                    </ol>
-                </div>
-            </div>
-            <!-- PAGE-HEADER END -->
-
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="card">
-                        <div class="card-header border-bottom d-flex justify-content-between align-items-center">
-                            <h3 class="card-title mb-0">Post Preview</h3>
-                            <div class="d-flex gap-2">
-                                <a href="{{ route('blog.edit', $blog->id) }}" class="btn btn-primary btn-sm">
-                                    <i class="fa fa-edit"></i> Edit
-                                </a>
-                                <a href="{{ route('blog.index') }}" class="btn btn-secondary btn-sm">
-                                    <i class="fa fa-arrow-left"></i> Back
-                                </a>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <!-- Blog Header -->
-                            <div class="blog-detail-header">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <span class="status-badge {{ $blog->status }}">
-                                        <i class="fa {{ $blog->status === 'published' ? 'fa-check-circle' : 'fa-clock' }}"></i>
-                                        {{ ucfirst($blog->status) }}
-                                    </span>                                    <span class="badge bg-info-soft text-dark">
-                                        <i class="fa fa-clock-o"></i> {{ $blog->reading_time }} min read
-                                    </span>
-                                </div>
-                                <h1 class="blog-title">{{ $blog->title }}</h1>
-                                <div class="blog-meta">
-                                    @if($blog->author)
-                                    <span>
-                                        <i class="fa fa-user"></i>
-                                        {{ $blog->author->name }}
-                                    </span>
-                                    @endif
-                                    @if($blog->published_at)
-                                    <span>
-                                        <i class="fa fa-calendar"></i>
-                                        {{ $blog->published_at->format('F d, Y') }}
-                                    </span>
-                                    @endif
-                                    <span>
-                                        <i class="fa fa-folder"></i>
-                                        Blog
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Featured Image -->
-                            @if($blog->featured_image)
-                            <img src="{{ asset($blog->featured_image) }}" alt="{{ $blog->title }}" class="blog-detail-image">
-                            @endif
-
-                            <!-- Excerpt -->
-                            @if($blog->excerpt)
-                            <div class="alert alert-info bg-light border-0 ps-4 py-3 mb-4" style="border-left: 4px solid #5066e1;">
-                                <strong>Excerpt:</strong>
-                                <p class="mb-0 text-muted mt-1">{{ $blog->excerpt }}</p>
-                            </div>
-                            @endif
-
-                            <!-- Content -->
-                            <div class="blog-detail-content">
-                                {!! $blog->content !!}
-                            </div>
-
-                            <!-- SEO Metadata -->
-                            <div class="seo-metadata">
-                                <h5 class="mb-3"><i class="fa fa-search me-1"></i> SEO Metadata</h5>
-                                <dl class="mb-0">
-                                    <dt>Slug</dt>
-                                    <dd><code>/blog/{{ $blog->slug }}</code></dd>
-
-                                    @if($blog->meta_title)
-                                    <dt>Meta Title</dt>
-                                    <dd>{{ $blog->meta_title }} <span class="text-muted">({{ strlen($blog->meta_title) }} chars)</span></dd>
-                                    @endif
-
-                                    @if($blog->meta_description)
-                                    <dt>Meta Description</dt>
-                                    <dd>{{ $blog->meta_description }} <span class="text-muted">({{ strlen($blog->meta_description) }} chars)</span></dd>
-                                    @endif
-
-                                    @if($blog->meta_keywords)
-                                    <dt>Meta Keywords</dt>
-                                    <dd>
-                                        @foreach(explode(',', $blog->meta_keywords) as $keyword)
-                                        <span class="badge bg-light text-dark me-1">{{ trim($keyword) }}</span>
-                                        @endforeach
-                                    </dd>
-                                    @endif
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-<!-- CONTAINER CLOSED -->
-@endsection

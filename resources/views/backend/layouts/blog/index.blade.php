@@ -1,54 +1,6 @@
-@extends('backend.app', ['title' => 'Blog Management'])
+@extends('backend.app')
 
-@push('styles')
-<link href="{{ asset('default/datatable.css') }}" rel="stylesheet" />
-<style>
-    .blog-thumb {
-        width: 48px;
-        height: 48px;
-        object-fit: cover;
-        border-radius: 8px;
-    }
-    .custom-switch {
-        display: inline-flex;
-        align-items: center;
-        margin-bottom: 0;
-    }
-    .custom-switch-input {
-        position: absolute;
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-    .custom-switch-indicator {
-        display: inline-block;
-        width: 36px;
-        height: 20px;
-        background: #d2d6dc;
-        border-radius: 10px;
-        position: relative;
-        cursor: pointer;
-        transition: background 0.2s ease;
-    }
-    .custom-switch-indicator::after {
-        content: '';
-        position: absolute;
-        width: 16px;
-        height: 16px;
-        background: #fff;
-        border-radius: 50%;
-        top: 2px;
-        left: 2px;
-        transition: transform 0.2s ease;
-    }
-    .custom-switch-input:checked + .custom-switch-indicator {
-        background: #2dce89;
-    }
-    .custom-switch-input:checked + .custom-switch-indicator::after {
-        transform: translateX(16px);
-    }
-</style>
-@endpush
+@section('title', 'Blog Management')
 
 @section('content')
 <!--app-content open-->
@@ -111,6 +63,57 @@
 </div>
 <!-- CONTAINER CLOSED -->
 @endsection
+
+
+@push('styles')
+<link href="{{ asset('default/datatable.css') }}" rel="stylesheet" />
+<style>
+    .blog-thumb {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    .custom-switch {
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: 0;
+    }
+    .custom-switch-input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .custom-switch-indicator {
+        display: inline-block;
+        width: 36px;
+        height: 20px;
+        background: #d2d6dc;
+        border-radius: 10px;
+        position: relative;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+    .custom-switch-indicator::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        background: #fff;
+        border-radius: 50%;
+        top: 2px;
+        left: 2px;
+        transition: transform 0.2s ease;
+    }
+    .custom-switch-input:checked + .custom-switch-indicator {
+        background: #2dce89;
+    }
+    .custom-switch-input:checked + .custom-switch-indicator::after {
+        transform: translateX(16px);
+    }
+</style>
+@endpush
 
 @push('scripts')
 <script>
